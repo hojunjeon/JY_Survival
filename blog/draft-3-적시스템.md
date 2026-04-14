@@ -1,4 +1,4 @@
-# [RJ Revolution #3] 버그들이 몰려온다 — 적 시스템 TDD 구현기
+# [JY Survival #3] 버그들이 몰려온다 — 적 시스템 TDD 구현기
 
 > **시리즈**: Superpowers + GSD + Gstack으로 게임 만들기  
 > **이번 사이클**: Cycle 2 — 적 시스템 (Enemy / WaveSystem / Collision)  

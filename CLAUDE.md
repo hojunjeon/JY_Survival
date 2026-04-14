@@ -1,4 +1,4 @@
-# RJ Revolution
+# JY Survival
 
 ## 목적
 Superpowers + GSD + Gstack 유기적 연동 워크플로우를

@@ -1,4 +1,4 @@
-# [RJ Revolution #1] 뱀서 클론 게임 기획기 — AI랑 브레인스토밍 해봤더니
+# [JY Survival #1] 뱀서 클론 게임 기획기 — AI랑 브레인스토밍 해봤더니
 
 > 이 시리즈는 Superpowers + GSD + Gstack 워크플로우를 실제 게임 토이 프로젝트를 통해 검증하는 개발일지다.
 
