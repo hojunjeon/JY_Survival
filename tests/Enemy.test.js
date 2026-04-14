@@ -109,3 +109,40 @@ describe('적 타입별 스탯', () => {
     expect(bug.x).toBeLessThan(200); // 왼쪽으로 도망
   });
 });
+
+describe('이벤트 전용 적 타입', () => {
+  it('IndentationError 적을 생성한다', () => {
+    const e = createEnemy('indentation_error', 100, 100);
+    expect(e.type).toBe('indentation_error');
+    expect(e.hp).toBeGreaterThan(0);
+    expect(e.contactDamage).toBeGreaterThan(0);
+  });
+
+  it('IndentationError는 SyntaxError보다 HP가 높다', () => {
+    const ie = createEnemy('indentation_error', 0, 0);
+    const syn = createEnemy('syntax_error', 0, 0);
+    expect(ie.hp).toBeGreaterThan(syn.hp);
+  });
+
+  it('EnvError 적을 생성한다', () => {
+    const e = createEnemy('env_error', 100, 100);
+    expect(e.type).toBe('env_error');
+    expect(e.hp).toBeGreaterThan(0);
+  });
+
+  it('EnvError는 SegFault보다 HP가 높다', () => {
+    const env = createEnemy('env_error', 0, 0);
+    const seg = createEnemy('seg_fault', 0, 0);
+    expect(env.hp).toBeGreaterThan(seg.hp);
+  });
+
+  it('EnvError는 느린 속도를 가진다 (SegFault 이하)', () => {
+    const env = createEnemy('env_error', 0, 0);
+    const seg = createEnemy('seg_fault', 0, 0);
+    expect(env.speed).toBeLessThanOrEqual(seg.speed);
+  });
+
+  it('알 수 없는 타입은 에러를 던진다', () => {
+    expect(() => createEnemy('unknown_type', 0, 0)).toThrow();
+  });
+});

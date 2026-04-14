@@ -32,7 +32,7 @@
 
 ---
 
-## 다음 작업: Cycle 3 — 무기 시스템
+## 다음 작업: Cycle 5 — 보스전 (장선형)
 
 ### Cycle 2 — 적 시스템 ✅
 - [x] `entities/Enemy.js` 버그 기반 클래스 4종 (SyntaxError/NullPointer/SegFault/HealBug)
@@ -42,19 +42,22 @@
 - [x] TDD: 누적 테스트 64개 전부 GREEN
 - [x] 문서화: `blog/draft-3-적시스템.md` 저장 완료
 
-### Cycle 3 태스크 (미완료)
-- [ ] `weapons/WeaponBase.js` + `entities/Projectile.js`
-- [ ] Python / C / Java 무기 구현
-- [ ] `ui/Menu.js` 무기 선택 화면
-- [ ] 충돌 감지 (투사체 ↔ 적)
-- [ ] 문서화: `blog/draft-4-무기시스템.md`
+### Cycle 3 — 무기 시스템 ✅
+- [x] `weapons/WeaponBase.js` + `entities/Projectile.js`
+- [x] Python / C / Java 무기 구현
+- [x] `ui/Menu.js` 무기 선택 화면
+- [x] 충돌 감지 (투사체 ↔ 적)
+- [x] TDD: 누적 테스트 122개 전부 GREEN
+- [x] 문서화: `blog/draft-4-무기시스템.md` 저장 완료
 
-### Cycle 4 태스크 (미완료)
-- [ ] `systems/EventSystem.js`
-- [ ] E1 이벤트 (IndentationError 웨이브)
-- [ ] E3 이벤트 (EnvError + 60초 생존)
-- [ ] Q1 퀘스트 (100마리 + 스탯 업그레이드)
-- [ ] 문서화: `blog/draft-5-이벤트퀘스트.md`
+### Cycle 4 — 이벤트·퀘스트 시스템 ✅
+- [x] `systems/EventSystem.js` — E1/E3 시간 트리거, Q1 킬 카운팅
+- [x] E1 이벤트 (IndentationError 15마리 처치 → cleared)
+- [x] E3 이벤트 (EnvError 1마리 이상 + 60초 생존 → cleared)
+- [x] Q1 퀘스트 (누적 100마리 → completed 알림)
+- [x] 이벤트 전용 적 타입 2종 추가 (indentation_error, env_error)
+- [x] TDD: 누적 테스트 166개 전부 GREEN
+- [x] 문서화: `blog/draft-5-이벤트퀘스트.md` 저장 완료
 
 ### Cycle 5 태스크 (미완료)
 - [ ] `entities/Boss.js` 장선형
@@ -77,7 +80,7 @@
 | 1편 (기획) | `blog/draft-1-기획.md` | Phase 1 | ✅ 작성 완료 (퇴고 후 발행) |
 | 2편 (코어 개발) | `blog/draft-2-코어개발.md` | Cycle 1 | ✅ 작성 완료 (퇴고 후 발행) |
 | 3편 (적 시스템) | `blog/draft-3-적시스템.md` | Cycle 2 | ✅ 작성 완료 (퇴고 후 발행) |
-| 4편 (무기 시스템) | `blog/draft-4-무기시스템.md` | Cycle 3 | ⏳ Cycle 3 완료 후 작성 |
-| 5편 (이벤트·퀘스트) | `blog/draft-5-이벤트퀘스트.md` | Cycle 4 | ⏳ Cycle 4 완료 후 작성 |
+| 4편 (무기 시스템) | `blog/draft-4-무기시스템.md` | Cycle 3 | ✅ 작성 완료 (퇴고 후 발행) |
+| 5편 (이벤트·퀘스트) | `blog/draft-5-이벤트퀘스트.md` | Cycle 4 | ✅ 작성 완료 (퇴고 후 발행) |
 | 6편 (보스전) | `blog/draft-6-보스전.md` | Cycle 5 | ⏳ Cycle 5 완료 후 작성 |
 | 7편 (완성·통합) | `blog/draft-7-완성.md` | Cycle 6 | ⏳ Cycle 6 완료 후 작성 |
