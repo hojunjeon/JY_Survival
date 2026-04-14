@@ -20,13 +20,7 @@
 - [x] 코딩: Phase 1 skip
 - [x] 문서화: `blog/draft-1-기획.md` 저장 완료
 
----
-
-## 다음 작업: Cycle 1 — 코어 & 플레이어
-
-Phase 2 진입점: GSD (태스크 선택)
-
-### Cycle 1 태스크 ✅
+### Cycle 1 — 코어 & 플레이어 ✅
 - [x] `index.html` + Canvas 마운트
 - [x] `core/Game.js` 게임 루프 (update/render)
 - [x] `core/Input.js` WASD 키보드 입력
@@ -34,43 +28,55 @@ Phase 2 진입점: GSD (태스크 선택)
 - [x] `core/Canvas.js` 렌더링 유틸
 - [x] `sprites/PixelRenderer.js` 김지윤 32×32 스프라이트
 - [x] TDD: 테스트 34개 전부 GREEN
+- [x] 문서화: `blog/draft-2-코어개발.md` 저장 완료
+
+---
+
+## 다음 작업: Cycle 2 — 적 시스템
 
 ### Cycle 2 태스크 (미완료)
 - [ ] `entities/Enemy.js` 버그 기반 클래스 + 3종
 - [ ] `systems/WaveSystem.js` 시간 기반 스폰
 - [ ] 충돌 감지 (플레이어 ↔ 적)
 - [ ] 회복 버그 + HP 아이템 드롭
+- [ ] 문서화: `blog/draft-3-적시스템.md`
 
 ### Cycle 3 태스크 (미완료)
 - [ ] `weapons/WeaponBase.js` + `entities/Projectile.js`
 - [ ] Python / C / Java 무기 구현
 - [ ] `ui/Menu.js` 무기 선택 화면
 - [ ] 충돌 감지 (투사체 ↔ 적)
+- [ ] 문서화: `blog/draft-4-무기시스템.md`
 
 ### Cycle 4 태스크 (미완료)
 - [ ] `systems/EventSystem.js`
 - [ ] E1 이벤트 (IndentationError 웨이브)
 - [ ] E3 이벤트 (EnvError + 60초 생존)
 - [ ] Q1 퀘스트 (100마리 + 스탯 업그레이드)
+- [ ] 문서화: `blog/draft-5-이벤트퀘스트.md`
 
 ### Cycle 5 태스크 (미완료)
 - [ ] `entities/Boss.js` 장선형
 - [ ] 보스 등장 트리거 로직
 - [ ] 스테이지 클리어 판정 + 보상 화면
+- [ ] 문서화: `blog/draft-6-보스전.md`
 
 ### Cycle 6 태스크 (미완료)
 - [ ] `systems/UpgradeSystem.js`
 - [ ] `ui/HUD.js`
 - [ ] `stages/Stage1.js` 전체 통합 테스트
-
-### Cycle 7 — 문서화
-- [x] `blog/draft-2-코어개발.md` ✅
+- [ ] 문서화: `blog/draft-7-완성.md`
 
 ---
 
 ## 블로그 초안 현황
 
-| 편 | 파일 | 상태 |
-|----|------|------|
-| 1편 (기획) | `blog/draft-1-기획.md` | ✅ 작성 완료 (퇴고 후 발행) |
-| 2편 (코어 개발) | `blog/draft-2-코어개발.md` | ✅ 작성 완료 (퇴고 후 발행) |
+| 편 | 파일 | 사이클 | 상태 |
+|----|------|--------|------|
+| 1편 (기획) | `blog/draft-1-기획.md` | Phase 1 | ✅ 작성 완료 (퇴고 후 발행) |
+| 2편 (코어 개발) | `blog/draft-2-코어개발.md` | Cycle 1 | ✅ 작성 완료 (퇴고 후 발행) |
+| 3편 (적 시스템) | `blog/draft-3-적시스템.md` | Cycle 2 | ⏳ Cycle 2 완료 후 작성 |
+| 4편 (무기 시스템) | `blog/draft-4-무기시스템.md` | Cycle 3 | ⏳ Cycle 3 완료 후 작성 |
+| 5편 (이벤트·퀘스트) | `blog/draft-5-이벤트퀘스트.md` | Cycle 4 | ⏳ Cycle 4 완료 후 작성 |
+| 6편 (보스전) | `blog/draft-6-보스전.md` | Cycle 5 | ⏳ Cycle 5 완료 후 작성 |
+| 7편 (완성·통합) | `blog/draft-7-완성.md` | Cycle 6 | ⏳ Cycle 6 완료 후 작성 |
