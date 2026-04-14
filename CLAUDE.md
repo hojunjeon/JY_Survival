@@ -14,8 +14,14 @@ Superpowers + GSD + Gstack 유기적 연동 워크플로우를
 
 ---
 
+## 세션 시작 시 필독 (IMPORTANT)
+세션 시작 시 아래 파일을 반드시 읽어라:
+- `docs/phase-status.md` — 현재 Phase 및 다음 작업 확인
+- `docs/design.md` — 게임 전체 설계 확정본
+
 ## Phase 감지 (IMPORTANT)
-세션 시작 시 아래 규칙으로 현재 Phase를 판단하라:
+세션 시작 시 `docs/phase-status.md` 의 현재 Phase를 기준으로 판단하라.
+파일이 없을 경우 아래 규칙으로 판단:
 
 - 게임 코드가 없으면 → Phase 1 (브레인스토밍 + 기획)
 - 게임 코드가 존재하고 활성 태스크가 있으면 → Phase 2+ (기능 개발)
