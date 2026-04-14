@@ -32,14 +32,15 @@
 
 ---
 
-## 다음 작업: Cycle 2 — 적 시스템
+## 다음 작업: Cycle 3 — 무기 시스템
 
-### Cycle 2 태스크 (미완료)
-- [ ] `entities/Enemy.js` 버그 기반 클래스 + 3종
-- [ ] `systems/WaveSystem.js` 시간 기반 스폰
-- [ ] 충돌 감지 (플레이어 ↔ 적)
-- [ ] 회복 버그 + HP 아이템 드롭
-- [ ] 문서화: `blog/draft-3-적시스템.md`
+### Cycle 2 — 적 시스템 ✅
+- [x] `entities/Enemy.js` 버그 기반 클래스 4종 (SyntaxError/NullPointer/SegFault/HealBug)
+- [x] `systems/WaveSystem.js` 시간 기반 스폰 (3초마다 3마리, 4방향 엣지)
+- [x] `core/Collision.js` 충돌 감지 (플레이어 ↔ 적, AABB)
+- [x] 회복 버그 + HP 아이템 드롭
+- [x] TDD: 누적 테스트 64개 전부 GREEN
+- [x] 문서화: `blog/draft-3-적시스템.md` 저장 완료
 
 ### Cycle 3 태스크 (미완료)
 - [ ] `weapons/WeaponBase.js` + `entities/Projectile.js`
@@ -75,7 +76,7 @@
 |----|------|--------|------|
 | 1편 (기획) | `blog/draft-1-기획.md` | Phase 1 | ✅ 작성 완료 (퇴고 후 발행) |
 | 2편 (코어 개발) | `blog/draft-2-코어개발.md` | Cycle 1 | ✅ 작성 완료 (퇴고 후 발행) |
-| 3편 (적 시스템) | `blog/draft-3-적시스템.md` | Cycle 2 | ⏳ Cycle 2 완료 후 작성 |
+| 3편 (적 시스템) | `blog/draft-3-적시스템.md` | Cycle 2 | ✅ 작성 완료 (퇴고 후 발행) |
 | 4편 (무기 시스템) | `blog/draft-4-무기시스템.md` | Cycle 3 | ⏳ Cycle 3 완료 후 작성 |
 | 5편 (이벤트·퀘스트) | `blog/draft-5-이벤트퀘스트.md` | Cycle 4 | ⏳ Cycle 4 완료 후 작성 |
 | 6편 (보스전) | `blog/draft-6-보스전.md` | Cycle 5 | ⏳ Cycle 5 완료 후 작성 |
