@@ -15,7 +15,8 @@ export class Game {
   }
 
   removeEntity(entity) {
-    this.entities = this.entities.filter(e => e !== entity);
+    const idx = this.entities.indexOf(entity);
+    if (idx > -1) this.entities.splice(idx, 1);
   }
 
   update(dt) {
@@ -47,7 +48,7 @@ export class Game {
 
   _loop(timestamp) {
     if (!this.running) return;
-    const dt = Math.min((timestamp - this._lastTime) / 1000, 0.05); // max 50ms cap
+    const dt = Math.max(0.0001, Math.min((timestamp - this._lastTime) / 1000, 0.05));
     this._lastTime = timestamp;
     this.update(dt);
     this.render();

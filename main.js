@@ -8,14 +8,16 @@ const game = new Game(canvas);
 const input = new Input();
 input.listen(window);
 
-const player = new Player(canvas.width / 2, canvas.height / 2);
-
-// Player의 render를 PixelRenderer로 덮어씌움
-player.render = (ctx) => {
-  PixelRenderer.drawPlayer(ctx, player.x, player.y, 2);
+// renderer DI: PixelRenderer를 주입하면 Player.render()가 스프라이트로 그린다
+const playerRenderer = {
+  draw(ctx, x, y) {
+    PixelRenderer.drawPlayer(ctx, x, y, 2);
+  },
 };
 
-// 입력 → 속도 반영
+const player = new Player(canvas.width / 2, canvas.height / 2, playerRenderer);
+
+// 매 프레임: 입력 → 속도 반영
 const origUpdate = player.update.bind(player);
 player.update = (dt) => {
   const { x, y } = input.getAxis();

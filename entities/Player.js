@@ -1,5 +1,6 @@
 export class Player {
-  constructor(x, y) {
+  // renderer: { draw(ctx, x, y) } 형태의 객체. 없으면 파란 사각형 폴백.
+  constructor(x, y, renderer = null) {
     this.x = x;
     this.y = y;
     this.width = 32;
@@ -10,6 +11,7 @@ export class Player {
     this.vx = 0;
     this.vy = 0;
     this.isDead = false;
+    this._renderer = renderer;
   }
 
   update(dt) {
@@ -27,7 +29,12 @@ export class Player {
   }
 
   render(ctx) {
-    ctx.fillStyle = '#4fc3f7';
-    ctx.fillRect(this.x - this.width / 2, this.y - this.height / 2, this.width, this.height);
+    if (this._renderer) {
+      this._renderer.draw(ctx, this.x, this.y);
+    } else {
+      // 폴백: 개발/테스트용 사각형
+      ctx.fillStyle = '#4fc3f7';
+      ctx.fillRect(this.x - this.width / 2, this.y - this.height / 2, this.width, this.height);
+    }
   }
 }

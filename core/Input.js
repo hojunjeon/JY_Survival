@@ -34,7 +34,18 @@ export class Input {
   }
 
   listen(target = window) {
-    target.addEventListener('keydown', e => this.onKeyDown(e));
-    target.addEventListener('keyup',   e => this.onKeyUp(e));
+    this._target = target;
+    this._boundDown = e => this.onKeyDown(e);
+    this._boundUp   = e => this.onKeyUp(e);
+    target.addEventListener('keydown', this._boundDown);
+    target.addEventListener('keyup',   this._boundUp);
+  }
+
+  unlisten() {
+    if (this._target) {
+      this._target.removeEventListener('keydown', this._boundDown);
+      this._target.removeEventListener('keyup',   this._boundUp);
+      this._target = null;
+    }
   }
 }
