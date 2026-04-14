@@ -26,13 +26,14 @@
 
 Phase 2 진입점: GSD (태스크 선택)
 
-### Cycle 1 태스크 (미완료)
-- [ ] `index.html` + Canvas 마운트
-- [ ] `core/Game.js` 게임 루프 (update/render)
-- [ ] `core/Input.js` WASD 키보드 입력
-- [ ] `entities/Player.js` 이동 + HP + 충돌박스
-- [ ] `core/Canvas.js` 렌더링 유틸
-- [ ] `sprites/PixelRenderer.js` 김지윤 32×32 스프라이트
+### Cycle 1 태스크 ✅
+- [x] `index.html` + Canvas 마운트
+- [x] `core/Game.js` 게임 루프 (update/render)
+- [x] `core/Input.js` WASD 키보드 입력
+- [x] `entities/Player.js` 이동 + HP + 충돌박스
+- [x] `core/Canvas.js` 렌더링 유틸
+- [x] `sprites/PixelRenderer.js` 김지윤 32×32 스프라이트
+- [x] TDD: 테스트 34개 전부 GREEN
 
 ### Cycle 2 태스크 (미완료)
 - [ ] `entities/Enemy.js` 버그 기반 클래스 + 3종

@@ -1,0 +1,16 @@
+{
+  "name": "rj-revolution",
+  "version": "1.0.0",
+  "description": "김지윤의 디버그 서바이벌",
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "serve": "npx serve ."
+  },
+  "devDependencies": {
+    "vitest": "^1.6.0",
+    "@vitest/coverage-v8": "^1.6.0",
+    "jsdom": "^24.0.0"
+  }
+}
