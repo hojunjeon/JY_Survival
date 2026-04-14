@@ -1,0 +1,9 @@
+# Claude Code local settings (personal, not shared)
+.claude/settings.local.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Node (if used later)
+node_modules/
