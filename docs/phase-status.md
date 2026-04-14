@@ -66,11 +66,12 @@
 - [x] TDD: 누적 테스트 207개 전부 GREEN
 - [x] 문서화: `blog/draft-6-보스전.md` 저장 완료
 
-### Cycle 6 태스크 (미완료)
-- [ ] `systems/UpgradeSystem.js`
-- [ ] `ui/HUD.js`
-- [ ] `stages/Stage1.js` 전체 통합 테스트
-- [ ] 문서화: `blog/draft-7-완성.md`
+### Cycle 6 — 완성 ✅
+- [x] `systems/UpgradeSystem.js` — 강화 재화, 스탯 업그레이드, 무기 강화
+- [x] `ui/HUD.js` — HP바, 킬카운트, 타이머, 이벤트 상태
+- [x] `stages/Stage1.js` — 전체 시스템 통합 오케스트레이터
+- [x] TDD: 누적 테스트 249개 전부 GREEN
+- [x] 문서화: `blog/draft-7-완성.md` 저장 완료
 
 ---
 
@@ -84,4 +85,4 @@
 | 4편 (무기 시스템) | `blog/draft-4-무기시스템.md` | Cycle 3 | ✅ 작성 완료 (퇴고 후 발행) |
 | 5편 (이벤트·퀘스트) | `blog/draft-5-이벤트퀘스트.md` | Cycle 4 | ✅ 작성 완료 (퇴고 후 발행) |
 | 6편 (보스전) | `blog/draft-6-보스전.md` | Cycle 5 | ✅ 작성 완료 (퇴고 후 발행) |
-| 7편 (완성·통합) | `blog/draft-7-완성.md` | Cycle 6 | ⏳ Cycle 6 완료 후 작성 |
+| 7편 (완성·통합) | `blog/draft-7-완성.md` | Cycle 6 | ✅ 작성 완료 (퇴고 후 발행) |
