@@ -32,7 +32,7 @@
 
 ---
 
-## 다음 작업: Cycle 5 — 보스전 (장선형)
+## 다음 작업: Cycle 6 — 완성 (업그레이드·HUD·통합)
 
 ### Cycle 2 — 적 시스템 ✅
 - [x] `entities/Enemy.js` 버그 기반 클래스 4종 (SyntaxError/NullPointer/SegFault/HealBug)
@@ -59,11 +59,12 @@
 - [x] TDD: 누적 테스트 166개 전부 GREEN
 - [x] 문서화: `blog/draft-5-이벤트퀘스트.md` 저장 완료
 
-### Cycle 5 태스크 (미완료)
-- [ ] `entities/Boss.js` 장선형
-- [ ] 보스 등장 트리거 로직
-- [ ] 스테이지 클리어 판정 + 보상 화면
-- [ ] 문서화: `blog/draft-6-보스전.md`
+### Cycle 5 — 보스전 ✅
+- [x] `entities/Boss.js` 장선형 (2페이즈, 대사, 투사체 패턴)
+- [x] 보스 등장 트리거 로직 (EventSystem 확장)
+- [x] 스테이지 클리어 판정 + 보상 화면
+- [x] TDD: 누적 테스트 207개 전부 GREEN
+- [x] 문서화: `blog/draft-6-보스전.md` 저장 완료
 
 ### Cycle 6 태스크 (미완료)
 - [ ] `systems/UpgradeSystem.js`
@@ -82,5 +83,5 @@
 | 3편 (적 시스템) | `blog/draft-3-적시스템.md` | Cycle 2 | ✅ 작성 완료 (퇴고 후 발행) |
 | 4편 (무기 시스템) | `blog/draft-4-무기시스템.md` | Cycle 3 | ✅ 작성 완료 (퇴고 후 발행) |
 | 5편 (이벤트·퀘스트) | `blog/draft-5-이벤트퀘스트.md` | Cycle 4 | ✅ 작성 완료 (퇴고 후 발행) |
-| 6편 (보스전) | `blog/draft-6-보스전.md` | Cycle 5 | ⏳ Cycle 5 완료 후 작성 |
+| 6편 (보스전) | `blog/draft-6-보스전.md` | Cycle 5 | ✅ 작성 완료 (퇴고 후 발행) |
 | 7편 (완성·통합) | `blog/draft-7-완성.md` | Cycle 6 | ⏳ Cycle 6 완료 후 작성 |

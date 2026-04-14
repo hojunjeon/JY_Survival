@@ -1,8 +1,9 @@
 export class EventSystem {
-  constructor({ e1TriggerTime = 30, e3TriggerTime = 90, q1Target = 100 } = {}) {
+  constructor({ e1TriggerTime = 30, e3TriggerTime = 90, q1Target = 100, bossTriggerDelay = 30 } = {}) {
     this._e1TriggerTime = e1TriggerTime;
     this._e3TriggerTime = e3TriggerTime;
     this._q1Target = q1Target;
+    this._bossTriggerDelay = bossTriggerDelay;
 
     this.elapsed = 0;
     this.totalKills = 0;
@@ -15,6 +16,9 @@ export class EventSystem {
     this.e3Elapsed = 0;
 
     this.q1State = 'pending';
+
+    this.bossState = 'pending';
+    this._e3ClearedAt = null;
   }
 
   update(dt) {
@@ -43,7 +47,31 @@ export class EventSystem {
       notifications.push({ type: 'event_triggered', event: 'E3' });
     }
 
+    // E3 클리어 시점 기록
+    if (this.e3State === 'cleared' && this._e3ClearedAt === null) {
+      this._e3ClearedAt = this.elapsed;
+    }
+
+    // 보스 등장 트리거: E3 클리어 후 bossTriggerDelay 경과
+    if (
+      this.bossState === 'pending' &&
+      this._e3ClearedAt !== null &&
+      this.elapsed >= this._e3ClearedAt + this._bossTriggerDelay
+    ) {
+      this.bossState = 'active';
+      notifications.push({ type: 'boss_triggered' });
+    }
+
     return notifications;
+  }
+
+  notifyBossKill() {
+    if (this.bossState !== 'active') return [];
+    this.bossState = 'dead';
+    return [
+      { type: 'boss_killed' },
+      { type: 'stage_clear' },
+    ];
   }
 
   notifyKill(enemyType) {
