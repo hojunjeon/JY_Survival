@@ -15,11 +15,15 @@ export class Player {
     // 마지막 이동 방향 (C 무기 등 방향 지정 무기에 사용). 초기값: 오른쪽
     this.lastDirX = 1;
     this.lastDirY = 0;
+    this.contactInvulTimer = 0;
+    this.hitFlashTimer = 0;
   }
 
   update(dt) {
     this.x += this.vx * dt;
     this.y += this.vy * dt;
+    if (this.contactInvulTimer > 0) this.contactInvulTimer -= dt;
+    if (this.hitFlashTimer > 0) this.hitFlashTimer -= dt;
     // 이동 중일 때만 lastDir 업데이트
     if (this.vx !== 0 || this.vy !== 0) {
       const len = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
@@ -31,6 +35,13 @@ export class Player {
   takeDamage(amount) {
     this.hp = Math.max(0, this.hp - amount);
     if (this.hp === 0) this.isDead = true;
+    this.hitFlashTimer = 0.15;
+  }
+
+  takeDamageFromContact(amount) {
+    if (this.contactInvulTimer > 0) return;
+    this.takeDamage(amount);
+    this.contactInvulTimer = 0.5;
   }
 
   heal(amount) {

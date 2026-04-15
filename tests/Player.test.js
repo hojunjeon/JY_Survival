@@ -71,3 +71,33 @@ describe('Player', () => {
     expect(player.speed).toBeGreaterThan(0);
   });
 });
+
+describe('접촉 데미지 쿨다운', () => {
+  it('takeDamageFromContact 호출 시 contactInvulTimer가 0.5로 설정된다', () => {
+    const p = new Player(0, 0);
+    p.takeDamageFromContact(10);
+    expect(p.contactInvulTimer).toBeCloseTo(0.5);
+  });
+
+  it('무적 중에는 접촉 데미지를 받지 않는다', () => {
+    const p = new Player(0, 0);
+    p.takeDamageFromContact(10); // HP 90, 쿨다운 시작
+    p.takeDamageFromContact(10); // 무적 중 → 무시
+    expect(p.hp).toBe(90);
+  });
+
+  it('update로 contactInvulTimer가 줄어든다', () => {
+    const p = new Player(0, 0);
+    p.takeDamageFromContact(10);
+    p.update(0.3);
+    expect(p.contactInvulTimer).toBeCloseTo(0.2);
+  });
+
+  it('쿨다운이 끝나면 다시 접촉 데미지를 받는다', () => {
+    const p = new Player(0, 0);
+    p.takeDamageFromContact(10);
+    p.update(0.6); // 쿨다운 만료
+    p.takeDamageFromContact(10);
+    expect(p.hp).toBe(80);
+  });
+});
