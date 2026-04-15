@@ -5,9 +5,9 @@
 
 ---
 
-## 현재 Phase: Phase 2 (기능 개발)
+## 현재 Phase: Phase 3 (MVP 개선 이터레이션)
 
-**업데이트**: 2026-04-14
+**업데이트**: 2026-04-15
 
 ---
 
@@ -32,7 +32,30 @@
 
 ---
 
-## 다음 작업: Cycle 6 — 완성 (업그레이드·HUD·통합)
+## Phase 3 — MVP 개선 이터레이션
+
+> 설계 문서: `docs/superpowers/specs/2026-04-15-phase3-improvement-design.md`
+
+### Cycle 1 — 수정 [ ]
+- [ ] 사망 처리 (게임 오버 화면 + 재시작)
+- [ ] 이벤트 UI 연결 (EventModal → main.js)
+- [ ] 피격 효과 (적 플래시 + 플레이어 비네팅)
+- [ ] 접촉 데미지 쿨다운 (0.5초 무적)
+- [ ] 배경 및 카메라 (월드 좌표계 + 카메라 추적)
+- [ ] TDD: 테스트 추가 및 GREEN 확인
+- [ ] 문서화: `blog/draft-8-수정.md`
+
+### Cycle 2 — 추가 [ ]
+- [ ] 타이머 HUD 연결 (HUD.js → main.js)
+- [ ] 버그 픽셀 아이콘 6종 (PixelRenderer.js 확장)
+- [ ] TDD: 테스트 추가 및 GREEN 확인
+- [ ] 문서화: `blog/draft-9-추가.md`
+
+---
+
+## 완료된 사이클 (Phase 1~2)
+
+> 다음 작업: Cycle 6 — 완성 (업그레이드·HUD·통합) ← Phase 2 완료로 아카이브
 
 ### Cycle 2 — 적 시스템 ✅
 - [x] `entities/Enemy.js` 버그 기반 클래스 4종 (SyntaxError/NullPointer/SegFault/HealBug)
