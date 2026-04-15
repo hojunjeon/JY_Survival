@@ -93,6 +93,9 @@ function startGame() {
   const eventModal = new EventModal({ canvasWidth: canvas.width, canvasHeight: canvas.height });
   let paused = false;
 
+  const WORLD_W = 2000;
+  const WORLD_H = 2000;
+
   let enemies = [];
   let projectiles = [];
   let boss = null;
@@ -148,6 +151,9 @@ function startGame() {
     player.vx = x * player.speed;
     player.vy = y * player.speed;
     player.update(dt);
+    // 월드 경계 클램핑
+    player.x = Math.max(player.width / 2, Math.min(WORLD_W - player.width / 2, player.x));
+    player.y = Math.max(player.height / 2, Math.min(WORLD_H - player.height / 2, player.y));
 
     // 2. 무기 업데이트 + 자동 발사
     if (selectedWeapon) {
@@ -332,11 +338,38 @@ function startGame() {
   };
 
   // ── Game.render에 HUD + 오비탈 추가 ────────────────────────────────────
-  const originalRender = game.render.bind(game);
   game.render = () => {
-    originalRender();
+    // 카메라 위치 계산 (플레이어 중심, 월드 경계 내 클램프)
+    const camX = Math.max(0, Math.min(WORLD_W - canvas.width,  player.x - canvas.width  / 2));
+    const camY = Math.max(0, Math.min(WORLD_H - canvas.height, player.y - canvas.height / 2));
 
-    // Java 오비탈 렌더
+    // 배경 클리어
+    ctx.fillStyle = '#0f0f1a';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // ── 월드 공간 ──────────────────────────────────────────────────
+    ctx.save();
+    ctx.translate(-camX, -camY);
+
+    // 그리드 배경 (뷰포트 범위만 그림)
+    const GRID = 64;
+    ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+    ctx.lineWidth = 1;
+    const startGridX = Math.floor(camX / GRID) * GRID;
+    const startGridY = Math.floor(camY / GRID) * GRID;
+    for (let x = startGridX; x < camX + canvas.width + GRID; x += GRID) {
+      ctx.beginPath(); ctx.moveTo(x, camY); ctx.lineTo(x, camY + canvas.height); ctx.stroke();
+    }
+    for (let y = startGridY; y < camY + canvas.height + GRID; y += GRID) {
+      ctx.beginPath(); ctx.moveTo(camX, y); ctx.lineTo(camX + canvas.width, y); ctx.stroke();
+    }
+
+    // 엔티티 렌더 (월드 좌표)
+    for (const entity of game.entities) {
+      entity.render(ctx);
+    }
+
+    // Java 오비탈 렌더 (월드 좌표)
     if (selectedWeapon && selectedWeapon.name === 'Java') {
       const orbPositions = selectedWeapon.getOrbPositions(player.x, player.y);
       orbPositions.forEach(orb => {
@@ -345,6 +378,21 @@ function startGame() {
         ctx.arc(orb.x, orb.y, orb.width / 2, 0, Math.PI * 2);
         ctx.fill();
       });
+    }
+
+    ctx.restore();
+    // ── 화면 공간 (HUD) ───────────────────────────────────────────
+
+    // 플레이어 피격 비네팅
+    if (player.hitFlashTimer > 0) {
+      const grad = ctx.createRadialGradient(
+        canvas.width / 2, canvas.height / 2, canvas.width * 0.25,
+        canvas.width / 2, canvas.height / 2, canvas.width * 0.75
+      );
+      grad.addColorStop(0, 'rgba(255,0,0,0)');
+      grad.addColorStop(1, 'rgba(255,0,0,0.45)');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
 
     // HUD: HP
@@ -362,12 +410,10 @@ function startGame() {
 
     // HUD: 보스 HP 바
     if (boss) {
-      const barW = 300;
-      const barH = 16;
+      const barW = 300, barH = 16;
       const barX = (canvas.width - barW) / 2;
       const barY = 12;
       const ratio = Math.max(0, boss.hp / boss.maxHp);
-
       ctx.fillStyle = '#333333';
       ctx.fillRect(barX, barY, barW, barH);
       ctx.fillStyle = boss.phase === 2 ? '#cc0066' : '#990099';
@@ -375,11 +421,13 @@ function startGame() {
       ctx.strokeStyle = '#ffffff';
       ctx.lineWidth = 1;
       ctx.strokeRect(barX, barY, barW, barH);
-
       ctx.fillStyle = '#ffffff';
       ctx.font = '11px monospace';
       ctx.textAlign = 'center';
-      ctx.fillText(`장선형 ${boss.phase === 2 ? '[2페이즈]' : ''}  ${boss.hp} / ${boss.maxHp}`, canvas.width / 2, barY + barH + 14);
+      ctx.fillText(
+        `장선형 ${boss.phase === 2 ? '[2페이즈]' : ''}  ${boss.hp} / ${boss.maxHp}`,
+        canvas.width / 2, barY + barH + 14
+      );
     }
 
     // 보스 대사 말풍선
