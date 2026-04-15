@@ -121,6 +121,14 @@ function startGame() {
 
   // ── Game.update 오버라이드 ───────────────────────────────────────────────
   game.update = (dt) => {
+    // 사망 감지
+    if (player.isDead) {
+      state = 'game_over';
+      game.stop();
+      renderGameOver();
+      return;
+    }
+
     // 1. 플레이어 입력 → 이동
     const { x, y } = input.getAxis();
     player.vx = x * player.speed;
@@ -393,6 +401,26 @@ function renderStageClear() {
   ctx.fillStyle = '#aaaaaa';
   ctx.font = '13px monospace';
   ctx.fillText('[ 새로고침으로 다시 시작 ]', canvas.width / 2, canvas.height / 2 + 80);
+
+  ctx.textAlign = 'left';
+}
+
+function renderGameOver() {
+  ctx.fillStyle = '#0d0d0d';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  ctx.fillStyle = '#f44336';
+  ctx.font = 'bold 36px monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2 - 60);
+
+  ctx.fillStyle = '#ffcccc';
+  ctx.font = '16px monospace';
+  ctx.fillText('김지윤이 쓰러졌다...', canvas.width / 2, canvas.height / 2);
+
+  ctx.fillStyle = '#aaaaaa';
+  ctx.font = '13px monospace';
+  ctx.fillText('[ 새로고침으로 다시 시작 ]', canvas.width / 2, canvas.height / 2 + 50);
 
   ctx.textAlign = 'left';
 }
