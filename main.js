@@ -8,6 +8,7 @@ import { checkCollision } from './core/Collision.js';
 import { WeaponMenu } from './ui/Menu.js';
 import { Boss } from './entities/Boss.js';
 import { Projectile } from './entities/Projectile.js';
+import { EventModal } from './ui/EventModal.js';
 
 const canvas = document.getElementById('game-canvas');
 const ctx = canvas.getContext('2d');
@@ -89,6 +90,9 @@ function startGame() {
 
   const eventSystem = new EventSystem();
 
+  const eventModal = new EventModal({ canvasWidth: canvas.width, canvasHeight: canvas.height });
+  let paused = false;
+
   let enemies = [];
   let projectiles = [];
   let boss = null;
@@ -119,8 +123,18 @@ function startGame() {
     }
   }
 
+  function handleGameKey(e) {
+    if (e.key === ' ' && eventModal.visible) {
+      eventModal.hide();
+      paused = false;
+    }
+  }
+  window.addEventListener('keydown', handleGameKey);
+
   // ── Game.update 오버라이드 ───────────────────────────────────────────────
   game.update = (dt) => {
+    if (paused) return;
+
     // 사망 감지
     if (player.isDead) {
       state = 'game_over';
@@ -158,6 +172,14 @@ function startGame() {
     // 5. 이벤트 시스템 업데이트
     const eventNotifications = eventSystem.update(dt);
     for (const n of eventNotifications) {
+      if (n.type === 'event_triggered') {
+        eventModal.show('triggered', n.event);
+        paused = true;
+      }
+      if (n.type === 'event_cleared') {
+        eventModal.show('cleared', n.event);
+        paused = true;
+      }
       if (n.type === 'boss_triggered' && !boss) {
         // 보스 등장 — 적 전체 제거
         for (const e of enemies) game.removeEntity(e);
@@ -372,6 +394,9 @@ function startGame() {
       ctx.textAlign = 'center';
       ctx.fillText(`장선형: "${bossDialogue}"`, canvas.width / 2, canvas.height - 40);
     }
+
+    // EventModal (항상 최상단)
+    eventModal.render(ctx);
 
     ctx.textAlign = 'left';
   };
