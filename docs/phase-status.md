@@ -7,7 +7,7 @@
 
 ## 현재 Phase: Phase 3 (MVP 개선 이터레이션)
 
-**업데이트**: 2026-04-15
+**업데이트**: 2026-04-16
 
 ---
 
@@ -77,16 +77,16 @@
 > 설계 문서: `docs/superpowers/specs/2026-04-15-phase3-improvement-design.md`
 > 실행 방식: **Subagent-Driven** (서브에이전트 per 태스크)
 
-### Cycle 1 — 수정 [ ]
+### Cycle 1 — 수정 ✅
 
 > 구현 계획: `docs/superpowers/plans/2026-04-15-cycle1-수정.md`
-- [ ] 사망 처리 (게임 오버 화면 + 재시작)
-- [ ] 이벤트 UI 연결 (EventModal → main.js)
-- [ ] 피격 효과 (적 플래시 + 플레이어 비네팅)
-- [ ] 접촉 데미지 쿨다운 (0.5초 무적)
-- [ ] 배경 및 카메라 (월드 좌표계 + 카메라 추적)
-- [ ] TDD: 테스트 추가 및 GREEN 확인
-- [ ] 문서화: `blog/draft-8-수정.md`
+- [x] 사망 처리 (게임 오버 화면 + 재시작)
+- [x] 이벤트 UI 연결 (EventModal → main.js)
+- [x] 피격 효과 (적 플래시 + 플레이어 비네팅)
+- [x] 접촉 데미지 쿨다운 (0.5초 무적)
+- [x] 배경 및 카메라 (월드 좌표계 + 카메라 추적)
+- [x] TDD: 누적 테스트 262개 전부 GREEN
+- [x] 문서화: `blog/draft-8-수정.md`
 
 ### Cycle 2 — 추가 [ ]
 
@@ -110,5 +110,5 @@
 | 5편 (이벤트·퀘스트) | `blog/draft-5-이벤트퀘스트.md` | Cycle 4 | ✅ 작성 완료 (퇴고 후 발행) |
 | 6편 (보스전) | `blog/draft-6-보스전.md` | Cycle 5 | ✅ 작성 완료 (퇴고 후 발행) |
 | 7편 (완성·통합) | `blog/draft-7-완성.md` | Cycle 6 | ✅ 작성 완료 (퇴고 후 발행) |
-| 8편 (수정) | `blog/draft-8-수정.md` | Phase 3 Cycle 1 | ⏳ 미작성 |
+| 8편 (수정) | `blog/draft-8-수정.md` | Phase 3 Cycle 1 | ✅ 작성 완료 (퇴고 후 발행) |
 | 9편 (추가) | `blog/draft-9-추가.md` | Phase 3 Cycle 2 | ⏳ 미작성 |
