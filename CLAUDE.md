@@ -18,6 +18,13 @@ Superpowers + GSD + Gstack 유기적 연동 워크플로우를
 세션 시작 시 아래 파일을 반드시 읽어라:
 - `docs/phase-status.md` — 현재 Phase 및 다음 작업 확인
 - `docs/design.md` — 게임 전체 설계 확정본
+- `docs/phase-status.md`에 링크된 **활성 구현 계획 파일** — 체크리스트 상태로 진행 위치 파악
+  - Phase 3 이후: `docs/superpowers/plans/` 디렉터리에 위치
+
+## 실행 방식 (Phase 3 이후)
+- **Subagent-Driven** 방식을 기본으로 사용한다.
+  - 태스크 하나당 서브에이전트 1개 디스패치
+  - 서브에이전트 완료 후 결과 리뷰 후 다음 태스크 진행
 
 ## Phase 감지 (IMPORTANT)
 세션 시작 시 `docs/phase-status.md` 의 현재 Phase를 기준으로 판단하라.

@@ -75,8 +75,11 @@
 ## Phase 3 — MVP 개선 이터레이션
 
 > 설계 문서: `docs/superpowers/specs/2026-04-15-phase3-improvement-design.md`
+> 실행 방식: **Subagent-Driven** (서브에이전트 per 태스크)
 
 ### Cycle 1 — 수정 [ ]
+
+> 구현 계획: `docs/superpowers/plans/2026-04-15-cycle1-수정.md`
 - [ ] 사망 처리 (게임 오버 화면 + 재시작)
 - [ ] 이벤트 UI 연결 (EventModal → main.js)
 - [ ] 피격 효과 (적 플래시 + 플레이어 비네팅)
@@ -86,6 +89,9 @@
 - [ ] 문서화: `blog/draft-8-수정.md`
 
 ### Cycle 2 — 추가 [ ]
+
+> 구현 계획: `docs/superpowers/plans/2026-04-15-cycle2-추가.md`
+
 - [ ] 타이머 HUD 연결 (HUD.js → main.js)
 - [ ] 버그 픽셀 아이콘 6종 (PixelRenderer.js 확장)
 - [ ] TDD: 테스트 추가 및 GREEN 확인
