@@ -146,3 +146,23 @@ describe('이벤트 전용 적 타입', () => {
     expect(() => createEnemy('unknown_type', 0, 0)).toThrow();
   });
 });
+
+describe('피격 플래시', () => {
+  it('takeDamage 호출 시 hitFlashTimer가 0.1로 설정된다', () => {
+    const e = createEnemy('syntax_error', 0, 0);
+    e.takeDamage(10);
+    expect(e.hitFlashTimer).toBeCloseTo(0.1);
+  });
+
+  it('update 시 hitFlashTimer가 줄어든다', () => {
+    const e = createEnemy('syntax_error', 0, 0);
+    e.takeDamage(10);
+    e.update(0.05, 0, 0);
+    expect(e.hitFlashTimer).toBeCloseTo(0.05);
+  });
+
+  it('데미지를 받지 않으면 hitFlashTimer는 0이다', () => {
+    const e = createEnemy('syntax_error', 0, 0);
+    expect(e.hitFlashTimer).toBe(0);
+  });
+});

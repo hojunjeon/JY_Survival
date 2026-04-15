@@ -12,14 +12,17 @@ export class Enemy {
     this.dropsHpItem = dropsHpItem;
     this.type = type;
     this.isDead = false;
+    this.hitFlashTimer = 0;
   }
 
   takeDamage(amount) {
     this.hp = Math.max(0, this.hp - amount);
     if (this.hp === 0) this.isDead = true;
+    this.hitFlashTimer = 0.1;
   }
 
   update(dt, targetX, targetY) {
+    if (this.hitFlashTimer > 0) this.hitFlashTimer -= dt;
     if (dt === 0) return;
 
     const dx = targetX - this.x;
@@ -49,7 +52,8 @@ export class Enemy {
       env_error:         '#4488ff',
       enemy:             '#ff8800',
     };
-    ctx.fillStyle = colors[this.type] || colors.enemy;
+    // 피격 플래시: hitFlashTimer > 0 이면 흰색으로 렌더
+    ctx.fillStyle = this.hitFlashTimer > 0 ? '#ffffff' : (colors[this.type] || colors.enemy);
     ctx.fillRect(this.x - this.width / 2, this.y - this.height / 2, this.width, this.height);
   }
 }
