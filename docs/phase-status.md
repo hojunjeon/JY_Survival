@@ -30,33 +30,6 @@
 - [x] TDD: 테스트 34개 전부 GREEN
 - [x] 문서화: `blog/draft-2-코어개발.md` 저장 완료
 
----
-
-## Phase 3 — MVP 개선 이터레이션
-
-> 설계 문서: `docs/superpowers/specs/2026-04-15-phase3-improvement-design.md`
-
-### Cycle 1 — 수정 [ ]
-- [ ] 사망 처리 (게임 오버 화면 + 재시작)
-- [ ] 이벤트 UI 연결 (EventModal → main.js)
-- [ ] 피격 효과 (적 플래시 + 플레이어 비네팅)
-- [ ] 접촉 데미지 쿨다운 (0.5초 무적)
-- [ ] 배경 및 카메라 (월드 좌표계 + 카메라 추적)
-- [ ] TDD: 테스트 추가 및 GREEN 확인
-- [ ] 문서화: `blog/draft-8-수정.md`
-
-### Cycle 2 — 추가 [ ]
-- [ ] 타이머 HUD 연결 (HUD.js → main.js)
-- [ ] 버그 픽셀 아이콘 6종 (PixelRenderer.js 확장)
-- [ ] TDD: 테스트 추가 및 GREEN 확인
-- [ ] 문서화: `blog/draft-9-추가.md`
-
----
-
-## 완료된 사이클 (Phase 1~2)
-
-> 다음 작업: Cycle 6 — 완성 (업그레이드·HUD·통합) ← Phase 2 완료로 아카이브
-
 ### Cycle 2 — 적 시스템 ✅
 - [x] `entities/Enemy.js` 버그 기반 클래스 4종 (SyntaxError/NullPointer/SegFault/HealBug)
 - [x] `systems/WaveSystem.js` 시간 기반 스폰 (3초마다 3마리, 4방향 엣지)
@@ -97,6 +70,28 @@
 - [x] 문서화: `blog/draft-7-완성.md` 저장 완료
 
 ---
+> 다음 작업 :
+
+## Phase 3 — MVP 개선 이터레이션
+
+> 설계 문서: `docs/superpowers/specs/2026-04-15-phase3-improvement-design.md`
+
+### Cycle 1 — 수정 [ ]
+- [ ] 사망 처리 (게임 오버 화면 + 재시작)
+- [ ] 이벤트 UI 연결 (EventModal → main.js)
+- [ ] 피격 효과 (적 플래시 + 플레이어 비네팅)
+- [ ] 접촉 데미지 쿨다운 (0.5초 무적)
+- [ ] 배경 및 카메라 (월드 좌표계 + 카메라 추적)
+- [ ] TDD: 테스트 추가 및 GREEN 확인
+- [ ] 문서화: `blog/draft-8-수정.md`
+
+### Cycle 2 — 추가 [ ]
+- [ ] 타이머 HUD 연결 (HUD.js → main.js)
+- [ ] 버그 픽셀 아이콘 6종 (PixelRenderer.js 확장)
+- [ ] TDD: 테스트 추가 및 GREEN 확인
+- [ ] 문서화: `blog/draft-9-추가.md`
+
+---
 
 ## 블로그 초안 현황
 
@@ -109,3 +104,5 @@
 | 5편 (이벤트·퀘스트) | `blog/draft-5-이벤트퀘스트.md` | Cycle 4 | ✅ 작성 완료 (퇴고 후 발행) |
 | 6편 (보스전) | `blog/draft-6-보스전.md` | Cycle 5 | ✅ 작성 완료 (퇴고 후 발행) |
 | 7편 (완성·통합) | `blog/draft-7-완성.md` | Cycle 6 | ✅ 작성 완료 (퇴고 후 발행) |
+| 8편 (수정) | `blog/draft-8-수정.md` | Phase 3 Cycle 1 | ⏳ 미작성 |
+| 9편 (추가) | `blog/draft-9-추가.md` | Phase 3 Cycle 2 | ⏳ 미작성 |
