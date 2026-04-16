@@ -257,7 +257,7 @@ function startGame() {
 
     // 4. 웨이브 스폰 (보스 등장 전까지만)
     if (!boss) {
-      const newEnemies = waveSystem.update(dt);
+      const newEnemies = waveSystem.update(dt, player.x, player.y);
       for (const e of newEnemies) {
         enemies.push(e);
         game.addEntity(e);

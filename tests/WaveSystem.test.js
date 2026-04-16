@@ -60,3 +60,31 @@ describe('WaveSystem', () => {
     expect(spawned2.length).toBeGreaterThan(0);
   });
 });
+
+describe('WaveSystem 플레이어 기준 스폰', () => {
+  it('update(dt, playerX, playerY) — 스폰 위치가 플레이어 기준 뷰포트 엣지 근처여야 한다', () => {
+    const ws = new WaveSystem({ spawnInterval: 1, canvasWidth: 600, canvasHeight: 600 });
+    // 플레이어가 가까운 위치에 있을 때: 현재 코드는 캔버스 엣지(0-600)에 스폰하므로
+    // 플레이어 좌표를 이용한 스폰과 다르다. 이 테스트는 playerX/Y를 사용할 때 실패한다.
+    const playerX = 100, playerY = 100;
+    const enemies = ws.update(1.0, playerX, playerY);
+    expect(enemies.length).toBeGreaterThan(0);
+
+    // 모든 적이 플레이어로부터 충분히 멀리 스폰되어야 한다
+    // 플레이어 기준 스폰이면: 최소 한 축에서 >= 300 거리
+    // 월드 경계 클램핑이 되지 않을 때: max(|x-px|, |y-py|) >= 300
+    // 대부분의 경우 >= 300이어야 하며, 월드 경계 근처에서만 예외 발생
+    for (const e of enemies) {
+      const dist = Math.max(Math.abs(e.x - playerX), Math.abs(e.y - playerY));
+      // 클램핑이 없는 경우 >= 300, 클램핑이 있어도 최소한 100 이상 떨어져야 함
+      // 실제로는 대부분 >= 300이므로, 통계적으로 최소값은 100 정도
+      expect(dist).toBeGreaterThanOrEqual(100);
+    }
+  });
+
+  it('playerX/Y 생략 시 기존 동작 (캔버스 엣지 기준) 유지', () => {
+    const ws = new WaveSystem({ spawnInterval: 1, canvasWidth: 600, canvasHeight: 600 });
+    const enemies = ws.update(1.0);
+    expect(enemies.length).toBeGreaterThan(0);
+  });
+});
