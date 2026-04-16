@@ -21,7 +21,7 @@ Superpowers + GSD + Gstack 유기적 연동 워크플로우를 실제 게임 토
 
 - Phase 1 진입점: Superpowers (브레인스토밍)
 - Phase 2 진입점: GSD (태스크 선택)
-- Phase 3+ 진입점: 루트의 `phase_N.md` 확인 → Phase 개발 사이클 규칙 적용
+- Phase 3+ 진입점: `phase_feedback/phase_N.md` 확인 → Phase 개발 사이클 규칙 적용
 
 ---
 
@@ -46,9 +46,15 @@ YOU MUST 사이클 순서를 임의로 변경하지 마라.
 
 **수정(Fix) → 추가(Add) → 제안(Suggest)**
 
+### phase_N.md 관리 규칙
+- 모든 `phase_N.md` 파일은 `phase_feedback/` 디렉토리에서 관리한다.
+- 사람이 새 Phase 피드백을 작성할 때도 `phase_feedback/phase_N.md` 로 저장한다.
+
 ### 진입 조건
-- 루트에 `phase_N.md` 파일이 존재하면 → 해당 파일 기반으로 새 Phase 진입
-- 파일이 없으면 → 이전 Phase 계속 진행
+1. `docs/phase-status.md` 에서 현재 Phase 번호 확인
+2. `phase_feedback/phase_N.md` 존재 여부 확인
+3. 파일이 존재하고 `docs/phase-status.md` 에 해당 Phase가 미완료 상태이면 → Phase 진입
+4. 파일이 없거나 이미 완료 상태이면 → 이전 Phase 계속 진행
 
 ### [필수] phase_N.md 검토 단계
 `phase_N.md`를 읽은 후 즉시 실행하지 않는다. 먼저:
@@ -74,7 +80,7 @@ YOU MUST 사이클 순서를 임의로 변경하지 마라.
 2. git commit
 
 **Phase 내 모든 사이클(수정+추가+제안) 완료 시 추가 처리:**
-3. `phase_N.md` → `phase_feedback/phase_N.md` 로 이동 (루트에 파일이 없어야 다음 세션에서 재진입하지 않음)
+3. `docs/phase-status.md` 에 Phase N 완료 표시
 4. `docs/phase-status.md` 의 현재 Phase를 Phase N+1 대기 상태로 업데이트
 
 ### On-demand 액션
