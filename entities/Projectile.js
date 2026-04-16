@@ -11,15 +11,15 @@ export class Projectile {
     this.height = 8;
   }
 
-  update(dt, canvas = null) {
+  update(dt, bounds = null) {
     this.x += this.vx * dt;
     this.y += this.vy * dt;
 
-    if (canvas) {
+    if (bounds) {
       const margin = 20;
       if (
-        this.x < -margin || this.x > canvas.width + margin ||
-        this.y < -margin || this.y > canvas.height + margin
+        this.x < -margin || this.x > bounds.width + margin ||
+        this.y < -margin || this.y > bounds.height + margin
       ) {
         this.active = false;
       }

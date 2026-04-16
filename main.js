@@ -107,7 +107,7 @@ function startGame() {
   let bossDialogueTimer = 0;
   let stageClearDialogue = null;
 
-  const canvasBounds = { width: canvas.width, height: canvas.height };
+  const worldBounds = { width: WORLD_W, height: WORLD_H };
 
   // ── 무기별 자동 발사 로직 ────────────────────────────────────────────────
   function tryFireWeapon(weapon, player) {
@@ -133,6 +133,10 @@ function startGame() {
     if (e.key === ' ' && eventModal.visible) {
       eventModal.hide();
       paused = false;
+    }
+    if ((e.key === 'r' || e.key === 'R') && state === 'game_over') {
+      window.removeEventListener('keydown', handleGameKey);
+      startGame();
     }
   }
   window.addEventListener('keydown', handleGameKey);
@@ -166,7 +170,7 @@ function startGame() {
 
     // 3. 투사체 업데이트 + 범위 이탈 제거
     for (const proj of projectiles) {
-      if (proj.active) proj.update(dt, canvasBounds);
+      if (proj.active) proj.update(dt, worldBounds);
     }
 
     // 4. 웨이브 스폰 (보스 등장 전까지만)
@@ -184,10 +188,13 @@ function startGame() {
       if (n.type === 'event_triggered') {
         eventModal.show('triggered', n.event);
         paused = true;
+        if (n.event === 'E1') waveSystem.setEventEnemyType('indentation_error');
+        if (n.event === 'E3') waveSystem.setEventEnemyType('env_error');
       }
       if (n.type === 'event_cleared') {
         eventModal.show('cleared', n.event);
         paused = true;
+        waveSystem.clearEventEnemyType();
       }
       if (n.type === 'boss_triggered' && !boss) {
         // 보스 등장 — 적 전체 제거
@@ -239,7 +246,7 @@ function startGame() {
 
     // 8. 투사체 업데이트
     for (const proj of [...projectiles, ...bossProjectiles]) {
-      if (proj.active) proj.update(dt, canvasBounds);
+      if (proj.active) proj.update(dt, worldBounds);
     }
 
     // 9. 투사체 ↔ 적 충돌
@@ -325,7 +332,14 @@ function startGame() {
     const dead = enemies.filter(e => e.isDead);
     for (const e of dead) {
       if (e.dropsHpItem) player.heal(20);
-      eventSystem.notifyKill(e.type);
+      const killNotifs = eventSystem.notifyKill(e.type);
+      for (const n of killNotifs) {
+        if (n.type === 'event_cleared') {
+          eventModal.show('cleared', n.event);
+          paused = true;
+          waveSystem.clearEventEnemyType();
+        }
+      }
       game.removeEntity(e);
     }
     enemies = enemies.filter(e => !e.isDead);
@@ -408,6 +422,9 @@ function startGame() {
       e1State: eventSystem.e1State,
       e3State: eventSystem.e3State,
       bossState: eventSystem.bossState,
+      e1Kills: eventSystem.e1Kills,
+      e3Kills: eventSystem.e3Kills,
+      e3Elapsed: eventSystem.e3Elapsed,
     });
 
     // 무기명 (HUD에 없는 정보이므로 별도 유지)
@@ -504,7 +521,7 @@ function renderGameOver() {
 
   ctx.fillStyle = '#aaaaaa';
   ctx.font = '13px monospace';
-  ctx.fillText('[ 새로고침으로 다시 시작 ]', canvas.width / 2, canvas.height / 2 + 50);
+  ctx.fillText('[ R키로 재시작 ]', canvas.width / 2, canvas.height / 2 + 50);
 
   ctx.textAlign = 'left';
 }

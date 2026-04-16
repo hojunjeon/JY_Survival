@@ -4,13 +4,13 @@ export class HUD {
     this.ch = canvasHeight;
   }
 
-  render(ctx, { playerHp, playerMaxHp, killCount, q1Target, elapsed, e1State, e3State, bossState }) {
+  render(ctx, { playerHp, playerMaxHp, killCount, q1Target, elapsed, e1State, e3State, bossState, e1Kills = 0, e3Kills = 0, e3Elapsed = 0 }) {
     ctx.save();
 
     this._renderHpBar(ctx, playerHp, playerMaxHp);
     this._renderKillCount(ctx, killCount, q1Target);
     this._renderTimer(ctx, elapsed);
-    this._renderEventStatus(ctx, e1State, e3State, bossState);
+    this._renderEventStatus(ctx, e1State, e3State, bossState, e1Kills, e3Kills, e3Elapsed);
 
     ctx.restore();
   }
@@ -64,7 +64,7 @@ export class HUD {
     ctx.fillText(timeStr, this.cw / 2, 8);
   }
 
-  _renderEventStatus(ctx, e1State, e3State, bossState) {
+  _renderEventStatus(ctx, e1State, e3State, bossState, e1Kills, e3Kills, e3Elapsed) {
     ctx.font = '13px monospace';
     ctx.textAlign = 'right';
     ctx.textBaseline = 'top';
@@ -80,7 +80,7 @@ export class HUD {
 
     if (e1State === 'active') {
       ctx.fillStyle = '#ffcc00';
-      ctx.fillText('[E1] 들여쓰기 지옥 진행 중', x, y);
+      ctx.fillText(`[E1] 들여쓰기 지옥 : IndentationError 처치 (${e1Kills}/15)`, x, y);
       y += 20;
     } else if (e1State === 'cleared') {
       ctx.fillStyle = '#4caf50';
@@ -90,7 +90,7 @@ export class HUD {
 
     if (e3State === 'active') {
       ctx.fillStyle = '#ff9800';
-      ctx.fillText('[E3] 파이참 위기 진행 중', x, y);
+      ctx.fillText(`[E3] 파이참 위기 : EnvError 처치 (${e3Kills}/1) | 생존 ${Math.floor(e3Elapsed)}/60초`, x, y);
       y += 20;
     } else if (e3State === 'cleared') {
       ctx.fillStyle = '#4caf50';

@@ -8,6 +8,15 @@ export class WaveSystem {
     this.canvasWidth = canvasWidth;
     this.canvasHeight = canvasHeight;
     this.elapsed = 0;
+    this.eventEnemyType = null;
+  }
+
+  setEventEnemyType(type) {
+    this.eventEnemyType = type;
+  }
+
+  clearEventEnemyType() {
+    this.eventEnemyType = null;
   }
 
   update(dt) {
@@ -24,7 +33,7 @@ export class WaveSystem {
     const spawned = [];
     for (let i = 0; i < count; i++) {
       const { x, y } = this._edgePosition();
-      const type = WAVE_TYPES[Math.floor(Math.random() * WAVE_TYPES.length)];
+      const type = this.eventEnemyType ?? WAVE_TYPES[Math.floor(Math.random() * WAVE_TYPES.length)];
       spawned.push(createEnemy(type, x, y));
     }
     return spawned;
