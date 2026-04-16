@@ -18,8 +18,90 @@ const input = new Input();
 input.listen(window);
 
 // ─── 상태 관리 ──────────────────────────────────────────────────────────────
-let state = 'menu'; // 'menu' | 'playing' | 'stage_clear'
+let state = 'intro'; // 'intro' | 'menu' | 'playing' | 'game_over' | 'stage_clear'
 let selectedWeapon = null;
+
+// ─── 인트로 화면 ──────────────────────────────────────────────────────────────
+function renderIntro() {
+  ctx.fillStyle = '#0d0d0d';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // 타이틀
+  ctx.fillStyle = '#4fc3f7';
+  ctx.font = 'bold 30px monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText('김지윤의 디버그 서바이벌', canvas.width / 2, 80);
+
+  // 부제
+  ctx.fillStyle = '#888888';
+  ctx.font = '13px monospace';
+  ctx.fillText('— 버그들을 처치하고 SSAFY를 구하라 —', canvas.width / 2, 110);
+
+  // 스토리
+  ctx.fillStyle = '#cccccc';
+  ctx.font = '14px monospace';
+  const story = [
+    'SSAFY 6반, 오후 11시.',
+    '동기들의 에러 메시지가 카톡으로 쏟아진다.',
+    '지윤 씨, 오늘도 버그 처치에 나선다.',
+  ];
+  story.forEach((line, i) => {
+    ctx.fillText(line, canvas.width / 2, 175 + i * 26);
+  });
+
+  // 구분선
+  ctx.strokeStyle = '#333333';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(80, 270); ctx.lineTo(canvas.width - 80, 270);
+  ctx.stroke();
+
+  // 조작법
+  ctx.fillStyle = '#ffcc00';
+  ctx.font = 'bold 13px monospace';
+  ctx.fillText('조작법', canvas.width / 2, 298);
+
+  ctx.fillStyle = '#aaaaaa';
+  ctx.font = '13px monospace';
+  const controls = [
+    'WASD / 방향키   이동',
+    '자동 공격       무기가 자동으로 발사됩니다',
+    'Space           이벤트 알림 닫기',
+    'R               게임 오버 후 재시작',
+  ];
+  controls.forEach((line, i) => {
+    ctx.fillText(line, canvas.width / 2, 322 + i * 22);
+  });
+
+  // 목표
+  ctx.fillStyle = '#4caf50';
+  ctx.font = 'bold 13px monospace';
+  ctx.fillText('목표: 버그를 처치하고 이벤트를 클리어하여 보스 장선형을 쓰러트려라!', canvas.width / 2, 430);
+
+  // 시작 힌트
+  const blink = Math.floor(Date.now() / 600) % 2 === 0;
+  ctx.fillStyle = blink ? '#ffffff' : '#666666';
+  ctx.font = 'bold 15px monospace';
+  ctx.fillText('[ Space ] 시작', canvas.width / 2, 490);
+
+  ctx.textAlign = 'left';
+}
+
+function handleIntroKey(e) {
+  if (e.key === ' ' || e.key === 'Enter') {
+    window.removeEventListener('keydown', handleIntroKey);
+    state = 'menu';
+    menuLoop();
+  }
+}
+window.addEventListener('keydown', handleIntroKey);
+
+function introLoop() {
+  if (state !== 'intro') return;
+  renderIntro();
+  requestAnimationFrame(introLoop);
+}
+introLoop();
 
 // ─── 메뉴 ────────────────────────────────────────────────────────────────────
 const weaponMenu = new WeaponMenu();
@@ -58,6 +140,7 @@ function renderMenu() {
 
 // 메뉴 키 입력
 function handleMenuKey(e) {
+  if (state !== 'menu') return;
   const idx = { '1': 0, '2': 1, '3': 2 }[e.key];
   if (idx === undefined) return;
   selectedWeapon = weaponMenu.select(idx);
@@ -72,7 +155,6 @@ function menuLoop() {
   renderMenu();
   requestAnimationFrame(menuLoop);
 }
-menuLoop();
 
 // ─── 게임 시작 ───────────────────────────────────────────────────────────────
 function startGame() {

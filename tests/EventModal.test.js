@@ -39,4 +39,31 @@ describe('EventModal', () => {
     modal.hide();
     expect(modal.visible).toBe(false);
   });
+
+  it('show("triggered", "E1") 호출 시 박진우 캐릭터가 설정된다', () => {
+    modal.show('triggered', 'E1');
+    expect(modal.character).toBe('박진우');
+  });
+
+  it('show("triggered", "E3") 호출 시 이한정 캐릭터가 설정된다', () => {
+    modal.show('triggered', 'E3');
+    expect(modal.character).toBe('이한정');
+  });
+
+  it('show("cleared", "E1") 호출 시 character가 null이다', () => {
+    modal.show('cleared', 'E1');
+    expect(modal.character).toBeNull();
+  });
+
+  it('show("triggered", "E1") 호출 시 dialogueLines 배열이 존재한다', () => {
+    modal.show('triggered', 'E1');
+    expect(Array.isArray(modal.dialogueLines)).toBe(true);
+    expect(modal.dialogueLines.length).toBeGreaterThan(0);
+  });
+
+  it('show("triggered", "E3") 호출 시 dialogueLines 배열이 존재한다', () => {
+    modal.show('triggered', 'E3');
+    expect(Array.isArray(modal.dialogueLines)).toBe(true);
+    expect(modal.dialogueLines.length).toBeGreaterThan(0);
+  });
 });
