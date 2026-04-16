@@ -1,3 +1,5 @@
+import { PixelRenderer } from '../sprites/PixelRenderer.js';
+
 export class Enemy {
   constructor(x, y, { hp, speed, contactDamage, flees = false, dropsHpItem = false, type = 'enemy' }) {
     this.x = x;
@@ -43,6 +45,13 @@ export class Enemy {
   }
 
   render(ctx) {
+    const sprite = PixelRenderer.BUG_SPRITES[this.type];
+    if (sprite) {
+      PixelRenderer.drawSprite(ctx, sprite, this.x - this.width / 2, this.y - this.height / 2, 2);
+      return;
+    }
+
+    // 폴백: 단색 사각형 (알 수 없는 타입)
     const colors = {
       syntax_error:      '#ff4444',
       null_pointer:      'rgba(180,180,255,0.7)',
@@ -52,8 +61,7 @@ export class Enemy {
       env_error:         '#4488ff',
       enemy:             '#ff8800',
     };
-    // 피격 플래시: hitFlashTimer > 0 이면 흰색으로 렌더
-    ctx.fillStyle = this.hitFlashTimer > 0 ? '#ffffff' : (colors[this.type] || colors.enemy);
+    ctx.fillStyle = colors[this.type] || colors.enemy;
     ctx.fillRect(this.x - this.width / 2, this.y - this.height / 2, this.width, this.height);
   }
 }

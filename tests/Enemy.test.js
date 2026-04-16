@@ -1,5 +1,6 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { Enemy, createEnemy } from '../entities/Enemy.js';
+import { PixelRenderer } from '../sprites/PixelRenderer.js';
 
 describe('Enemy 기반 클래스', () => {
   let enemy;
@@ -144,6 +145,35 @@ describe('이벤트 전용 적 타입', () => {
 
   it('알 수 없는 타입은 에러를 던진다', () => {
     expect(() => createEnemy('unknown_type', 0, 0)).toThrow();
+  });
+});
+
+describe('Enemy 픽셀 스프라이트 렌더', () => {
+  const makeCtx = () => ({
+    save: vi.fn(),
+    restore: vi.fn(),
+    fillRect: vi.fn(),
+    fillStyle: '',
+  });
+
+  it('알려진 타입 → drawSprite 사용 (fillRect 미호출)', () => {
+    const drawSpriteSpy = vi.spyOn(PixelRenderer, 'drawSprite').mockImplementation(() => {});
+    const enemy = createEnemy('syntax_error', 100, 100);
+    const ctx = makeCtx();
+    enemy.render(ctx);
+    expect(drawSpriteSpy).toHaveBeenCalledOnce();
+    expect(ctx.fillRect).not.toHaveBeenCalled();
+    drawSpriteSpy.mockRestore();
+  });
+
+  it('알 수 없는 타입 → 폴백 fillRect 사용', () => {
+    const drawSpriteSpy = vi.spyOn(PixelRenderer, 'drawSprite').mockImplementation(() => {});
+    const enemy = new Enemy(100, 100, { hp: 10, speed: 50, contactDamage: 5, type: 'unknown_bug' });
+    const ctx = makeCtx();
+    enemy.render(ctx);
+    expect(drawSpriteSpy).not.toHaveBeenCalled();
+    expect(ctx.fillRect).toHaveBeenCalled();
+    drawSpriteSpy.mockRestore();
   });
 });
 

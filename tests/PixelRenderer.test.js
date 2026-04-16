@@ -39,3 +39,30 @@ describe('PixelRenderer', () => {
     expect(PixelRenderer.PLAYER_SPRITE[0].length).toBe(32);
   });
 });
+
+describe('BUG_SPRITES', () => {
+  const EXPECTED_TYPES = [
+    'syntax_error',
+    'null_pointer',
+    'seg_fault',
+    'heal_bug',
+    'indentation_error',
+    'env_error',
+  ];
+
+  it('BUG_SPRITES는 6종 모두 정의되어 있다', () => {
+    for (const type of EXPECTED_TYPES) {
+      expect(PixelRenderer.BUG_SPRITES[type]).toBeDefined();
+    }
+  });
+
+  it('각 BUG_SPRITE는 16×16 배열이다', () => {
+    for (const type of EXPECTED_TYPES) {
+      const sprite = PixelRenderer.BUG_SPRITES[type];
+      expect(sprite.length).toBe(16);
+      for (const row of sprite) {
+        expect(row.length).toBe(16);
+      }
+    }
+  });
+});

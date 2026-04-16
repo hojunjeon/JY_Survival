@@ -11,6 +11,134 @@ const W = '#ffffff';   // 흰색
 const G = '#2dc653';   // 노트북 화면 (그린)
 const K = '#222222';   // 노트북 바디
 
+// ─── 버그 픽셀 스프라이트 (16×16, scale=2 렌더 시 32×32) ──────────────────
+
+// SyntaxError: 빨간 타원형 몸체 + 흰색 느낌표
+const _SE = null, SR = '#cc2200', SL = '#ff4422', SW = '#ffffff';
+const SYNTAX_ERROR_SPRITE = [
+  [_SE,_SE,_SE,_SE,_SE,_SE,_SE,_SE,_SE,_SE,_SE,_SE,_SE,_SE,_SE,_SE],
+  [_SE,_SE,_SE, SR, SR, SR, SR, SR, SR, SR, SR,_SE,_SE,_SE,_SE,_SE],
+  [_SE,_SE, SR, SR, SL, SL, SL, SL, SL, SL, SR, SR,_SE,_SE,_SE,_SE],
+  [_SE,_SE, SR, SL, SL, SL, SW, SW, SL, SL, SL, SR,_SE,_SE,_SE,_SE],
+  [_SE,_SE, SR, SL, SL, SL, SW, SW, SL, SL, SL, SR,_SE,_SE,_SE,_SE],
+  [_SE,_SE, SR, SL, SL, SL, SW, SW, SL, SL, SL, SR,_SE,_SE,_SE,_SE],
+  [_SE,_SE, SR, SL, SL, SL, SL, SL, SL, SL, SL, SR,_SE,_SE,_SE,_SE],
+  [_SE,_SE, SR, SL, SL, SL, SW, SW, SL, SL, SL, SR,_SE,_SE,_SE,_SE],
+  [_SE,_SE, SR, SL, SL, SL, SW, SW, SL, SL, SL, SR,_SE,_SE,_SE,_SE],
+  [_SE,_SE, SR, SR, SL, SL, SL, SL, SL, SL, SR, SR,_SE,_SE,_SE,_SE],
+  [_SE,_SE,_SE, SR, SR, SR, SR, SR, SR, SR, SR,_SE,_SE,_SE,_SE,_SE],
+  [_SE,_SE,_SE,_SE,_SE,_SE,_SE,_SE,_SE,_SE,_SE,_SE,_SE,_SE,_SE,_SE],
+  [_SE,_SE,_SE,_SE,_SE,_SE,_SE,_SE,_SE,_SE,_SE,_SE,_SE,_SE,_SE,_SE],
+  [_SE,_SE,_SE,_SE,_SE,_SE,_SE,_SE,_SE,_SE,_SE,_SE,_SE,_SE,_SE,_SE],
+  [_SE,_SE,_SE,_SE,_SE,_SE,_SE,_SE,_SE,_SE,_SE,_SE,_SE,_SE,_SE,_SE],
+  [_SE,_SE,_SE,_SE,_SE,_SE,_SE,_SE,_SE,_SE,_SE,_SE,_SE,_SE,_SE,_SE],
+];
+
+// NullPointer: 반투명 유령
+const _NP = null, NG = '#ccccee', NE = '#000022';
+const NULL_POINTER_SPRITE = [
+  [_NP,_NP,_NP,_NP, NG, NG, NG, NG, NG, NG,_NP,_NP,_NP,_NP,_NP,_NP],
+  [_NP,_NP,_NP, NG, NG, NG, NG, NG, NG, NG, NG,_NP,_NP,_NP,_NP,_NP],
+  [_NP,_NP, NG, NG, NG, NG, NG, NG, NG, NG, NG, NG,_NP,_NP,_NP,_NP],
+  [_NP,_NP, NG, NG, NE, NE, NG, NG, NE, NE, NG, NG,_NP,_NP,_NP,_NP],
+  [_NP,_NP, NG, NG, NE, NE, NG, NG, NE, NE, NG, NG,_NP,_NP,_NP,_NP],
+  [_NP,_NP, NG, NG, NG, NG, NG, NG, NG, NG, NG, NG,_NP,_NP,_NP,_NP],
+  [_NP,_NP, NG, NG, NG, NG, NG, NG, NG, NG, NG, NG,_NP,_NP,_NP,_NP],
+  [_NP,_NP, NG, NG, NG, NG, NG, NG, NG, NG, NG, NG,_NP,_NP,_NP,_NP],
+  [_NP,_NP, NG, NG, NG, NG, NG, NG, NG, NG, NG, NG,_NP,_NP,_NP,_NP],
+  [_NP, NG, NG,_NP, NG, NG, NG,_NP, NG, NG, NG,_NP, NG,_NP,_NP,_NP],
+  [_NP, NG,_NP,_NP,_NP, NG, NG,_NP,_NP, NG, NG,_NP, NG,_NP,_NP,_NP],
+  [_NP,_NP,_NP,_NP,_NP,_NP,_NP,_NP,_NP,_NP,_NP,_NP,_NP,_NP,_NP,_NP],
+  [_NP,_NP,_NP,_NP,_NP,_NP,_NP,_NP,_NP,_NP,_NP,_NP,_NP,_NP,_NP,_NP],
+  [_NP,_NP,_NP,_NP,_NP,_NP,_NP,_NP,_NP,_NP,_NP,_NP,_NP,_NP,_NP,_NP],
+  [_NP,_NP,_NP,_NP,_NP,_NP,_NP,_NP,_NP,_NP,_NP,_NP,_NP,_NP,_NP,_NP],
+  [_NP,_NP,_NP,_NP,_NP,_NP,_NP,_NP,_NP,_NP,_NP,_NP,_NP,_NP,_NP,_NP],
+];
+
+// SegFault: 갈색 육각형 + 균열선
+const _SF = null, SFB = '#884400', SFO = '#cc6600', SFC = '#ffaa55';
+const SEG_FAULT_SPRITE = [
+  [_SF,_SF,_SF,_SF,SFB,SFB,SFB,SFB,SFB,SFB,SFB,_SF,_SF,_SF,_SF,_SF],
+  [_SF,_SF,_SF,SFB,SFO,SFO,SFO,SFO,SFO,SFO,SFB,SFB,_SF,_SF,_SF,_SF],
+  [_SF,_SF,SFB,SFO,SFO,SFC,SFO,SFO,SFO,SFO,SFO,SFB,SFB,_SF,_SF,_SF],
+  [_SF,SFB,SFO,SFO,SFC,SFO,SFO,SFO,SFO,SFO,SFO,SFO,SFB,_SF,_SF,_SF],
+  [_SF,SFB,SFO,SFC,SFB,SFB,SFO,SFO,SFO,SFC,SFO,SFO,SFB,_SF,_SF,_SF],
+  [_SF,SFB,SFO,SFO,SFO,SFB,SFO,SFO,SFC,SFO,SFO,SFO,SFB,_SF,_SF,_SF],
+  [_SF,SFB,SFO,SFO,SFO,SFO,SFB,SFC,SFO,SFO,SFO,SFO,SFB,_SF,_SF,_SF],
+  [_SF,SFB,SFO,SFO,SFC,SFO,SFO,SFB,SFO,SFO,SFO,SFO,SFB,_SF,_SF,_SF],
+  [_SF,SFB,SFO,SFO,SFO,SFC,SFO,SFO,SFB,SFO,SFO,SFO,SFB,_SF,_SF,_SF],
+  [_SF,_SF,SFB,SFO,SFO,SFO,SFO,SFO,SFO,SFB,SFB,SFB,_SF,_SF,_SF,_SF],
+  [_SF,_SF,_SF,SFB,SFB,SFB,SFB,SFB,SFB,SFB,_SF,_SF,_SF,_SF,_SF,_SF],
+  [_SF,_SF,_SF,_SF,_SF,_SF,_SF,_SF,_SF,_SF,_SF,_SF,_SF,_SF,_SF,_SF],
+  [_SF,_SF,_SF,_SF,_SF,_SF,_SF,_SF,_SF,_SF,_SF,_SF,_SF,_SF,_SF,_SF],
+  [_SF,_SF,_SF,_SF,_SF,_SF,_SF,_SF,_SF,_SF,_SF,_SF,_SF,_SF,_SF,_SF],
+  [_SF,_SF,_SF,_SF,_SF,_SF,_SF,_SF,_SF,_SF,_SF,_SF,_SF,_SF,_SF,_SF],
+  [_SF,_SF,_SF,_SF,_SF,_SF,_SF,_SF,_SF,_SF,_SF,_SF,_SF,_SF,_SF,_SF],
+];
+
+// HealBug: 녹색 하트
+const _HB = null, HG = '#22cc44', HD = '#118822';
+const HEAL_BUG_SPRITE = [
+  [_HB,_HB,_HB,_HB,_HB,_HB,_HB,_HB,_HB,_HB,_HB,_HB,_HB,_HB,_HB,_HB],
+  [_HB,_HB,_HB,_HB, HG, HG, HG,_HB, HG, HG, HG,_HB,_HB,_HB,_HB,_HB],
+  [_HB,_HB,_HB, HG, HG, HG, HG, HG, HG, HG, HG, HG,_HB,_HB,_HB,_HB],
+  [_HB,_HB, HG, HG, HG, HD, HG, HG, HD, HG, HG, HG, HG,_HB,_HB,_HB],
+  [_HB,_HB, HG, HG, HG, HG, HG, HG, HG, HG, HG, HG, HG,_HB,_HB,_HB],
+  [_HB,_HB, HG, HG, HG, HG, HG, HG, HG, HG, HG, HG, HG,_HB,_HB,_HB],
+  [_HB,_HB,_HB, HG, HG, HG, HG, HG, HG, HG, HG, HG,_HB,_HB,_HB,_HB],
+  [_HB,_HB,_HB,_HB, HG, HG, HG, HG, HG, HG, HG,_HB,_HB,_HB,_HB,_HB],
+  [_HB,_HB,_HB,_HB,_HB, HG, HG, HG, HG, HG,_HB,_HB,_HB,_HB,_HB,_HB],
+  [_HB,_HB,_HB,_HB,_HB,_HB, HG, HG, HG,_HB,_HB,_HB,_HB,_HB,_HB,_HB],
+  [_HB,_HB,_HB,_HB,_HB,_HB,_HB, HG,_HB,_HB,_HB,_HB,_HB,_HB,_HB,_HB],
+  [_HB,_HB,_HB,_HB,_HB,_HB,_HB,_HB,_HB,_HB,_HB,_HB,_HB,_HB,_HB,_HB],
+  [_HB,_HB,_HB,_HB,_HB,_HB,_HB,_HB,_HB,_HB,_HB,_HB,_HB,_HB,_HB,_HB],
+  [_HB,_HB,_HB,_HB,_HB,_HB,_HB,_HB,_HB,_HB,_HB,_HB,_HB,_HB,_HB,_HB],
+  [_HB,_HB,_HB,_HB,_HB,_HB,_HB,_HB,_HB,_HB,_HB,_HB,_HB,_HB,_HB,_HB],
+  [_HB,_HB,_HB,_HB,_HB,_HB,_HB,_HB,_HB,_HB,_HB,_HB,_HB,_HB,_HB,_HB],
+];
+
+// IndentationError: 주황 배경 + 들여쓰기 막대
+const _IE = null, IO = '#ff8800', ID = '#cc5500', IW = '#ffffff';
+const INDENTATION_ERROR_SPRITE = [
+  [_IE, IO, IO, IO, IO, IO, IO, IO, IO, IO, IO, IO, IO, IO,_IE,_IE],
+  [_IE, IO, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, IO,_IE,_IE],
+  [_IE, IO, IW, IW, IW, IW, IW, IW, IW, ID, ID, ID, ID, IO,_IE,_IE],
+  [_IE, IO, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, IO,_IE,_IE],
+  [_IE, IO, ID, IW, IW, IW, IW, IW, IW, ID, ID, ID, ID, IO,_IE,_IE],
+  [_IE, IO, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, IO,_IE,_IE],
+  [_IE, IO, ID, ID, IW, IW, IW, IW, IW, ID, ID, ID, ID, IO,_IE,_IE],
+  [_IE, IO, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, IO,_IE,_IE],
+  [_IE, IO, ID, ID, ID, IW, IW, IW, IW, ID, ID, ID, ID, IO,_IE,_IE],
+  [_IE, IO, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, IO,_IE,_IE],
+  [_IE, IO, IO, IO, IO, IO, IO, IO, IO, IO, IO, IO, IO, IO,_IE,_IE],
+  [_IE,_IE,_IE,_IE,_IE,_IE,_IE,_IE,_IE,_IE,_IE,_IE,_IE,_IE,_IE,_IE],
+  [_IE,_IE,_IE,_IE,_IE,_IE,_IE,_IE,_IE,_IE,_IE,_IE,_IE,_IE,_IE,_IE],
+  [_IE,_IE,_IE,_IE,_IE,_IE,_IE,_IE,_IE,_IE,_IE,_IE,_IE,_IE,_IE,_IE],
+  [_IE,_IE,_IE,_IE,_IE,_IE,_IE,_IE,_IE,_IE,_IE,_IE,_IE,_IE,_IE,_IE],
+  [_IE,_IE,_IE,_IE,_IE,_IE,_IE,_IE,_IE,_IE,_IE,_IE,_IE,_IE,_IE,_IE],
+];
+
+// EnvError: 파란 배경 + 노란 경고 삼각형
+const _EE = null, EB = '#2255cc', EY = '#ffee00', EW = '#ffffff';
+const ENV_ERROR_SPRITE = [
+  [_EE, EB, EB, EB, EB, EB, EB, EB, EB, EB, EB, EB, EB,_EE,_EE,_EE],
+  [_EE, EB, EB, EB, EB, EB, EB, EB, EB, EB, EB, EB, EB,_EE,_EE,_EE],
+  [_EE, EB, EB, EB, EB, EB, EY, EB, EB, EB, EB, EB, EB,_EE,_EE,_EE],
+  [_EE, EB, EB, EB, EB, EY, EY, EY, EB, EB, EB, EB, EB,_EE,_EE,_EE],
+  [_EE, EB, EB, EB, EY, EY, EW, EY, EY, EB, EB, EB, EB,_EE,_EE,_EE],
+  [_EE, EB, EB, EB, EY, EY, EW, EY, EY, EB, EB, EB, EB,_EE,_EE,_EE],
+  [_EE, EB, EB, EB, EY, EY, EW, EY, EY, EB, EB, EB, EB,_EE,_EE,_EE],
+  [_EE, EB, EB, EB, EY, EY, EY, EY, EY, EB, EB, EB, EB,_EE,_EE,_EE],
+  [_EE, EB, EB, EB, EY, EY, EW, EY, EY, EB, EB, EB, EB,_EE,_EE,_EE],
+  [_EE, EB, EB, EY, EY, EY, EY, EY, EY, EY, EB, EB, EB,_EE,_EE,_EE],
+  [_EE, EB, EB, EB, EB, EB, EB, EB, EB, EB, EB, EB, EB,_EE,_EE,_EE],
+  [_EE,_EE,_EE,_EE,_EE,_EE,_EE,_EE,_EE,_EE,_EE,_EE,_EE,_EE,_EE,_EE],
+  [_EE,_EE,_EE,_EE,_EE,_EE,_EE,_EE,_EE,_EE,_EE,_EE,_EE,_EE,_EE,_EE],
+  [_EE,_EE,_EE,_EE,_EE,_EE,_EE,_EE,_EE,_EE,_EE,_EE,_EE,_EE,_EE,_EE],
+  [_EE,_EE,_EE,_EE,_EE,_EE,_EE,_EE,_EE,_EE,_EE,_EE,_EE,_EE,_EE,_EE],
+  [_EE,_EE,_EE,_EE,_EE,_EE,_EE,_EE,_EE,_EE,_EE,_EE,_EE,_EE,_EE,_EE],
+];
+
 // 김지윤 32×32 픽셀 아트 (정면)
 const PLAYER_SPRITE = [
   // 0-3: 머리 위
@@ -57,6 +185,14 @@ const PLAYER_SPRITE = [
 
 export const PixelRenderer = {
   PLAYER_SPRITE,
+  BUG_SPRITES: {
+    syntax_error:      SYNTAX_ERROR_SPRITE,
+    null_pointer:      NULL_POINTER_SPRITE,
+    seg_fault:         SEG_FAULT_SPRITE,
+    heal_bug:          HEAL_BUG_SPRITE,
+    indentation_error: INDENTATION_ERROR_SPRITE,
+    env_error:         ENV_ERROR_SPRITE,
+  },
 
   drawSprite(ctx, sprite, x, y, scale = 1) {
     ctx.save();
