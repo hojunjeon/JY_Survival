@@ -9,6 +9,7 @@ import { WeaponMenu } from './ui/Menu.js';
 import { Boss } from './entities/Boss.js';
 import { Projectile } from './entities/Projectile.js';
 import { EventModal } from './ui/EventModal.js';
+import { HUD } from './ui/HUD.js';
 
 const canvas = document.getElementById('game-canvas');
 const ctx = canvas.getContext('2d');
@@ -81,6 +82,8 @@ function startGame() {
     draw(ctx, x, y) { PixelRenderer.drawPlayer(ctx, x, y, 2); },
   };
   const player = new Player(canvas.width / 2, canvas.height / 2, playerRenderer);
+
+  const hud = new HUD({ canvasWidth: canvas.width, canvasHeight: canvas.height });
 
   const waveSystem = new WaveSystem({
     spawnInterval: 3,
@@ -395,17 +398,25 @@ function startGame() {
       ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
 
-    // HUD: HP
-    ctx.fillStyle = '#ffffff';
-    ctx.font = '14px monospace';
-    ctx.textAlign = 'left';
-    ctx.fillText(`HP: ${player.hp} / ${player.maxHp}`, 12, 20);
+    // HUD 렌더 (HP바, 킬카운트, 타이머, 이벤트 상태)
+    hud.render(ctx, {
+      playerHp: player.hp,
+      playerMaxHp: player.maxHp,
+      killCount: eventSystem.totalKills,
+      q1Target: 100,
+      elapsed: eventSystem.elapsed,
+      e1State: eventSystem.e1State,
+      e3State: eventSystem.e3State,
+      bossState: eventSystem.bossState,
+    });
 
-    // HUD: 무기명
+    // 무기명 (HUD에 없는 정보이므로 별도 유지)
     if (selectedWeapon) {
       ctx.textAlign = 'right';
       ctx.fillStyle = '#4fc3f7';
-      ctx.fillText(`무기: ${selectedWeapon.name}`, canvas.width - 12, 20);
+      ctx.font = '14px monospace';
+      ctx.fillText(`무기: ${selectedWeapon.name}`, canvas.width - 12, 56);
+      ctx.textAlign = 'left';
     }
 
     // HUD: 보스 HP 바

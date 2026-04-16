@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { HUD } from '../ui/HUD.js';
+import { EventSystem } from '../systems/EventSystem.js';
 
 function makeCtx() {
   return {
@@ -127,5 +128,71 @@ describe('HUD — 이벤트 상태', () => {
     hud.render(ctx, makeState({ bossState: 'active' }));
     const texts = ctx.fillText.mock.calls.map(c => String(c[0]));
     expect(texts.some(t => t.toUpperCase().includes('BOSS') || t.includes('장선형'))).toBe(true);
+  });
+});
+
+describe('HUD + EventSystem 연동', () => {
+  const makeCtx = () => {
+    const calls = [];
+    return {
+      save: vi.fn(),
+      restore: vi.fn(),
+      fillRect: vi.fn(),
+      strokeRect: vi.fn(),
+      beginPath: vi.fn(),
+      arc: vi.fn(),
+      fill: vi.fn(),
+      stroke: vi.fn(),
+      fillStyle: '',
+      strokeStyle: '',
+      font: '',
+      textAlign: '',
+      textBaseline: '',
+      lineWidth: 1,
+      fillText: vi.fn((...args) => calls.push(args)),
+      _calls: calls,
+    };
+  };
+
+  it('EventSystem.elapsed=65.5s → HUD 타이머에 "1:05" 표시', () => {
+    const hud = new HUD({ canvasWidth: 800, canvasHeight: 600 });
+    const eventSystem = new EventSystem({ e1TriggerTime: 9999, e3TriggerTime: 9999 });
+    eventSystem.update(65.5);
+
+    const ctx = makeCtx();
+    hud.render(ctx, {
+      playerHp: 100,
+      playerMaxHp: 100,
+      killCount: eventSystem.totalKills,
+      q1Target: 100,
+      elapsed: eventSystem.elapsed,
+      e1State: eventSystem.e1State,
+      e3State: eventSystem.e3State,
+      bossState: eventSystem.bossState,
+    });
+
+    const timerCall = ctx._calls.find(args => String(args[0]).includes('1:05'));
+    expect(timerCall).toBeDefined();
+  });
+
+  it('EventSystem.e1State=active → HUD에 [E1] 이벤트 상태 표시', () => {
+    const hud = new HUD({ canvasWidth: 800, canvasHeight: 600 });
+    const eventSystem = new EventSystem({ e1TriggerTime: 1, e3TriggerTime: 9999 });
+    eventSystem.update(2);
+
+    const ctx = makeCtx();
+    hud.render(ctx, {
+      playerHp: 100,
+      playerMaxHp: 100,
+      killCount: 0,
+      q1Target: 100,
+      elapsed: eventSystem.elapsed,
+      e1State: eventSystem.e1State,
+      e3State: eventSystem.e3State,
+      bossState: eventSystem.bossState,
+    });
+
+    const e1Call = ctx._calls.find(args => String(args[0]).includes('E1'));
+    expect(e1Call).toBeDefined();
   });
 });
