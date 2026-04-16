@@ -158,6 +158,7 @@ function menuLoop() {
 
 // ─── 게임 시작 ───────────────────────────────────────────────────────────────
 function startGame() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
   state = 'playing';
 
   const playerRenderer = {
@@ -231,7 +232,7 @@ function startGame() {
     if (player.isDead) {
       state = 'game_over';
       game.stop();
-      renderGameOver();
+      gameOverLoop();
       return;
     }
 
@@ -561,6 +562,14 @@ function startGame() {
 
   game.addEntity(player);
   game.start();
+}
+
+// ─── 게임 오버 루프 ──────────────────────────────────────────────────────────
+function gameOverLoop() {
+  if (state !== 'game_over') return;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  renderGameOver();
+  requestAnimationFrame(gameOverLoop);
 }
 
 // ─── 스테이지 클리어 화면 ─────────────────────────────────────────────────────
