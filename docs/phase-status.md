@@ -88,14 +88,14 @@
 - [x] TDD: 누적 테스트 262개 전부 GREEN
 - [x] 문서화: `blog/draft-8-수정.md`
 
-### Cycle 2 — 추가 [ ]
+### Cycle 2 — 추가 ✅
 
 > 구현 계획: `docs/superpowers/plans/2026-04-15-cycle2-추가.md`
 
-- [ ] 타이머 HUD 연결 (HUD.js → main.js)
-- [ ] 버그 픽셀 아이콘 6종 (PixelRenderer.js 확장)
-- [ ] TDD: 테스트 추가 및 GREEN 확인
-- [ ] 문서화: `blog/draft-9-추가.md`
+- [x] 타이머 HUD 연결 (HUD.js → main.js)
+- [x] 버그 픽셀 아이콘 6종 (PixelRenderer.js 확장)
+- [x] TDD: 누적 테스트 268개 전부 GREEN
+- [x] 문서화: `blog/draft-9-추가.md`
 
 ---
 
@@ -111,4 +111,4 @@
 | 6편 (보스전) | `blog/draft-6-보스전.md` | Cycle 5 | ✅ 작성 완료 (퇴고 후 발행) |
 | 7편 (완성·통합) | `blog/draft-7-완성.md` | Cycle 6 | ✅ 작성 완료 (퇴고 후 발행) |
 | 8편 (수정) | `blog/draft-8-수정.md` | Phase 3 Cycle 1 | ✅ 작성 완료 (퇴고 후 발행) |
-| 9편 (추가) | `blog/draft-9-추가.md` | Phase 3 Cycle 2 | ⏳ 미작성 |
+| 9편 (추가) | `blog/draft-9-추가.md` | Phase 3 Cycle 2 | ✅ 작성 완료 (퇴고 후 발행) |
