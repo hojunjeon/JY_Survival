@@ -74,14 +74,23 @@ YOU MUST 사이클 순서를 임의로 변경하지 마라.
 
 > 제안 섹션이 없으면 해당 사이클을 스킵한다.
 
+### 태스크 완료 시 필수 처리 (IMPORTANT)
+**태스크 하나 완료할 때마다** 반드시:
+1. `docs/phase-status.md` — 완료된 태스크 체크 (`[x]`) 및 상태 업데이트
+2. git commit && push (태스크 단위 커밋)
+
+> 이유: 세션 도중 토큰 한도 초과 시 완료된 태스크가 유실되지 않도록 한다.
+> 다음 세션은 `docs/phase-status.md` 의 체크 상태를 보고 이어서 진행한다.
+
 ### 사이클 완료 시 필수 처리
-각 사이클(수정/추가/제안) 완료 후 반드시:
-1. `docs/phase-status.md` — 완료된 사이클 체크 및 상태 업데이트
-2. git commit && push
+사이클 내 모든 태스크 완료 후 추가로:
+1. 블로그 초안 작성 (`blog/game-dev/draft-{편번호}-{주제}.md`)
+2. `docs/phase-status.md` — 사이클 완료 표시
+3. git commit && push (사이클 완료 커밋)
 
 **Phase 내 모든 사이클(수정+추가+제안) 완료 시 추가 처리:**
-3. `docs/phase-status.md` 에 Phase N 완료 표시
-4. `docs/phase-status.md` 의 현재 Phase를 Phase N+1 대기 상태로 업데이트
+4. `docs/phase-status.md` 에 Phase N 완료 표시
+5. `docs/phase-status.md` 의 현재 Phase를 Phase N+1 대기 상태로 업데이트
 
 ### On-demand 액션
 사이클과 무관하게 언제든 실행 가능:
@@ -115,8 +124,10 @@ blog/
 - 정보 소스 우선순위: `.claude/dev-log/` → `docs/phase-status.md` → git log → 기존 game-dev 초안
 
 ## Git 커밋 규칙
-- 사이클 중간의 임시 작업은 커밋하지 않는다.
-- 커밋 시점은 `Phase 개발 사이클 규칙 > 사이클 완료 시 필수 처리` 참조.
+- **태스크 완료 시마다** git commit && push 한다.
+- 사이클 중간의 미완성 작업(코드 절반만 작성 등)은 커밋하지 않는다.
+- 사이클 단위 커밋이 아닌 태스크 단위 커밋이므로, 커밋 메시지에 태스크 번호와 내용을 명시한다.
+  - 예: `feat: phase5 T3 — 이벤트 대화창 레이아웃 개선`
 
 ## 하네스 로그
 파일 변경 로그는 `.claude/dev-log/` 에 자동 수집된다.
