@@ -67,3 +67,26 @@ describe('EventModal', () => {
     expect(modal.dialogueLines.length).toBeGreaterThan(0);
   });
 });
+
+describe('EventModal 새 레이아웃', () => {
+  test('show("triggered", "E1", {progress: "5/15"}) — visible=true, progress 저장', () => {
+    const modal = new EventModal({ canvasWidth: 600, canvasHeight: 600 });
+    modal.show('triggered', 'E1', { progress: '5/15' });
+    expect(modal.visible).toBe(true);
+    expect(modal.extra?.progress).toBe('5/15');
+  });
+
+  test('show("triggered", "E1") — extra 없이도 동작', () => {
+    const modal = new EventModal({ canvasWidth: 600, canvasHeight: 600 });
+    modal.show('triggered', 'E1');
+    expect(modal.visible).toBe(true);
+    expect(modal.extra).toEqual({});
+  });
+
+  test('hide() 후 visible=false', () => {
+    const modal = new EventModal({ canvasWidth: 600, canvasHeight: 600 });
+    modal.show('triggered', 'E1');
+    modal.hide();
+    expect(modal.visible).toBe(false);
+  });
+});
