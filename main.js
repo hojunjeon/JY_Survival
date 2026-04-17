@@ -10,6 +10,11 @@ import { Boss } from './entities/Boss.js';
 import { Projectile } from './entities/Projectile.js';
 import { EventModal } from './ui/EventModal.js';
 import { HUD } from './ui/HUD.js';
+import { GitWeapon } from './weapons/Git.js';
+import { SQLWeapon } from './weapons/SQL.js';
+import { JavaScriptWeapon } from './weapons/JavaScript.js';
+import { DjangoWeapon } from './weapons/Django.js';
+import { LinuxBashWeapon } from './weapons/LinuxBash.js';
 
 const canvas = document.getElementById('game-canvas');
 const ctx = canvas.getContext('2d');
@@ -190,6 +195,24 @@ function startGame() {
   let bossDialogueTimer = 0;
   let stageClearDialogue = null;
 
+  const REWARD_WEAPON_POOL = [
+    GitWeapon, SQLWeapon, JavaScriptWeapon, DjangoWeapon, LinuxBashWeapon,
+  ];
+  const availableRewards = [...REWARD_WEAPON_POOL];
+  let ownedWeapons = [selectedWeapon];
+  let rewardNotice = null;
+  let rewardNoticeTimer = 0;
+
+  function giveRewardWeapon() {
+    if (availableRewards.length === 0) return;
+    const idx = Math.floor(Math.random() * availableRewards.length);
+    const WeaponClass = availableRewards.splice(idx, 1)[0];
+    const weapon = new WeaponClass();
+    if (ownedWeapons.length < 4) ownedWeapons.push(weapon);
+    rewardNotice = `무기 획득: ${weapon.name}`;
+    rewardNoticeTimer = 3;
+  }
+
   const worldBounds = { width: WORLD_W, height: WORLD_H };
 
   // ── 무기별 자동 발사 로직 ────────────────────────────────────────────────
@@ -201,12 +224,30 @@ function startGame() {
 
     if (!weapon.canFire()) return;
 
-    let dirX = player.lastDirX;
-    let dirY = player.lastDirY;
+    const dirX = player.lastDirX;
+    const dirY = player.lastDirY;
 
-    // Python은 방향 무관 (360°), C는 lastDir 사용
     const newProjs = weapon.fire(player.x, player.y, dirX, dirY);
     for (const p of newProjs) {
+      if (p.isAreaEffect) {
+        for (const enemy of enemies) {
+          if (!enemy.isDead) {
+            const dx = enemy.x - p.cx;
+            const dy = enemy.y - p.cy;
+            if (Math.sqrt(dx * dx + dy * dy) <= p.radius) {
+              enemy.takeDamage(p.damage);
+            }
+          }
+        }
+        continue;
+      }
+      if (p.isUlt) {
+        for (const enemy of enemies) {
+          if (!enemy.isDead) enemy.takeDamage(p.damage);
+        }
+        if (boss && !boss.isDead) boss.takeDamage(p.damage);
+        continue;
+      }
       projectiles.push(p);
       game.addEntity(p);
     }
@@ -246,10 +287,12 @@ function startGame() {
     player.y = Math.max(player.height / 2, Math.min(WORLD_H - player.height / 2, player.y));
 
     // 2. 무기 업데이트 + 자동 발사
-    if (selectedWeapon) {
-      selectedWeapon.update(dt);
-      tryFireWeapon(selectedWeapon, player);
+    for (const weapon of ownedWeapons) {
+      if (weapon.name !== 'Java') weapon.update(dt);
+      tryFireWeapon(weapon, player);
     }
+    const javaWeapon = ownedWeapons.find(w => w.name === 'Java');
+    if (javaWeapon) javaWeapon.update(dt);
 
     // 3. 투사체 업데이트 + 범위 이탈 제거
     for (const proj of projectiles) {
@@ -278,6 +321,7 @@ function startGame() {
         eventModal.show('cleared', n.event);
         paused = true;
         waveSystem.clearEventEnemyType();
+        if (n.event === 'E3') giveRewardWeapon();
       }
       if (n.type === 'boss_triggered' && !boss) {
         // 보스 등장 — 적 전체 제거
@@ -354,6 +398,7 @@ function startGame() {
           if (boss.isDead) {
             bossDialogue = boss.getDialogue('death');
             bossDialogueTimer = 4;
+            giveRewardWeapon();
             const killNotifs = eventSystem.notifyBossKill();
             for (const n of killNotifs) {
               if (n.type === 'stage_clear') {
@@ -426,6 +471,12 @@ function startGame() {
       game.removeEntity(e);
     }
     enemies = enemies.filter(e => !e.isDead);
+
+    // 15-1. 무기 획득 알림 타이머
+    if (rewardNoticeTimer > 0) {
+      rewardNoticeTimer -= dt;
+      if (rewardNoticeTimer <= 0) rewardNotice = null;
+    }
 
     // 16. 비활성 투사체 제거
     const deadProjs = projectiles.filter(p => !p.active);
@@ -510,12 +561,21 @@ function startGame() {
       e3Elapsed: eventSystem.e3Elapsed,
     });
 
-    // 무기명 (HUD에 없는 정보이므로 별도 유지)
-    if (selectedWeapon) {
+    // 무기 목록 HUD
+    ownedWeapons.forEach((w, i) => {
       ctx.textAlign = 'right';
       ctx.fillStyle = '#4fc3f7';
-      ctx.font = '14px monospace';
-      ctx.fillText(`무기: ${selectedWeapon.name}`, canvas.width - 12, 56);
+      ctx.font = '13px monospace';
+      ctx.fillText(`[${i + 1}] ${w.name}`, canvas.width - 12, 56 + i * 20);
+    });
+    ctx.textAlign = 'left';
+
+    // 무기 획득 알림
+    if (rewardNotice) {
+      ctx.fillStyle = '#ffd700';
+      ctx.font = 'bold 15px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText(rewardNotice, canvas.width / 2, canvas.height / 2 - 100);
       ctx.textAlign = 'left';
     }
 
