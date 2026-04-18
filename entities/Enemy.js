@@ -67,13 +67,12 @@ export class Enemy {
 }
 
 const ENEMY_STATS = {
-  syntax_error:      { hp: 40,  speed: 80,  contactDamage: 10, flees: false, dropsHpItem: false },
+  syntax_error:      { hp: 24,  speed: 80,  contactDamage: 10, flees: false, dropsHpItem: false },
   null_pointer:      { hp: 20,  speed: 140, contactDamage: 5,  flees: false, dropsHpItem: false },
-  seg_fault:         { hp: 100, speed: 40,  contactDamage: 25, flees: false, dropsHpItem: false },
+  seg_fault:         { hp: 48,  speed: 40,  contactDamage: 25, flees: false, dropsHpItem: false },
   heal_bug:          { hp: 15,  speed: 150, contactDamage: 0,  flees: true,  dropsHpItem: true  },
-  // 이벤트 전용
-  indentation_error: { hp: 60,  speed: 70,  contactDamage: 15, flees: false, dropsHpItem: false },
-  env_error:         { hp: 130, speed: 35,  contactDamage: 15, flees: false, dropsHpItem: false },
+  indentation_error: { hp: 36,  speed: 70,  contactDamage: 15, flees: false, dropsHpItem: false },
+  env_error:         { hp: 48,  speed: 35,  contactDamage: 15, flees: false, dropsHpItem: false },
 };
 
 export function createEnemy(type, x, y) {

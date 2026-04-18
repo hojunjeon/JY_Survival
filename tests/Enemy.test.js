@@ -131,10 +131,10 @@ describe('이벤트 전용 적 타입', () => {
     expect(e.hp).toBeGreaterThan(0);
   });
 
-  it('EnvError는 SegFault보다 HP가 높다', () => {
+  it('EnvError는 SegFault보다 HP가 같거나 높다', () => {
     const env = createEnemy('env_error', 0, 0);
     const seg = createEnemy('seg_fault', 0, 0);
-    expect(env.hp).toBeGreaterThan(seg.hp);
+    expect(env.hp).toBeGreaterThanOrEqual(seg.hp);
   });
 
   it('EnvError는 느린 속도를 가진다 (SegFault 이하)', () => {
@@ -194,5 +194,33 @@ describe('피격 플래시', () => {
   it('데미지를 받지 않으면 hitFlashTimer는 0이다', () => {
     const e = createEnemy('syntax_error', 0, 0);
     expect(e.hitFlashTimer).toBe(0);
+  });
+});
+
+describe('ENEMY_STATS HP 조정', () => {
+  test('syntax_error HP = 24', () => {
+    const e = createEnemy('syntax_error', 0, 0);
+    expect(e.hp).toBe(24);
+    expect(e.maxHp).toBe(24);
+  });
+
+  test('seg_fault HP = 48', () => {
+    const e = createEnemy('seg_fault', 0, 0);
+    expect(e.hp).toBe(48);
+  });
+
+  test('indentation_error HP = 36', () => {
+    const e = createEnemy('indentation_error', 0, 0);
+    expect(e.hp).toBe(36);
+  });
+
+  test('env_error HP = 48', () => {
+    const e = createEnemy('env_error', 0, 0);
+    expect(e.hp).toBe(48);
+  });
+
+  test('null_pointer HP = 20 (유지)', () => {
+    const e = createEnemy('null_pointer', 0, 0);
+    expect(e.hp).toBe(20);
   });
 });

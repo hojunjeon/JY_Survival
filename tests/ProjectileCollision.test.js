@@ -41,14 +41,14 @@ describe('투사체 ↔ 적 충돌', () => {
   });
 
   it('투사체가 적에게 데미지를 준다', () => {
-    const proj = new Projectile(100, 100, 0, 0, 30);
-    const enemy = createEnemy('syntax_error', 100, 100); // hp: 40
+    const proj = new Projectile(100, 100, 0, 0, 10);
+    const enemy = createEnemy('syntax_error', 100, 100); // hp: 24
 
     if (checkCollision(proj, enemy)) {
       enemy.takeDamage(proj.damage);
     }
 
-    expect(enemy.hp).toBe(10); // 40 - 30
+    expect(enemy.hp).toBe(14); // 24 - 10
   });
 
   it('투사체 데미지로 적 HP가 0이 되면 isDead가 된다', () => {
