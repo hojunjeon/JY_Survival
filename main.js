@@ -280,6 +280,9 @@ function startGame() {
       }
       projectiles.push(p);
       game.addEntity(p);
+      if (weapon.name === 'C/C++') {
+        triggerScreenShake(5, 0.15);
+      }
     }
   }
 
@@ -748,6 +751,25 @@ function startGame() {
         ctx.arc(orb.x, orb.y, orb.width / 2, 0, Math.PI * 2);
         ctx.fill();
       });
+    }
+
+    // C/C++ 조준선 렌더
+    const cWeapon = ownedWeapons.find(w => w.name === 'C/C++');
+    if (cWeapon) {
+      const aimX = player.lastDirX || 0;
+      const aimY = player.lastDirY || 0;
+      if (aimX !== 0 || aimY !== 0) {
+        ctx.save();
+        ctx.strokeStyle = 'rgba(200, 200, 255, 0.4)';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([6, 4]);
+        ctx.beginPath();
+        ctx.moveTo(player.x, player.y);
+        ctx.lineTo(player.x + aimX * 400, player.y + aimY * 400);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.restore();
+      }
     }
 
     // FloatingText 렌더 (월드 좌표)

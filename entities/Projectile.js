@@ -9,7 +9,8 @@ export class Projectile {
     isAllEnemy = false,
     chainHops = 0,
     chainRadius = 0,
-    hitEnemyIds = null
+    hitEnemyIds = null,
+    isRailgun = false
   } = {}) {
     this.x = x;
     this.y = y;
@@ -26,6 +27,7 @@ export class Projectile {
     this.chainHops = chainHops;
     this.chainRadius = chainRadius;
     this.hitEnemyIds = hitEnemyIds;
+    this.isRailgun = isRailgun;
     this.active = true;
     this.width = 8;
     this.height = 8;
@@ -52,6 +54,18 @@ export class Projectile {
 
   render(ctx) {
     if (!this.active) return;
+    if (this.isRailgun) {
+      ctx.save();
+      const angle = Math.atan2(this.vy, this.vx);
+      ctx.translate(this.x, this.y);
+      ctx.rotate(angle);
+      ctx.fillStyle = '#ccccff';
+      ctx.fillRect(-20, -2, 40, 4);
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(-20, -1, 40, 2);
+      ctx.restore();
+      return;
+    }
     ctx.fillStyle = this.color;
     ctx.fillRect(this.x - this.width / 2, this.y - this.height / 2, this.width, this.height);
   }

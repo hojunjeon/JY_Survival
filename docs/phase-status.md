@@ -243,7 +243,32 @@
 
 ## Phase 7 — 완료 ✅
 
-## 현재 Phase: Phase 8 대기 중
+## 현재 Phase: Phase 8 진행 중
+
+---
+
+## Phase 8 — 무기 기믹 + 신규 몬스터
+
+> 실행 방식: **Subagent-Driven** (서브에이전트 per 태스크)
+> 설계 문서: `phase_feedback/phase_8.md`
+> 구현 계획: `docs/superpowers/plans/2026-04-18-phase8-cycle1-수정.md`
+
+### Cycle 1 — 수정 (무기 기믹 재구현 6종)
+
+- [x] T1: Python — Chain Lightning (Projectile 체이닝 + 초록 뱀 궤적) — `1157ec7`
+- [x] T2: C/C++ — Railgun (조준선 + 빔 이펙트 + Screen Shake) — `TBD`
+- [ ] T3: Java — GC Blackhole (5초마다 블랙홀 소환 + 흡입 + 폭발)
+- [ ] T4: Git — Branch & Merge (분신 저장 → 3초 후 라인 데미지)
+- [ ] T5: SQL — DROP TABLE (표적 → 낙하 블록 → 착지 폭발)
+- [ ] T6: JavaScript — Tornado (확장 토네이도 범위 데미지)
+
+### Cycle 2 — 추가 (신규 몬스터 5종)
+
+- [ ] T1: Race Condition — 샴쌍둥이 버그 (동시 처치 필요)
+- [ ] T2: Memory Leak — 거대해지는 슬라임 (크기 증가 + 가비지 장판)
+- [ ] T3: Infinite Loop — 가두리 양식러 (코드 벽 생성)
+- [ ] T4: Input Mismatch — 컨트롤 반전술사 (3초 방향키 반전)
+- [ ] T5: Library Dependency — 패키지 버퍼 (주변 적 방어력 버프)
 
 ## 블로그 초안 현황
 
