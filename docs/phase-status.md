@@ -224,7 +224,26 @@
 ### Cycle 1 — 수정
 
 - [x] T1: 재시작 잔상 버그 수정 (Game.clearEntities() + startGame 초기화) — `f33fce3`, `119fe60`
-- [ ] T2: Enemy/Boss 피격 플래시 drawSpriteTinted로 교체 (사각형 박스 제거)
+- [x] T2: Enemy/Boss 피격 플래시 drawSpriteTinted로 교체 (사각형 박스 제거) — `2b701d0`
+- [x] 문서화: `blog/game-dev/draft-17-수정3.md`
+
+### Cycle 1 — 완료 ✅
+
+### Cycle 2 — 추가
+
+> phase_7.md #추가 항목 (무기 차별화, 이벤트 특별 무기) 모두 Phase 5/6에서 구현 완료 → 스킵
+
+### Cycle 2 — 완료 ✅ (스킵)
+
+### Cycle 3 — 제안
+
+> phase_7.md #제안 없음 → 스킵
+
+### Cycle 3 — 완료 ✅ (스킵)
+
+## Phase 7 — 완료 ✅
+
+## 현재 Phase: Phase 8 대기 중
 
 ## 블로그 초안 현황
 
@@ -242,3 +261,4 @@
 | 10편 (CLAUDE.md 진화) | `blog/draft-10-CLAUDE.md진화.md` | Phase 3 Cycle 3 | ✅ 작성 완료 (퇴고 후 발행) |
 | 11편 (Phase4 수정) | `blog/draft-11-수정.md` | Phase 4 Cycle 1 | ✅ 작성 완료 (퇴고 후 발행) |
 | 12편 (Phase4 추가) | `blog/draft-12-추가.md` | Phase 4 Cycle 2 | ✅ 작성 완료 (퇴고 후 발행) |
+| 17편 (Phase7 수정) | `blog/game-dev/draft-17-수정3.md` | Phase 7 Cycle 1 | ✅ 작성 완료 (퇴고 후 발행) |
