@@ -211,7 +211,20 @@
 
 ## Phase 6 — 완료 ✅
 
-## 현재 Phase: Phase 7 대기 중
+## 현재 Phase: Phase 7 진행 중
+
+---
+
+## Phase 7 — 게임 완성도 4차 개선
+
+> 실행 방식: **Subagent-Driven** (서브에이전트 per 태스크)
+> 설계 문서: `phase_feedback/phase_7.md`
+> 구현 계획: `docs/superpowers/plans/2026-04-18-phase7-cycle1-수정.md`
+
+### Cycle 1 — 수정
+
+- [x] T1: 재시작 잔상 버그 수정 (Game.clearEntities() + startGame 초기화) — `f33fce3`, `119fe60`
+- [ ] T2: Enemy/Boss 피격 플래시 drawSpriteTinted로 교체 (사각형 박스 제거)
 
 ## 블로그 초안 현황
 
