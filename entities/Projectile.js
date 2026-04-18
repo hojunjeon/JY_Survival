@@ -6,7 +6,10 @@ export class Projectile {
     isAreaEffect = false,
     areaRadius = 0,
     areaColor = '#ffffff',
-    isAllEnemy = false
+    isAllEnemy = false,
+    chainHops = 0,
+    chainRadius = 0,
+    hitEnemyIds = null
   } = {}) {
     this.x = x;
     this.y = y;
@@ -20,6 +23,9 @@ export class Projectile {
     this.areaRadius = areaRadius;
     this.areaColor = areaColor;
     this.isAllEnemy = isAllEnemy;
+    this.chainHops = chainHops;
+    this.chainRadius = chainRadius;
+    this.hitEnemyIds = hitEnemyIds;
     this.active = true;
     this.width = 8;
     this.height = 8;

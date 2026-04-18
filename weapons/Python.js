@@ -3,31 +3,21 @@ import { Projectile } from '../entities/Projectile.js';
 
 export class PythonWeapon extends WeaponBase {
   constructor() {
-    super({ damage: 10, cooldown: 0.8, projectileSpeed: 150, piercing: false });
+    super({ damage: 15, cooldown: 1.0, projectileSpeed: 200, piercing: false });
     this.name = 'Python';
   }
 
   _createProjectiles(x, y, dirX, dirY) {
-    const baseAngle = Math.atan2(dirY, dirX);
-    const spread = Math.PI / 6; // 30도
-    const projectiles = [];
-
-    // 3방향 투사체: 중앙, 좌측, 우측
-    const angles = [
-      baseAngle - spread,
-      baseAngle,
-      baseAngle + spread
-    ];
-
-    for (const angle of angles) {
-      const vx = Math.cos(angle) * this.projectileSpeed;
-      const vy = Math.sin(angle) * this.projectileSpeed;
-      projectiles.push(new Projectile(x, y, vx, vy, this.damage, {
-        homing: true,
-        color: '#ffe066'
-      }));
-    }
-
-    return projectiles;
+    const vx = dirX * this.projectileSpeed;
+    const vy = dirY * this.projectileSpeed;
+    const proj = new Projectile(x, y, vx, vy, this.damage, {
+      color: '#44ff44',
+      chainHops: 2,
+      chainRadius: 130,
+      hitEnemyIds: new Set()
+    });
+    proj.width = 6;
+    proj.height = 6;
+    return [proj];
   }
 }

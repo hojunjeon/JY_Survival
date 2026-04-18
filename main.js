@@ -16,6 +16,7 @@ import { SQLWeapon } from './weapons/SQL.js';
 import { JavaScriptWeapon } from './weapons/JavaScript.js';
 import { DjangoWeapon } from './weapons/Django.js';
 import { LinuxBashWeapon } from './weapons/LinuxBash.js';
+import { PythonWeapon } from './weapons/Python.js';
 
 const canvas = document.getElementById('game-canvas');
 const ctx = canvas.getContext('2d');
@@ -511,6 +512,42 @@ function startGame() {
           } else {
             enemy.takeDamage(proj.damage);
             triggerScreenShake(3, 0.1);
+
+            // Chain Lightning 체이닝
+            if (proj.chainHops > 0 && proj.chainRadius > 0) {
+              if (!proj.hitEnemyIds) proj.hitEnemyIds = new Set();
+              proj.hitEnemyIds.add(enemy);
+
+              // 범위 내 미방문 적 탐색
+              let nearestEnemy = null;
+              let nearestDist = Infinity;
+              for (const e of enemies) {
+                if (e.isDead || proj.hitEnemyIds.has(e)) continue;
+                const dx = e.x - proj.x;
+                const dy = e.y - proj.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist < proj.chainRadius && dist < nearestDist) {
+                  nearestDist = dist;
+                  nearestEnemy = e;
+                }
+              }
+              if (nearestEnemy) {
+                const dx = nearestEnemy.x - proj.x;
+                const dy = nearestEnemy.y - proj.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                const chainProj = new Projectile(proj.x, proj.y, (dx/dist)*200, (dy/dist)*200, proj.damage, {
+                  color: '#44ff44',
+                  chainHops: proj.chainHops - 1,
+                  chainRadius: proj.chainRadius,
+                  hitEnemyIds: new Set(proj.hitEnemyIds),
+                });
+                chainProj.width = 6;
+                chainProj.height = 6;
+                projectiles.push(chainProj);
+                game.addEntity(chainProj);
+              }
+            }
+
             proj.deactivate();
             break;
           }
