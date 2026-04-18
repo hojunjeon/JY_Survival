@@ -114,13 +114,21 @@ export class Boss {
       ctx.fillRect(this.x - this.width / 2, this.y - this.height / 2, this.width, this.height);
     }
 
-    // 피격 플래시
+    // 피격 플래시 — 스프라이트 픽셀에만 흰색 오버레이
     if (this.hitFlashTimer > 0) {
-      ctx.save();
-      ctx.globalAlpha = 0.5;
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(this.x - this.width / 2, this.y - this.height / 2, this.width, this.height);
-      ctx.restore();
+      if (BOSS_SPRITE) {
+        PixelRenderer.drawSpriteTinted(
+          ctx, BOSS_SPRITE,
+          this.x - this.width / 2, this.y - this.height / 2,
+          2, '#ffffff', 0.6
+        );
+      } else {
+        ctx.save();
+        ctx.globalAlpha = 0.5;
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(this.x - this.width / 2, this.y - this.height / 2, this.width, this.height);
+        ctx.restore();
+      }
     }
 
     // 25% 이하 저체력 강조: 빨간 점선 테두리

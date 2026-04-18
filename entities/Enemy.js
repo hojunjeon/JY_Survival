@@ -116,16 +116,22 @@ export class Enemy {
       ctx.fillRect(this.x - this.width / 2, this.y - this.height / 2, this.width, this.height);
     }
 
-    // 피격 플래시 오버레이 (흰색)
+    // 피격 플래시 오버레이 — 스프라이트가 있으면 tinted, 없으면 사각형
     if (this.hitFlashTimer > 0) {
-      ctx.save();
-      ctx.globalAlpha = 0.6;
-      ctx.fillStyle = '#ffffff';
-      ctx.beginPath();
-      ctx.rect(this.x - this.width / 2, this.y - this.height / 2, this.width, this.height);
-      ctx.clip();
-      ctx.fillRect(this.x - this.width / 2, this.y - this.height / 2, this.width, this.height);
-      ctx.restore();
+      const sprite = PixelRenderer.BUG_SPRITES[this.type];
+      if (sprite) {
+        PixelRenderer.drawSpriteTinted(
+          ctx, sprite,
+          this.x - this.width / 2, this.y - this.height / 2,
+          2, '#ffffff', 0.7
+        );
+      } else {
+        ctx.save();
+        ctx.globalAlpha = 0.6;
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(this.x - this.width / 2, this.y - this.height / 2, this.width, this.height);
+        ctx.restore();
+      }
     }
 
     // 사망 시 빨간 오버레이
