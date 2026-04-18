@@ -163,11 +163,23 @@
 - [x] T10: 보상 무기 지급 시스템 — main.js 연동 (E3/보스 클리어 시 랜덤 무기 지급)
 - [x] T11: Boss 스프라이트 렌더 적용 + 2페이즈 빨간 오버레이 + 피격 플래시 — `8a502d5`
 - [x] TDD: 누적 테스트 308개 GREEN
-- [ ] 문서화: `blog/game-dev/draft-14-추가.md`
+- [x] 문서화: `blog/game-dev/draft-14-추가.md`
+
+### Cycle 2 — 완료 ✅
 
 ### Cycle 3 — 제안
 
-> phase_5.md #제안 없음 → 스킵 예정
+> phase_5.md #제안 없음 → 스킵
+
+### Cycle 3 — 완료 ✅ (스킵)
+
+## Phase 5 — 완료 ✅
+
+---
+
+## 현재 Phase: Phase 6 대기 중
+
+> `phase_feedback/phase_6.md` 작성 후 진입 예정
 
 ## 블로그 초안 현황
 
