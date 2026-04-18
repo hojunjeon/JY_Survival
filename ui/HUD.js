@@ -4,13 +4,13 @@ export class HUD {
     this.ch = canvasHeight;
   }
 
-  render(ctx, { playerHp, playerMaxHp, killCount, q1Target, elapsed, e1State, e3State, bossState, e1Kills = 0, e3Kills = 0, e3Elapsed = 0 }) {
+  render(ctx, { playerHp, playerMaxHp, killCount, q1Target, elapsed, e1State, e2State, bossState, e1Kills = 0, e2Kills = 0, e2Elapsed = 0 }) {
     ctx.save();
 
     this._renderHpBar(ctx, playerHp, playerMaxHp);
     this._renderKillCount(ctx, killCount, q1Target);
     this._renderTimer(ctx, elapsed);
-    this._renderEventStatus(ctx, e1State, e3State, bossState, e1Kills, e3Kills, e3Elapsed);
+    this._renderEventStatus(ctx, e1State, e2State, bossState, e1Kills, e2Kills, e2Elapsed);
 
     ctx.restore();
   }
@@ -64,7 +64,7 @@ export class HUD {
     ctx.fillText(timeStr, this.cw / 2, 8);
   }
 
-  _renderEventStatus(ctx, e1State, e3State, bossState, e1Kills, e3Kills, e3Elapsed) {
+  _renderEventStatus(ctx, e1State, e2State, bossState, e1Kills, e2Kills, e2Elapsed) {
     ctx.font = '13px monospace';
     ctx.textAlign = 'right';
     ctx.textBaseline = 'top';
@@ -88,13 +88,13 @@ export class HUD {
       y += 20;
     }
 
-    if (e3State === 'active') {
+    if (e2State === 'active') {
       ctx.fillStyle = '#ff9800';
-      ctx.fillText(`[E3] 파이참 위기 : EnvError 처치 (${e3Kills}/1) | 생존 ${Math.floor(e3Elapsed)}/60초`, x, y);
+      ctx.fillText(`[E2] 파이참 위기 : 생존 ${Math.floor(e2Elapsed)}/30초`, x, y);
       y += 20;
-    } else if (e3State === 'cleared') {
+    } else if (e2State === 'cleared') {
       ctx.fillStyle = '#4caf50';
-      ctx.fillText('[E3] 클리어 ✓', x, y);
+      ctx.fillText('[E2] 클리어 ✓', x, y);
       y += 20;
     }
   }

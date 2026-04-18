@@ -5,10 +5,10 @@ import { WaveSystem } from '../systems/WaveSystem.js';
 import { EventSystem } from '../systems/EventSystem.js';
 import { UpgradeSystem } from '../systems/UpgradeSystem.js';
 
-function makeStage({ e1TriggerTime = 30, e3TriggerTime = 90, q1Target = 5, bossTriggerDelay = 10 } = {}) {
+function makeStage({ e1TriggerTime = 30, e2TriggerTime = 90, q1Target = 5, bossTriggerDelay = 10 } = {}) {
   const player = new Player(400, 300);
   const waveSystem = new WaveSystem({ spawnInterval: 3, canvasWidth: 800, canvasHeight: 600 });
-  const eventSystem = new EventSystem({ e1TriggerTime, e3TriggerTime, q1Target, bossTriggerDelay });
+  const eventSystem = new EventSystem({ e1TriggerTime, e2TriggerTime, q1Target, bossTriggerDelay });
   const upgradeSystem = new UpgradeSystem();
 
   return new Stage1({ player, waveSystem, eventSystem, upgradeSystem, canvasWidth: 800, canvasHeight: 600 });
@@ -75,12 +75,12 @@ describe('Stage1 — 이벤트 시스템 연동', () => {
   });
 
   it('보스 트리거 이벤트가 반환된다', () => {
-    const stage = makeStage({ e3TriggerTime: 1, bossTriggerDelay: 1 });
-    stage.update(1); // E3 활성화
-    stage.eventSystem.notifyKill('env_error'); // E3 킬 조건
-    // E3 클리어: 1초 + 60초 생존 시뮬레이션
-    stage.eventSystem.e3State = 'cleared';
-    stage.eventSystem._e3ClearedAt = 1;
+    const stage = makeStage({ e2TriggerTime: 1, bossTriggerDelay: 1 });
+    stage.update(1); // E2 활성화
+    stage.eventSystem.notifyKill('env_error'); // E2 킬 조건
+    // E2 클리어: 1초 생존 시뮬레이션
+    stage.eventSystem.e2State = 'cleared';
+    stage.eventSystem._e2ClearedAt = 1;
     stage.eventSystem.elapsed = 3; // 1 + 1(delay) 초과
 
     const events = stage.update(0);
@@ -88,12 +88,12 @@ describe('Stage1 — 이벤트 시스템 연동', () => {
   });
 
   it('보스 트리거 시 일반 적이 모두 제거된다', () => {
-    const stage = makeStage({ e3TriggerTime: 1, bossTriggerDelay: 1 });
+    const stage = makeStage({ e2TriggerTime: 1, bossTriggerDelay: 1 });
     stage.update(3); // 적 3마리 스폰
 
     // 보스 조건 강제 설정
-    stage.eventSystem.e3State = 'cleared';
-    stage.eventSystem._e3ClearedAt = 0;
+    stage.eventSystem.e2State = 'cleared';
+    stage.eventSystem._e2ClearedAt = 0;
     stage.eventSystem.elapsed = 3;
 
     stage.update(0); // 보스 트리거
@@ -149,11 +149,11 @@ describe('Stage1 — HUD 상태 조회', () => {
     expect(hud.elapsed).toBeGreaterThan(0);
   });
 
-  it('getHudState는 e1State, e3State, bossState를 반환한다', () => {
+  it('getHudState는 e1State, e2State, bossState를 반환한다', () => {
     const stage = makeStage();
     const hud = stage.getHudState();
     expect(hud.e1State).toBe('pending');
-    expect(hud.e3State).toBe('pending');
+    expect(hud.e2State).toBe('pending');
     expect(hud.bossState).toBe('pending');
   });
 });

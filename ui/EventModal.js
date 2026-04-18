@@ -14,7 +14,7 @@ const EVENT_CONFIG = {
     cleared: '들여쓰기 지옥 탈출 성공!',
     reward: '강화 재화 +2',
   },
-  E3: {
+  E2: {
     title: '이벤트 : 파이참 위기',
     character: '이한정',
     dialogueLines: [
@@ -22,7 +22,7 @@ const EVENT_CONFIG = {
       '지윤님 이것 좀 풀어주세요.',
     ],
     situation: '이한정의 IDE가 먹통이 됐습니다.',
-    actionBase: 'EnvError를 처치하고 60초를 생존하세요',
+    actionBase: '30초를 생존하세요',
     progressFormat: () => '',
     cleared: '파이참 위기 극복!',
     reward: '무기 획득',
@@ -35,8 +35,8 @@ const EVENT_MESSAGES = {
     triggered: '동기가 IndentationError 패닉! IndentationError 15마리 처치!',
     cleared:   '들여쓰기 지옥 탈출 성공!',
   },
-  E3: {
-    triggered: '동기의 IDE가 안 켜져! EnvError 처치 + 60초 생존!',
+  E2: {
+    triggered: '동기의 IDE가 안 켜져! 30초를 생존하세요!',
     cleared:   '파이참 위기 극복!',
   },
 };

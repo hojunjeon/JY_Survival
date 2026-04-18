@@ -1,7 +1,7 @@
 export class EventSystem {
-  constructor({ e1TriggerTime = 30, e3TriggerTime = 90, q1Target = 100, bossTriggerDelay = 30 } = {}) {
+  constructor({ e1TriggerTime = 30, e2TriggerTime = 90, q1Target = 100, bossTriggerDelay = 30 } = {}) {
     this._e1TriggerTime = e1TriggerTime;
-    this._e3TriggerTime = e3TriggerTime;
+    this._e2TriggerTime = e2TriggerTime;
     this._q1Target = q1Target;
     this._bossTriggerDelay = bossTriggerDelay;
 
@@ -11,27 +11,27 @@ export class EventSystem {
     this.e1State = 'pending';
     this.e1Kills = 0;
 
-    this.e3State = 'pending';
-    this.e3Kills = 0;
-    this.e3Elapsed = 0;
+    this.e2State = 'pending';
+    this.e2Kills = 0;
+    this.e2Elapsed = 0;
 
     this.q1State = 'pending';
 
     this.bossState = 'pending';
-    this._e3ClearedAt = null;
+    this._e2ClearedAt = null;
   }
 
   update(dt) {
     const notifications = [];
     this.elapsed += dt;
 
-    // E3 경과 시간 누적
-    if (this.e3State === 'active') {
-      this.e3Elapsed += dt;
-      // E3 클리어 조건: env_error 1마리 이상 처치 + 60초 생존
-      if (this.e3Kills >= 1 && this.e3Elapsed >= 60) {
-        this.e3State = 'cleared';
-        notifications.push({ type: 'event_cleared', event: 'E3' });
+    // E2 경과 시간 누적
+    if (this.e2State === 'active') {
+      this.e2Elapsed += dt;
+      // E2 클리어 조건: 30초 생존
+      if (this.e2Elapsed >= 30) {
+        this.e2State = 'cleared';
+        notifications.push({ type: 'event_cleared', event: 'E2' });
       }
     }
 
@@ -41,22 +41,22 @@ export class EventSystem {
       notifications.push({ type: 'event_triggered', event: 'E1' });
     }
 
-    // E3 트리거
-    if (this.e3State === 'pending' && this.elapsed >= this._e3TriggerTime) {
-      this.e3State = 'active';
-      notifications.push({ type: 'event_triggered', event: 'E3' });
+    // E2 트리거
+    if (this.e2State === 'pending' && this.elapsed >= this._e2TriggerTime) {
+      this.e2State = 'active';
+      notifications.push({ type: 'event_triggered', event: 'E2' });
     }
 
-    // E3 클리어 시점 기록
-    if (this.e3State === 'cleared' && this._e3ClearedAt === null) {
-      this._e3ClearedAt = this.elapsed;
+    // E2 클리어 시점 기록
+    if (this.e2State === 'cleared' && this._e2ClearedAt === null) {
+      this._e2ClearedAt = this.elapsed;
     }
 
-    // 보스 등장 트리거: E3 클리어 후 bossTriggerDelay 경과
+    // 보스 등장 트리거: E2 클리어 후 bossTriggerDelay 경과
     if (
       this.bossState === 'pending' &&
-      this._e3ClearedAt !== null &&
-      this.elapsed >= this._e3ClearedAt + this._bossTriggerDelay
+      this._e2ClearedAt !== null &&
+      this.elapsed >= this._e2ClearedAt + this._bossTriggerDelay
     ) {
       this.bossState = 'active';
       notifications.push({ type: 'boss_triggered' });
@@ -87,9 +87,9 @@ export class EventSystem {
       }
     }
 
-    // E3 킬 집계
-    if (this.e3State === 'active' && enemyType === 'env_error') {
-      this.e3Kills += 1;
+    // E2 킬 집계 (무한 스폰 모드는 처치수 집계만, 클리어 조건 제외)
+    if (this.e2State === 'active' && enemyType === 'env_error') {
+      this.e2Kills += 1;
     }
 
     // Q1 퀘스트

@@ -29,8 +29,8 @@ describe('EventModal', () => {
     expect(modal.reward).toContain('재화');
   });
 
-  it('show("triggered", "E3") 호출 시 E3 메시지에 IDE가 포함된다', () => {
-    modal.show('triggered', 'E3');
+  it('show("triggered", "E2") 호출 시 E2 메시지에 IDE가 포함된다', () => {
+    modal.show('triggered', 'E2');
     expect(modal.message).toContain('IDE');
   });
 
@@ -45,8 +45,8 @@ describe('EventModal', () => {
     expect(modal.character).toBe('박진우');
   });
 
-  it('show("triggered", "E3") 호출 시 이한정 캐릭터가 설정된다', () => {
-    modal.show('triggered', 'E3');
+  it('show("triggered", "E2") 호출 시 이한정 캐릭터가 설정된다', () => {
+    modal.show('triggered', 'E2');
     expect(modal.character).toBe('이한정');
   });
 
@@ -61,8 +61,8 @@ describe('EventModal', () => {
     expect(modal.dialogueLines.length).toBeGreaterThan(0);
   });
 
-  it('show("triggered", "E3") 호출 시 dialogueLines 배열이 존재한다', () => {
-    modal.show('triggered', 'E3');
+  it('show("triggered", "E2") 호출 시 dialogueLines 배열이 존재한다', () => {
+    modal.show('triggered', 'E2');
     expect(Array.isArray(modal.dialogueLines)).toBe(true);
     expect(modal.dialogueLines.length).toBeGreaterThan(0);
   });

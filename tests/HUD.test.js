@@ -30,7 +30,7 @@ function makeState(overrides = {}) {
     q1Target: 100,
     elapsed: 0,
     e1State: 'pending',
-    e3State: 'pending',
+    e2State: 'pending',
     bossState: 'pending',
     ...overrides,
   };
@@ -118,10 +118,10 @@ describe('HUD — 이벤트 상태', () => {
     expect(texts.some(t => t.includes('E1') || t.includes('들여쓰기'))).toBe(true);
   });
 
-  it('E3이 active 상태이면 이벤트 표시가 있다', () => {
-    hud.render(ctx, makeState({ e3State: 'active' }));
+  it('E2이 active 상태이면 이벤트 표시가 있다', () => {
+    hud.render(ctx, makeState({ e2State: 'active' }));
     const texts = ctx.fillText.mock.calls.map(c => String(c[0]));
-    expect(texts.some(t => t.includes('E3') || t.includes('파이참'))).toBe(true);
+    expect(texts.some(t => t.includes('E2') || t.includes('파이참'))).toBe(true);
   });
 
   it('보스가 active 상태이면 BOSS 표시가 있다', () => {
@@ -167,7 +167,7 @@ describe('HUD + EventSystem 연동', () => {
       q1Target: 100,
       elapsed: eventSystem.elapsed,
       e1State: eventSystem.e1State,
-      e3State: eventSystem.e3State,
+      e2State: eventSystem.e2State,
       bossState: eventSystem.bossState,
     });
 
@@ -177,7 +177,7 @@ describe('HUD + EventSystem 연동', () => {
 
   it('EventSystem.e1State=active → HUD에 [E1] 이벤트 상태 표시', () => {
     const hud = new HUD({ canvasWidth: 800, canvasHeight: 600 });
-    const eventSystem = new EventSystem({ e1TriggerTime: 1, e3TriggerTime: 9999 });
+    const eventSystem = new EventSystem({ e1TriggerTime: 1, e2TriggerTime: 9999 });
     eventSystem.update(2);
 
     const ctx = makeCtx();
@@ -188,7 +188,7 @@ describe('HUD + EventSystem 연동', () => {
       q1Target: 100,
       elapsed: eventSystem.elapsed,
       e1State: eventSystem.e1State,
-      e3State: eventSystem.e3State,
+      e2State: eventSystem.e2State,
       bossState: eventSystem.bossState,
     });
 

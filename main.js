@@ -319,7 +319,7 @@ function startGame() {
         enemies = [];
         // 이벤트 모드 진입
         if (n.event === 'E1') waveSystem.setEventMode('indentation_error', 15);
-        if (n.event === 'E3') waveSystem.setEventMode('env_error', 3);
+        if (n.event === 'E2') waveSystem.setEventMode('env_error', Infinity);
       }
       if (n.type === 'event_cleared') {
         eventModal.show('cleared', n.event);
@@ -333,7 +333,7 @@ function startGame() {
           }
           return true;
         });
-        if (n.event === 'E3') giveRewardWeapon();
+        if (n.event === 'E2') giveRewardWeapon();
       }
       if (n.type === 'boss_triggered' && !boss) {
         // 보스 등장 — 적 전체 제거
@@ -574,11 +574,11 @@ function startGame() {
       q1Target: 100,
       elapsed: eventSystem.elapsed,
       e1State: eventSystem.e1State,
-      e3State: eventSystem.e3State,
+      e2State: eventSystem.e2State,
       bossState: eventSystem.bossState,
       e1Kills: eventSystem.e1Kills,
-      e3Kills: eventSystem.e3Kills,
-      e3Elapsed: eventSystem.e3Elapsed,
+      e2Kills: eventSystem.e2Kills,
+      e2Elapsed: eventSystem.e2Elapsed,
     });
 
     // 무기 목록 HUD

@@ -5,7 +5,7 @@ describe('EventSystem 초기 상태', () => {
   let es;
 
   beforeEach(() => {
-    es = new EventSystem({ e1TriggerTime: 30, e3TriggerTime: 90, q1Target: 100 });
+    es = new EventSystem({ e1TriggerTime: 30, e2TriggerTime: 90, q1Target: 100 });
   });
 
   it('elapsed는 0으로 시작한다', () => {
@@ -20,8 +20,8 @@ describe('EventSystem 초기 상태', () => {
     expect(es.e1State).toBe('pending');
   });
 
-  it('E3는 pending 상태로 시작한다', () => {
-    expect(es.e3State).toBe('pending');
+  it('E2는 pending 상태로 시작한다', () => {
+    expect(es.e2State).toBe('pending');
   });
 
   it('Q1은 pending 상태로 시작한다', () => {
@@ -32,12 +32,12 @@ describe('EventSystem 초기 상태', () => {
     expect(es.e1Kills).toBe(0);
   });
 
-  it('E3 킬 카운트는 0으로 시작한다', () => {
-    expect(es.e3Kills).toBe(0);
+  it('E2 킬 카운트는 0으로 시작한다', () => {
+    expect(es.e2Kills).toBe(0);
   });
 
-  it('E3 경과 시간은 0으로 시작한다', () => {
-    expect(es.e3Elapsed).toBe(0);
+  it('E2 경과 시간은 0으로 시작한다', () => {
+    expect(es.e2Elapsed).toBe(0);
   });
 });
 
@@ -45,7 +45,7 @@ describe('EventSystem.update() — 시간 경과', () => {
   let es;
 
   beforeEach(() => {
-    es = new EventSystem({ e1TriggerTime: 30, e3TriggerTime: 90, q1Target: 100 });
+    es = new EventSystem({ e1TriggerTime: 30, e2TriggerTime: 90, q1Target: 100 });
   });
 
   it('update(dt) 호출 시 elapsed가 증가한다', () => {
@@ -69,19 +69,19 @@ describe('EventSystem.update() — 시간 경과', () => {
     expect(triggered).toBeTruthy();
   });
 
-  it('E3 트리거 시간 이전에는 E3가 active되지 않는다', () => {
+  it('E2 트리거 시간 이전에는 E2가 active되지 않는다', () => {
     es.update(89);
-    expect(es.e3State).toBe('pending');
+    expect(es.e2State).toBe('pending');
   });
 
-  it('elapsed가 e3TriggerTime에 도달하면 E3가 active된다', () => {
+  it('elapsed가 e2TriggerTime에 도달하면 E2가 active된다', () => {
     es.update(90);
-    expect(es.e3State).toBe('active');
+    expect(es.e2State).toBe('active');
   });
 
-  it('E3 트리거 시 update()가 이벤트 알림을 반환한다', () => {
+  it('E2 트리거 시 update()가 이벤트 알림을 반환한다', () => {
     const notifications = es.update(90);
-    const triggered = notifications.find(n => n.type === 'event_triggered' && n.event === 'E3');
+    const triggered = notifications.find(n => n.type === 'event_triggered' && n.event === 'E2');
     expect(triggered).toBeTruthy();
   });
 
@@ -95,7 +95,7 @@ describe('EventSystem — Q1 퀘스트 (버그 100마리)', () => {
   let es;
 
   beforeEach(() => {
-    es = new EventSystem({ e1TriggerTime: 30, e3TriggerTime: 90, q1Target: 100 });
+    es = new EventSystem({ e1TriggerTime: 30, e2TriggerTime: 90, q1Target: 100 });
   });
 
   it('notifyKill 호출 시 totalKills가 증가한다', () => {
@@ -175,73 +175,70 @@ describe('EventSystem — E1 이벤트 (IndentationError 15마리)', () => {
   });
 });
 
-describe('EventSystem — E3 이벤트 (EnvError + 60초 생존)', () => {
+describe('EventSystem — E2 이벤트 (30초 생존)', () => {
   let es;
 
   beforeEach(() => {
-    es = new EventSystem({ e1TriggerTime: 30, e3TriggerTime: 90, q1Target: 100 });
-    es.update(90); // E3 트리거
+    es = new EventSystem({ e1TriggerTime: 30, e2TriggerTime: 90, q1Target: 100 });
+    es.update(90); // E2 트리거
   });
 
-  it('E3 활성 중 e3Elapsed가 누적된다', () => {
+  it('E2 활성 중 e2Elapsed가 누적된다', () => {
     es.update(10);
-    expect(es.e3Elapsed).toBeCloseTo(10);
+    expect(es.e2Elapsed).toBeCloseTo(10);
   });
 
-  it('E3 활성 중 env_error 처치가 e3Kills에 집계된다', () => {
+  it('E2 활성 중 env_error 처치가 e2Kills에 집계된다', () => {
     es.notifyKill('env_error');
-    expect(es.e3Kills).toBe(1);
+    expect(es.e2Kills).toBe(1);
   });
 
-  it('E3 활성 중 다른 타입 처치는 e3Kills에 집계되지 않는다', () => {
+  it('E2 활성 중 다른 타입 처치는 e2Kills에 집계되지 않는다', () => {
     es.notifyKill('syntax_error');
-    expect(es.e3Kills).toBe(0);
+    expect(es.e2Kills).toBe(0);
   });
 
-  it('60초 생존해도 env_error 처치 없으면 E3 cleared 안 된다', () => {
-    es.update(60);
-    expect(es.e3State).toBe('active');
+  it('30초 생존하면 E2가 cleared된다', () => {
+    es.update(30);
+    expect(es.e2State).toBe('cleared');
   });
 
-  it('env_error 처치해도 60초 미만이면 E3 cleared 안 된다', () => {
-    es.notifyKill('env_error');
-    es.update(59);
-    expect(es.e3State).toBe('active');
+  it('30초 미만이면 E2 cleared 안 된다', () => {
+    es.update(29);
+    expect(es.e2State).toBe('active');
   });
 
-  it('env_error 1마리 이상 처치 + 60초 생존 시 E3가 cleared된다', () => {
-    es.notifyKill('env_error');
-    es.update(60);
-    expect(es.e3State).toBe('cleared');
+  it('정확히 30초 시점에 E2가 cleared된다', () => {
+    es.update(30);
+    expect(es.e2State).toBe('cleared');
   });
 
-  it('E3 클리어 시 update()가 event_cleared 알림을 반환한다', () => {
-    es.notifyKill('env_error');
-    const notifications = es.update(60);
-    const cleared = notifications.find(n => n.type === 'event_cleared' && n.event === 'E3');
+  it('E2 클리어 시 update()가 event_cleared 알림을 반환한다', () => {
+    const notifications = es.update(30);
+    const cleared = notifications.find(n => n.type === 'event_cleared' && n.event === 'E2');
     expect(cleared).toBeTruthy();
   });
 
-  it('E3 pending 중에는 env_error 처치가 e3Kills에 집계되지 않는다', () => {
-    const earlyEs = new EventSystem({ e1TriggerTime: 30, e3TriggerTime: 90, q1Target: 100 });
+  it('E2 pending 중에는 env_error 처치가 e2Kills에 집계되지 않는다', () => {
+    const earlyEs = new EventSystem({ e1TriggerTime: 30, e2TriggerTime: 90, q1Target: 100 });
     earlyEs.notifyKill('env_error');
-    expect(earlyEs.e3Kills).toBe(0);
+    expect(earlyEs.e2Kills).toBe(0);
   });
 });
 
 describe('EventSystem — 복합 시나리오', () => {
-  it('E1 cleared 후 E3는 독립적으로 동작한다', () => {
-    const es = new EventSystem({ e1TriggerTime: 30, e3TriggerTime: 90, q1Target: 100 });
+  it('E1 cleared 후 E2는 독립적으로 동작한다', () => {
+    const es = new EventSystem({ e1TriggerTime: 30, e2TriggerTime: 90, q1Target: 100 });
     es.update(30); // E1 트리거
     for (let i = 0; i < 15; i++) es.notifyKill('indentation_error'); // E1 클리어
-    es.update(60); // E3 트리거 시점(90초)에 도달
-    expect(es.e3State).toBe('active');
+    es.update(60); // E2 트리거 시점(90초)에 도달
+    expect(es.e2State).toBe('active');
   });
 
   it('기본값으로 생성 시에도 정상 동작한다', () => {
     const es = new EventSystem();
     expect(es.e1State).toBe('pending');
-    expect(es.e3State).toBe('pending');
+    expect(es.e2State).toBe('pending');
     expect(es.q1State).toBe('pending');
   });
 });

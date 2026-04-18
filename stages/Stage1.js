@@ -69,7 +69,7 @@ export class Stage1 {
       q1Target: this.eventSystem._q1Target,
       elapsed: this.eventSystem.elapsed,
       e1State: this.eventSystem.e1State,
-      e3State: this.eventSystem.e3State,
+      e2State: this.eventSystem.e2State,
       bossState: this.eventSystem.bossState,
     };
   }
