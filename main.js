@@ -169,6 +169,7 @@ function startGame() {
 
   const playerRenderer = {
     draw(ctx, x, y) { PixelRenderer.drawPlayer(ctx, x, y, 2); },
+    drawWithOutline(ctx, x, y) { PixelRenderer.drawPlayerWithOutline(ctx, x, y, 2); },
   };
   const player = new Player(canvas.width / 2, canvas.height / 2, playerRenderer);
 

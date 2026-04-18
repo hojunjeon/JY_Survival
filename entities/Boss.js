@@ -122,5 +122,21 @@ export class Boss {
       ctx.fillRect(this.x - this.width / 2, this.y - this.height / 2, this.width, this.height);
       ctx.restore();
     }
+
+    // 25% 이하 저체력 강조: 빨간 점선 테두리
+    if (this.hp > 0 && this.hp <= this.maxHp * 0.25) {
+      ctx.save();
+      ctx.strokeStyle = '#ff0000';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([4, 4]);
+      ctx.strokeRect(
+        this.x - this.width / 2 - 2,
+        this.y - this.height / 2 - 2,
+        this.width + 4,
+        this.height + 4
+      );
+      ctx.setLineDash([]);
+      ctx.restore();
+    }
   }
 }

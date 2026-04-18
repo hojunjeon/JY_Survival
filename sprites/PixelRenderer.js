@@ -341,6 +341,35 @@ export const PixelRenderer = {
     ctx.restore();
   },
 
+  drawSpriteWithOutline(ctx, sprite, x, y, scale = 1, outlineColor = '#00ffcc') {
+    ctx.save();
+    // 아웃라인: 4방향에 outlineColor로 먼저 그림
+    ctx.fillStyle = outlineColor;
+    for (let row = 0; row < sprite.length; row++) {
+      for (let col = 0; col < sprite[row].length; col++) {
+        if (sprite[row][col] === null || sprite[row][col] === undefined) continue;
+        const px = x + col * scale;
+        const py = y + row * scale;
+        ctx.fillRect(px - 1, py, scale + 2, scale); // 좌우
+        ctx.fillRect(px, py - 1, scale, scale + 2); // 상하
+      }
+    }
+    // 스프라이트 본체
+    for (let row = 0; row < sprite.length; row++) {
+      for (let col = 0; col < sprite[row].length; col++) {
+        const color = sprite[row][col];
+        if (color === null || color === undefined) continue;
+        ctx.fillStyle = color;
+        ctx.fillRect(x + col * scale, y + row * scale, scale, scale);
+      }
+    }
+    ctx.restore();
+  },
+
+  drawPlayerWithOutline(ctx, x, y, scale = 1) {
+    this.drawSpriteWithOutline(ctx, PLAYER_SPRITE, x - (32 * scale) / 2, y - (32 * scale) / 2, scale, '#00ffcc');
+  },
+
   drawPlayer(ctx, x, y, scale = 1) {
     this.drawSprite(ctx, PLAYER_SPRITE, x - (32 * scale) / 2, y - (32 * scale) / 2, scale);
   },

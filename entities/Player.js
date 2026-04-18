@@ -50,11 +50,14 @@ export class Player {
 
   render(ctx) {
     if (this._renderer) {
-      this._renderer.draw(ctx, this.x, this.y);
+      this._renderer.drawWithOutline(ctx, this.x, this.y);
     } else {
-      // 폴백: 개발/테스트용 사각형
+      // 폴백: 개발/테스트용 사각형 + 청록 테두리
       ctx.fillStyle = '#4fc3f7';
       ctx.fillRect(this.x - this.width / 2, this.y - this.height / 2, this.width, this.height);
+      ctx.strokeStyle = '#00ffcc';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(this.x - this.width / 2 - 1, this.y - this.height / 2 - 1, this.width + 2, this.height + 2);
     }
   }
 }
