@@ -232,6 +232,42 @@ function startGame() {
   function tryFireWeapon(weapon, player) {
     if (!weapon) return;
 
+    // Git Branch & Merge — merge 실행
+    if (weapon.name === 'Git' && weapon.mergeReady) {
+      const bp = weapon.consumeMerge();
+      if (bp) {
+        // 직선 위 적 탐색 (선분과 점 거리 계산)
+        const lineX1 = bp.x, lineY1 = bp.y;
+        const lineX2 = player.x, lineY2 = player.y;
+        const lineLenSq = (lineX2 - lineX1) ** 2 + (lineY2 - lineY1) ** 2;
+        const allMergeTargets = [...enemies, ...(boss && !boss.isDead ? [boss] : [])];
+        let hitCount = 0;
+        for (const e of allMergeTargets) {
+          if (e.isDead) continue;
+          let dist;
+          if (lineLenSq === 0) {
+            dist = Math.sqrt((e.x - lineX1) ** 2 + (e.y - lineY1) ** 2);
+          } else {
+            const t = Math.max(0, Math.min(1,
+              ((e.x - lineX1) * (lineX2 - lineX1) + (e.y - lineY1) * (lineY2 - lineY1)) / lineLenSq
+            ));
+            const closestX = lineX1 + t * (lineX2 - lineX1);
+            const closestY = lineY1 + t * (lineY2 - lineY1);
+            dist = Math.sqrt((e.x - closestX) ** 2 + (e.y - closestY) ** 2);
+          }
+          if (dist <= 60) {
+            e.takeDamage(weapon.damage);
+            hitCount++;
+          }
+        }
+        if (hitCount > 0) {
+          triggerScreenShake(4, 0.2);
+          floatingTextManager.add('Merge Conflict Resolved!', player.x, player.y - 30, '#f05033');
+        }
+      }
+      return;
+    }
+
     // Java 블랙홀 소환
     if (weapon.name === 'Java' && weapon._pendingBlackhole) {
       weapon._pendingBlackhole = false;
@@ -279,28 +315,6 @@ function startGame() {
         if (boss && !boss.isDead) {
           boss.takeDamage(p.damage);
           triggerScreenShake(6, 0.15);
-        }
-        continue;
-      }
-      // Git: 지역 효과 (폭발)
-      if (p.isAreaEffect) {
-        for (const enemy of enemies) {
-          if (!enemy.isDead) {
-            const dx = enemy.x - p.x;
-            const dy = enemy.y - p.y;
-            if (Math.sqrt(dx * dx + dy * dy) <= p.areaRadius) {
-              enemy.takeDamage(p.areaRadius > 0 ? p.damage : p.areaRadius);
-              triggerScreenShake(3, 0.1);
-            }
-          }
-        }
-        if (boss && !boss.isDead) {
-          const dx = boss.x - p.x;
-          const dy = boss.y - p.y;
-          if (Math.sqrt(dx * dx + dy * dy) <= p.areaRadius) {
-            boss.takeDamage(p.damage);
-            triggerScreenShake(6, 0.15);
-          }
         }
         continue;
       }
@@ -851,6 +865,32 @@ function startGame() {
         ctx.setLineDash([]);
         ctx.restore();
       }
+    }
+
+    // Git Branch 포인트 렌더
+    const gitWeapon = ownedWeapons.find(w => w.name === 'Git');
+    if (gitWeapon && gitWeapon.branchPoint) {
+      const bp = gitWeapon.branchPoint;
+      ctx.save();
+      // Branch 포인트 원
+      ctx.beginPath();
+      ctx.arc(bp.x, bp.y, 8, 0, Math.PI * 2);
+      ctx.fillStyle = '#f05033';
+      ctx.fill();
+      ctx.font = 'bold 10px monospace';
+      ctx.fillStyle = '#ffffff';
+      ctx.textAlign = 'center';
+      ctx.fillText('B', bp.x, bp.y + 4);
+      // 연결 점선
+      ctx.setLineDash([6, 4]);
+      ctx.strokeStyle = `rgba(240, 80, 51, ${0.4 + 0.3 * Math.sin(Date.now() / 200)})`;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(bp.x, bp.y);
+      ctx.lineTo(player.x, player.y);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.restore();
     }
 
     // FloatingText 렌더 (월드 좌표)

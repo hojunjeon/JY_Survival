@@ -1,48 +1,47 @@
 import { WeaponBase } from './WeaponBase.js';
-import { Projectile } from '../entities/Projectile.js';
 
 export class GitWeapon extends WeaponBase {
   constructor() {
-    super({ damage: 40, cooldown: 3 });
+    super({ damage: 50, cooldown: 5 });
     this.name = 'Git';
-    this.maxCooldown = 3;
-    this.cooldown = 0; // 시작 시 발사 가능
+    this.maxCooldown = 5;
+    this.cooldown = 0;
+    this.branchPoint = null;   // {x, y}
+    this.mergeTimer = 0;
+    this.mergeReady = false;
   }
 
   canFire() {
-    return this.cooldown <= 0;
+    return this.cooldown <= 0 && !this.branchPoint;
   }
 
   update(dt) {
     if (this.cooldown > 0) {
       this.cooldown = Math.max(0, this.cooldown - dt);
     }
+    if (this.branchPoint) {
+      this.mergeTimer -= dt;
+      if (this.mergeTimer <= 0) {
+        this.mergeReady = true;
+      }
+    }
   }
 
+  // branchPoint 저장은 main.js에서 호출
   fire(x, y, dirX, dirY) {
+    if (!this.canFire()) return [];
     this.cooldown = this.maxCooldown;
-    const projectiles = [];
+    this.branchPoint = { x, y };
+    this.mergeTimer = 3.0;
+    this.mergeReady = false;
+    return []; // 투사체 없음 — 직선 데미지는 main.js에서 처리
+  }
 
-    // 폭발 투사체 (지역 효과)
-    const explosionProj = new Projectile(x, y, 0, 0, 40, {
-      isAreaEffect: true,
-      areaRadius: 150,
-      areaColor: '#f05033'
-    });
-    projectiles.push(explosionProj);
-
-    // 8방향 잔여 투사체 (데미지 15)
-    const directions = 8;
-    const speed = 250;
-    for (let i = 0; i < directions; i++) {
-      const angle = (i / directions) * 2 * Math.PI;
-      const vx = Math.cos(angle) * speed;
-      const vy = Math.sin(angle) * speed;
-      projectiles.push(new Projectile(x, y, vx, vy, 15, {
-        color: '#f05033'
-      }));
-    }
-
-    return projectiles;
+  consumeMerge() {
+    const bp = this.branchPoint;
+    this.branchPoint = null;
+    this.mergeReady = false;
+    this.mergeTimer = 0;
+    return bp;
   }
 }
