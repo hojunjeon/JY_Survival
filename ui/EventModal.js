@@ -1,6 +1,4 @@
-import { PixelRenderer } from '../sprites/PixelRenderer.js';
-
-const NPC_SPRITES = null; // Task 7에서 PixelRenderer.js에 추가 예정
+import { PixelRenderer, NPC_SPRITES } from '../sprites/PixelRenderer.js';
 
 const EVENT_CONFIG = {
   E1: {

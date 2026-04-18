@@ -314,3 +314,5 @@ export const PixelRenderer = {
     this.drawSprite(ctx, PLAYER_SPRITE, x - (32 * scale) / 2, y - (32 * scale) / 2, scale);
   },
 };
+
+export { NPC_SPRITES, BOSS_SPRITE };
