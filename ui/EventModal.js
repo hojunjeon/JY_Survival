@@ -134,7 +134,7 @@ export class EventModal {
 
     const sprite = NPC_SPRITES?.[cfg.character];
     if (sprite) {
-      PixelRenderer.drawSprite(ctx, sprite, bx + 24, y, 3);
+      PixelRenderer.drawSpriteClipped(ctx, sprite, bx + 24, y, 3, 16);
     }
     ctx.fillStyle = '#ffffff';
     ctx.font = 'bold 18px monospace';

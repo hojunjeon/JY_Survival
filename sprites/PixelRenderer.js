@@ -310,6 +310,20 @@ export const PixelRenderer = {
     ctx.restore();
   },
 
+  drawSpriteClipped(ctx, sprite, x, y, scale = 1, rowCount) {
+    const rows = rowCount != null ? Math.min(rowCount, sprite.length) : sprite.length;
+    ctx.save();
+    for (let row = 0; row < rows; row++) {
+      for (let col = 0; col < sprite[row].length; col++) {
+        const color = sprite[row][col];
+        if (color === null || color === undefined) continue;
+        ctx.fillStyle = color;
+        ctx.fillRect(x + col * scale, y + row * scale, scale, scale);
+      }
+    }
+    ctx.restore();
+  },
+
   drawPlayer(ctx, x, y, scale = 1) {
     this.drawSprite(ctx, PLAYER_SPRITE, x - (32 * scale) / 2, y - (32 * scale) / 2, scale);
   },
