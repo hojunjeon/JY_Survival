@@ -164,6 +164,7 @@ function menuLoop() {
 
 // ─── 게임 시작 ───────────────────────────────────────────────────────────────
 function startGame() {
+  game.clearEntities();
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   state = 'playing';
 
