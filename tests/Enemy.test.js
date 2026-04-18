@@ -224,3 +224,47 @@ describe('ENEMY_STATS HP 조정', () => {
     expect(e.hp).toBe(20);
   });
 });
+
+describe('Enemy 피격 색상 오버레이', () => {
+  const makeCtx = () => ({
+    save: vi.fn(),
+    restore: vi.fn(),
+    fillRect: vi.fn(),
+    fillStyle: '',
+    globalAlpha: 1,
+  });
+
+  test('hitFlashTimer > 0이면 render에서 fillRect 2회 호출 (스프라이트 + 오버레이)', () => {
+    const drawSpriteSpy = vi.spyOn(PixelRenderer, 'drawSprite').mockImplementation(() => {});
+    const enemy = createEnemy('syntax_error', 50, 50);
+    enemy.hitFlashTimer = 0.05;
+    const ctx = makeCtx();
+    enemy.render(ctx);
+    // save & restore 호출 확인 (오버레이 안쪽)
+    expect(ctx.save).toHaveBeenCalled();
+    expect(ctx.restore).toHaveBeenCalled();
+    drawSpriteSpy.mockRestore();
+  });
+
+  test('isDead=true면 render에서 빨간 오버레이 적용 (globalAlpha=0.8)', () => {
+    const drawSpriteSpy = vi.spyOn(PixelRenderer, 'drawSprite').mockImplementation(() => {});
+    const enemy = createEnemy('syntax_error', 50, 50);
+    enemy.isDead = true;
+    const ctx = makeCtx();
+    enemy.render(ctx);
+    expect(ctx.save).toHaveBeenCalled();
+    expect(ctx.restore).toHaveBeenCalled();
+    drawSpriteSpy.mockRestore();
+  });
+
+  test('hitFlashTimer=0이고 isDead=false면 오버레이 미적용', () => {
+    const drawSpriteSpy = vi.spyOn(PixelRenderer, 'drawSprite').mockImplementation(() => {});
+    const enemy = createEnemy('syntax_error', 50, 50);
+    const ctx = makeCtx();
+    enemy.render(ctx);
+    // drawSprite만 호출, save/restore는 호출되지 않음
+    expect(drawSpriteSpy).toHaveBeenCalledOnce();
+    expect(ctx.save).not.toHaveBeenCalled();
+    drawSpriteSpy.mockRestore();
+  });
+});

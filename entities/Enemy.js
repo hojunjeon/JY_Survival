@@ -48,21 +48,38 @@ export class Enemy {
     const sprite = PixelRenderer.BUG_SPRITES[this.type];
     if (sprite) {
       PixelRenderer.drawSprite(ctx, sprite, this.x - this.width / 2, this.y - this.height / 2, 2);
-      return;
+    } else {
+      // 폴백: 단색 사각형 (알 수 없는 타입)
+      const colors = {
+        syntax_error:      '#ff4444',
+        null_pointer:      'rgba(180,180,255,0.7)',
+        seg_fault:         '#884400',
+        heal_bug:          '#44ff88',
+        indentation_error: '#ffaa44',
+        env_error:         '#4488ff',
+        enemy:             '#ff8800',
+      };
+      ctx.fillStyle = colors[this.type] || colors.enemy;
+      ctx.fillRect(this.x - this.width / 2, this.y - this.height / 2, this.width, this.height);
     }
 
-    // 폴백: 단색 사각형 (알 수 없는 타입)
-    const colors = {
-      syntax_error:      '#ff4444',
-      null_pointer:      'rgba(180,180,255,0.7)',
-      seg_fault:         '#884400',
-      heal_bug:          '#44ff88',
-      indentation_error: '#ffaa44',
-      env_error:         '#4488ff',
-      enemy:             '#ff8800',
-    };
-    ctx.fillStyle = colors[this.type] || colors.enemy;
-    ctx.fillRect(this.x - this.width / 2, this.y - this.height / 2, this.width, this.height);
+    // 피격 플래시 오버레이 (흰색)
+    if (this.hitFlashTimer > 0) {
+      ctx.save();
+      ctx.globalAlpha = 0.6;
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(this.x - this.width / 2, this.y - this.height / 2, this.width, this.height);
+      ctx.restore();
+    }
+
+    // 사망 시 빨간 오버레이
+    if (this.isDead) {
+      ctx.save();
+      ctx.globalAlpha = 0.8;
+      ctx.fillStyle = '#ff0000';
+      ctx.fillRect(this.x - this.width / 2, this.y - this.height / 2, this.width, this.height);
+      ctx.restore();
+    }
   }
 }
 
