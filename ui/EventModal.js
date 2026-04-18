@@ -106,7 +106,22 @@ export class EventModal {
   }
 
   _renderTriggered(ctx, cfg, bx, by, bw, accent) {
-    let y = by + 36;
+    // 총 콘텐츠 높이 사전 계산
+    const bh = 360;
+    const titleHeight = 36;
+    const divider1Height = 20;
+    const npcBlockHeight = 60;
+    const divider2Height = 20;
+    const dialogueHeight = 22 * cfg.dialogueLines.length + 8;
+    const divider3Height = 22;
+    const situationHeight = 22;
+    const actionHeight = 22;
+
+    const totalContentHeight = titleHeight + divider1Height + npcBlockHeight + divider2Height + dialogueHeight + divider3Height + situationHeight + actionHeight;
+
+    // 수직 중앙 배치
+    const startY = by + (bh - totalContentHeight) / 2;
+    let y = startY;
 
     ctx.fillStyle = accent;
     ctx.font = 'bold 16px monospace';
