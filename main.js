@@ -287,6 +287,12 @@ function startGame() {
       return;
     }
 
+    // JavaScript Tornado — 발동
+    if (weapon.name === 'JavaScript' && weapon.canFire()) {
+      weapon.startTornado(player.x, player.y);
+      return;
+    }
+
     // Java 블랙홀 소환
     if (weapon.name === 'Java' && weapon._pendingBlackhole) {
       weapon._pendingBlackhole = false;
@@ -454,6 +460,23 @@ function startGame() {
       triggerScreenShake(8, 0.3);
       floatingTextManager.add('DROP TABLE!', sqlWeapon2.targetX, sqlWeapon2.targetY - 20, '#4499ff');
       sqlWeapon2.phaseTimer = 0.34; // 다음 프레임에 재실행 방지
+    }
+
+    // JavaScript 토네이도 데미지
+    const jsWeapon = ownedWeapons.find(w => w.name === 'JavaScript');
+    if (jsWeapon && jsWeapon.tornado && jsWeapon.tornado._pendingDmg) {
+      jsWeapon.tornado._pendingDmg = false;
+      const t = jsWeapon.tornado;
+      const tornadoTargets = [...enemies, ...(boss && !boss.isDead ? [boss] : [])];
+      for (const e of tornadoTargets) {
+        if (e.isDead) continue;
+        const dx = e.x - t.x;
+        const dy = e.y - t.y;
+        if (Math.sqrt(dx * dx + dy * dy) <= t.radius) {
+          e.takeDamage(jsWeapon.damage);
+          triggerScreenShake(1, 0.05);
+        }
+      }
     }
 
     // 4. 웨이브 스폰 (보스 등장 전까지만)
@@ -966,6 +989,37 @@ function startGame() {
           ctx.fillStyle = `rgba(255,255,255,${sqlWeapon.flashTimer / 0.15 * 0.5})`;
           ctx.fillRect(tx - 120, ty - 120, 240, 240);
         }
+      }
+      ctx.restore();
+    }
+
+    // JavaScript 토네이도 렌더
+    const jsWeaponR = ownedWeapons.find(w => w.name === 'JavaScript');
+    if (jsWeaponR && jsWeaponR.tornado) {
+      const t = jsWeaponR.tornado;
+      const progress = 1 - (t.timer / t.maxTimer);
+      ctx.save();
+      // 반투명 노란 원 (외곽)
+      ctx.beginPath();
+      ctx.arc(t.x, t.y, t.radius, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(247, 223, 30, ${0.6 - progress * 0.3})`;
+      ctx.lineWidth = 3;
+      ctx.stroke();
+      // 안쪽 채우기
+      ctx.beginPath();
+      ctx.arc(t.x, t.y, t.radius, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(247, 223, 30, ${0.08 + progress * 0.05})`;
+      ctx.fill();
+      // 회전하는 괄호 파티클 3개
+      const symbols = ['(', '{', ')'];
+      for (let i = 0; i < 3; i++) {
+        const a = t.angle + (i / 3) * Math.PI * 2;
+        const px = t.x + Math.cos(a) * t.radius * 0.7;
+        const py = t.y + Math.sin(a) * t.radius * 0.7;
+        ctx.font = 'bold 14px monospace';
+        ctx.fillStyle = `rgba(247, 223, 30, 0.9)`;
+        ctx.textAlign = 'center';
+        ctx.fillText(symbols[i], px, py + 5);
       }
       ctx.restore();
     }
