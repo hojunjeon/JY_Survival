@@ -3,7 +3,7 @@ import { WeaponBase } from './WeaponBase.js';
 const ORB_COUNT = 3;
 const ORB_RADIUS = 60;
 const ORB_SPEED = 2.0; // rad/s
-const ORB_DAMAGE = 15;
+const ORB_DAMAGE = 18;
 
 export class JavaWeapon extends WeaponBase {
   constructor() {
@@ -14,6 +14,7 @@ export class JavaWeapon extends WeaponBase {
       angle: (i / ORB_COUNT) * 2 * Math.PI,
       radius: ORB_RADIUS,
       damage: ORB_DAMAGE,
+      color: '#ff6600',
       width: 16,
       height: 16,
       // 동일 적 다중피격 방지: enemyId → 남은 무적시간(초)

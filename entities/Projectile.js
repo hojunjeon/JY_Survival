@@ -1,11 +1,25 @@
 export class Projectile {
-  constructor(x, y, vx, vy, damage, { piercing = false } = {}) {
+  constructor(x, y, vx, vy, damage, {
+    piercing = false,
+    homing = false,
+    color = '#ffff00',
+    isAreaEffect = false,
+    areaRadius = 0,
+    areaColor = '#ffffff',
+    isAllEnemy = false
+  } = {}) {
     this.x = x;
     this.y = y;
     this.vx = vx;
     this.vy = vy;
     this.damage = damage;
     this.piercing = piercing;
+    this.homing = homing;
+    this.color = color;
+    this.isAreaEffect = isAreaEffect;
+    this.areaRadius = areaRadius;
+    this.areaColor = areaColor;
+    this.isAllEnemy = isAllEnemy;
     this.active = true;
     this.width = 8;
     this.height = 8;
@@ -32,7 +46,7 @@ export class Projectile {
 
   render(ctx) {
     if (!this.active) return;
-    ctx.fillStyle = '#ffff00';
+    ctx.fillStyle = this.color;
     ctx.fillRect(this.x - this.width / 2, this.y - this.height / 2, this.width, this.height);
   }
 }

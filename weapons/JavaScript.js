@@ -3,9 +3,9 @@ import { Projectile } from '../entities/Projectile.js';
 
 export class JavaScriptWeapon extends WeaponBase {
   constructor() {
-    super({ damage: 8, cooldown: 0.8 });
+    super({ damage: 12, cooldown: 0.6 });
     this.name = 'JavaScript';
-    this.maxCooldown = 0.8;
+    this.maxCooldown = 0.6;
     this.cooldown = 0;
   }
 
@@ -21,16 +21,17 @@ export class JavaScriptWeapon extends WeaponBase {
 
   fire(x, y, dirX, dirY) {
     this.cooldown = this.maxCooldown;
-    const speed = 250;
+    const speed = 280;
     const projs = [];
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 3; i++) {
       const angle = Math.random() * Math.PI * 2;
       projs.push(
         new Projectile(
           x, y,
           Math.cos(angle) * speed,
           Math.sin(angle) * speed,
-          8
+          12,
+          { color: '#f7df1e' }
         )
       );
     }

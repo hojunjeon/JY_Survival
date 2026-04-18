@@ -1,10 +1,11 @@
 import { WeaponBase } from './WeaponBase.js';
+import { Projectile } from '../entities/Projectile.js';
 
 export class GitWeapon extends WeaponBase {
   constructor() {
-    super({ damage: 25, cooldown: 4 });
+    super({ damage: 40, cooldown: 3 });
     this.name = 'Git';
-    this.maxCooldown = 4;
+    this.maxCooldown = 3;
     this.cooldown = 0; // 시작 시 발사 가능
   }
 
@@ -20,12 +21,28 @@ export class GitWeapon extends WeaponBase {
 
   fire(x, y, dirX, dirY) {
     this.cooldown = this.maxCooldown;
-    return [{
+    const projectiles = [];
+
+    // 폭발 투사체 (지역 효과)
+    const explosionProj = new Projectile(x, y, 0, 0, 40, {
       isAreaEffect: true,
-      radius: 120,
-      damage: 25,
-      cx: x,
-      cy: y
-    }];
+      areaRadius: 150,
+      areaColor: '#f05033'
+    });
+    projectiles.push(explosionProj);
+
+    // 8방향 잔여 투사체 (데미지 15)
+    const directions = 8;
+    const speed = 250;
+    for (let i = 0; i < directions; i++) {
+      const angle = (i / directions) * 2 * Math.PI;
+      const vx = Math.cos(angle) * speed;
+      const vy = Math.sin(angle) * speed;
+      projectiles.push(new Projectile(x, y, vx, vy, 15, {
+        color: '#f05033'
+      }));
+    }
+
+    return projectiles;
   }
 }

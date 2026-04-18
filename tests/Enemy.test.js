@@ -232,6 +232,9 @@ describe('Enemy 피격 색상 오버레이', () => {
     fillRect: vi.fn(),
     fillStyle: '',
     globalAlpha: 1,
+    beginPath: vi.fn(),
+    rect: vi.fn(),
+    clip: vi.fn(),
   });
 
   test('hitFlashTimer > 0이면 render에서 fillRect 2회 호출 (스프라이트 + 오버레이)', () => {

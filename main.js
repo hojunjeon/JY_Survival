@@ -229,23 +229,32 @@ function startGame() {
 
     const newProjs = weapon.fire(player.x, player.y, dirX, dirY);
     for (const p of newProjs) {
-      if (p.isAreaEffect) {
-        for (const enemy of enemies) {
-          if (!enemy.isDead) {
-            const dx = enemy.x - p.cx;
-            const dy = enemy.y - p.cy;
-            if (Math.sqrt(dx * dx + dy * dy) <= p.radius) {
-              enemy.takeDamage(p.damage);
-            }
-          }
-        }
-        continue;
-      }
-      if (p.isUlt) {
+      // LinuxBash: 모든 적 즉시 데미지
+      if (p.isAllEnemy) {
         for (const enemy of enemies) {
           if (!enemy.isDead) enemy.takeDamage(p.damage);
         }
         if (boss && !boss.isDead) boss.takeDamage(p.damage);
+        continue;
+      }
+      // Git: 지역 효과 (폭발)
+      if (p.isAreaEffect) {
+        for (const enemy of enemies) {
+          if (!enemy.isDead) {
+            const dx = enemy.x - p.x;
+            const dy = enemy.y - p.y;
+            if (Math.sqrt(dx * dx + dy * dy) <= p.areaRadius) {
+              enemy.takeDamage(p.areaRadius > 0 ? p.damage : p.areaRadius);
+            }
+          }
+        }
+        if (boss && !boss.isDead) {
+          const dx = boss.x - p.x;
+          const dy = boss.y - p.y;
+          if (Math.sqrt(dx * dx + dy * dy) <= p.areaRadius) {
+            boss.takeDamage(p.damage);
+          }
+        }
         continue;
       }
       projectiles.push(p);
@@ -391,19 +400,86 @@ function startGame() {
       }
     }
 
-    // 8. 투사체 업데이트
+    // 8. 투사체 업데이트 + homing 처리
     for (const proj of [...projectiles, ...bossProjectiles]) {
       if (proj.active) proj.update(dt, worldBounds);
+    }
+
+    // 8-1. homing 투사체 유도 처리
+    for (const proj of projectiles) {
+      if (!proj.active || !proj.homing) continue;
+
+      // 가장 가까운 적 찾기
+      let closestEnemy = null;
+      let closestDist = Infinity;
+      for (const enemy of enemies) {
+        if (enemy.isDead) continue;
+        const dx = enemy.x - proj.x;
+        const dy = enemy.y - proj.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < closestDist) {
+          closestDist = dist;
+          closestEnemy = enemy;
+        }
+      }
+
+      // 보스도 추적 대상
+      if (boss && !boss.isDead) {
+        const dx = boss.x - proj.x;
+        const dy = boss.y - proj.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < closestDist) {
+          closestDist = dist;
+          closestEnemy = boss;
+        }
+      }
+
+      // 적이 있으면 유도
+      if (closestEnemy) {
+        const dx = closestEnemy.x - proj.x;
+        const dy = closestEnemy.y - proj.y;
+        const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+        const targetAngle = Math.atan2(dy, dx);
+        const currentAngle = Math.atan2(proj.vy, proj.vx);
+
+        // 현재 각도에서 목표 각도로 최대 3rad/s 회전
+        const maxRotation = 3 * dt;
+        let angleDiff = targetAngle - currentAngle;
+
+        // 각도 정규화 (-π ~ π)
+        while (angleDiff > Math.PI) angleDiff -= 2 * Math.PI;
+        while (angleDiff < -Math.PI) angleDiff += 2 * Math.PI;
+
+        const rotation = Math.max(-maxRotation, Math.min(maxRotation, angleDiff));
+        const newAngle = currentAngle + rotation;
+        const speed = Math.sqrt(proj.vx * proj.vx + proj.vy * proj.vy);
+
+        proj.vx = Math.cos(newAngle) * speed;
+        proj.vy = Math.sin(newAngle) * speed;
+      }
     }
 
     // 9. 투사체 ↔ 적 충돌
     for (const proj of projectiles) {
       if (!proj.active) continue;
+
+      // piercing: 중복 피격 방지 Set
+      if (!proj.hitEnemies) proj.hitEnemies = new Set();
+
       for (const enemy of enemies) {
         if (enemy.isDead) continue;
         if (checkCollision(proj, enemy)) {
-          enemy.takeDamage(proj.damage);
-          if (!proj.piercing) { proj.deactivate(); break; }
+          // piercing이면 적 ID 추적하여 중복 피격 방지
+          if (proj.piercing) {
+            if (!proj.hitEnemies.has(enemy)) {
+              enemy.takeDamage(proj.damage);
+              proj.hitEnemies.add(enemy);
+            }
+          } else {
+            enemy.takeDamage(proj.damage);
+            proj.deactivate();
+            break;
+          }
         }
       }
     }
@@ -413,8 +489,18 @@ function startGame() {
       for (const proj of projectiles) {
         if (!proj.active) continue;
         if (checkCollision(proj, boss)) {
-          boss.takeDamage(proj.damage);
-          if (!proj.piercing) proj.deactivate();
+          // piercing: 중복 피격 방지
+          if (proj.piercing) {
+            if (!proj.hitEnemies) proj.hitEnemies = new Set();
+            if (!proj.hitEnemies.has(boss)) {
+              boss.takeDamage(proj.damage);
+              proj.hitEnemies.add(boss);
+            }
+          } else {
+            boss.takeDamage(proj.damage);
+            proj.deactivate();
+          }
+
           if (boss.isDead) {
             bossDialogue = boss.getDialogue('death');
             bossDialogueTimer = 4;
@@ -498,9 +584,30 @@ function startGame() {
       if (rewardNoticeTimer <= 0) rewardNotice = null;
     }
 
-    // 16. 비활성 투사체 제거
+    // 16. 비활성 투사체 처리 + 지역 효과
     const deadProjs = projectiles.filter(p => !p.active);
-    for (const p of deadProjs) game.removeEntity(p);
+    for (const p of deadProjs) {
+      // Git: 지역 효과 처리 (투사체 만료 또는 충돌 시)
+      if (p.isAreaEffect && p.areaRadius > 0) {
+        for (const enemy of enemies) {
+          if (!enemy.isDead) {
+            const dx = enemy.x - p.x;
+            const dy = enemy.y - p.y;
+            if (Math.sqrt(dx * dx + dy * dy) <= p.areaRadius) {
+              enemy.takeDamage(p.damage);
+            }
+          }
+        }
+        if (boss && !boss.isDead) {
+          const dx = boss.x - p.x;
+          const dy = boss.y - p.y;
+          if (Math.sqrt(dx * dx + dy * dy) <= p.areaRadius) {
+            boss.takeDamage(p.damage);
+          }
+        }
+      }
+      game.removeEntity(p);
+    }
     projectiles = projectiles.filter(p => p.active);
 
     const deadBossProjs = bossProjectiles.filter(p => !p.active);
@@ -543,8 +650,9 @@ function startGame() {
     // Java 오비탈 렌더 (월드 좌표)
     if (selectedWeapon && selectedWeapon.name === 'Java') {
       const orbPositions = selectedWeapon.getOrbPositions(player.x, player.y);
-      orbPositions.forEach(orb => {
-        ctx.fillStyle = '#ff9800';
+      orbPositions.forEach((orb, idx) => {
+        const orbColor = selectedWeapon.orbs[idx].color;
+        ctx.fillStyle = orbColor;
         ctx.beginPath();
         ctx.arc(orb.x, orb.y, orb.width / 2, 0, Math.PI * 2);
         ctx.fill();

@@ -15,17 +15,14 @@ describe('PythonWeapon', () => {
     expect(weapon.name).toBe('Python');
   });
 
-  it('fire() 시 8방향 투사체 8개를 반환한다', () => {
+  it('fire() 시 3방향 투사체 3개를 반환한다 (homing)', () => {
     const projectiles = weapon.fire(0, 0, 1, 0);
-    expect(projectiles.length).toBe(8);
+    expect(projectiles.length).toBe(3);
   });
 
-  it('8개의 투사체가 고르게 퍼진다 (벡터 합이 0에 가깝다)', () => {
+  it('3개의 투사체가 homing 플래그를 가진다', () => {
     const projectiles = weapon.fire(0, 0, 1, 0);
-    const sumVx = projectiles.reduce((s, p) => s + p.vx, 0);
-    const sumVy = projectiles.reduce((s, p) => s + p.vy, 0);
-    expect(Math.abs(sumVx)).toBeLessThan(0.01);
-    expect(Math.abs(sumVy)).toBeLessThan(0.01);
+    projectiles.forEach(p => expect(p.homing).toBe(true));
   });
 
   it('투사체 속도는 150 이하다 (느림)', () => {

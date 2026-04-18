@@ -1,10 +1,11 @@
 import { WeaponBase } from './WeaponBase.js';
+import { Projectile } from '../entities/Projectile.js';
 
 export class LinuxBashWeapon extends WeaponBase {
   constructor() {
-    super({ damage: 60, cooldown: 8 });
+    super({ damage: 30, cooldown: 6 });
     this.name = 'LinuxBash';
-    this.maxCooldown = 8;
+    this.maxCooldown = 6;
     this.cooldown = 0;
   }
 
@@ -20,9 +21,8 @@ export class LinuxBashWeapon extends WeaponBase {
 
   fire(x, y, dirX, dirY) {
     this.cooldown = this.maxCooldown;
-    return [{
-      isUlt: true,
-      damage: 60
-    }];
+    return [new Projectile(x, y, 0, 0, 30, {
+      isAllEnemy: true
+    })];
   }
 }
