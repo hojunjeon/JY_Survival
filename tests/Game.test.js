@@ -58,4 +58,13 @@ describe('Game', () => {
     game.removeEntity(entity);
     expect(game.entities).not.toContain(entity);
   });
+
+  it('clearEntities()는 모든 엔티티를 제거한다', () => {
+    const e1 = { update: vi.fn(), render: vi.fn() };
+    const e2 = { update: vi.fn(), render: vi.fn() };
+    game.addEntity(e1);
+    game.addEntity(e2);
+    game.clearEntities();
+    expect(game.entities).toHaveLength(0);
+  });
 });

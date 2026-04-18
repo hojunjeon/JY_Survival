@@ -19,6 +19,10 @@ export class Game {
     if (idx > -1) this.entities.splice(idx, 1);
   }
 
+  clearEntities() {
+    this.entities = [];
+  }
+
   update(dt) {
     for (const entity of this.entities) {
       entity.update(dt);
