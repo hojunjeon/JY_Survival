@@ -88,3 +88,38 @@ describe('WaveSystem 플레이어 기준 스폰', () => {
     expect(enemies.length).toBeGreaterThan(0);
   });
 });
+
+describe('WaveSystem 이벤트 모드', () => {
+  test('setEventMode("indentation_error", 15) — 15마리 스폰 후 중단', () => {
+    const ws = new WaveSystem({ spawnInterval: 1, canvasWidth: 600, canvasHeight: 600 });
+    ws.setEventMode('indentation_error', 15);
+    let total = 0;
+    for (let i = 0; i < 20; i++) {
+      ws.elapsed = ws.spawnInterval;
+      const batch = ws.update(0, 300, 300);
+      total += batch.length;
+    }
+    expect(total).toBe(15);
+  });
+
+  test('setEventMode — 스폰된 적 타입이 설정된 타입이어야 한다', () => {
+    const ws = new WaveSystem({ spawnInterval: 1, canvasWidth: 600, canvasHeight: 600 });
+    ws.setEventMode('env_error', 3);
+    ws.elapsed = ws.spawnInterval;
+    const batch = ws.update(0, 300, 300);
+    for (const e of batch) {
+      expect(e.type).toBe('env_error');
+    }
+  });
+
+  test('clearEventMode() 후 일반 웨이브 재개', () => {
+    const ws = new WaveSystem({ spawnInterval: 1, canvasWidth: 600, canvasHeight: 600 });
+    ws.setEventMode('env_error', 3);
+    ws.clearEventMode();
+    ws.elapsed = ws.spawnInterval;
+    const batch = ws.update(0, 300, 300);
+    for (const e of batch) {
+      expect(['syntax_error', 'null_pointer', 'seg_fault']).toContain(e.type);
+    }
+  });
+});

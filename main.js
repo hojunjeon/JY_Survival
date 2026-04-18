@@ -314,13 +314,25 @@ function startGame() {
       if (n.type === 'event_triggered') {
         eventModal.show('triggered', n.event);
         paused = true;
-        if (n.event === 'E1') waveSystem.setEventEnemyType('indentation_error');
-        if (n.event === 'E3') waveSystem.setEventEnemyType('env_error');
+        // 기존 몹 전부 제거
+        for (const e of enemies) game.removeEntity(e);
+        enemies = [];
+        // 이벤트 모드 진입
+        if (n.event === 'E1') waveSystem.setEventMode('indentation_error', 15);
+        if (n.event === 'E3') waveSystem.setEventMode('env_error', 3);
       }
       if (n.type === 'event_cleared') {
         eventModal.show('cleared', n.event);
         paused = true;
-        waveSystem.clearEventEnemyType();
+        waveSystem.clearEventMode();
+        // 이벤트 몹 전부 제거
+        enemies = enemies.filter(e => {
+          if (e.type === 'indentation_error' || e.type === 'env_error') {
+            game.removeEntity(e);
+            return false;
+          }
+          return true;
+        });
         if (n.event === 'E3') giveRewardWeapon();
       }
       if (n.type === 'boss_triggered' && !boss) {
@@ -338,10 +350,18 @@ function startGame() {
     // 5-1. 적 킬 이벤트 시스템 통보 (죽은 적 처리 직전)
     // (아래 9번에서 처리)
 
-    // 6. 적 이동
+    // 6. 적 이동 + 특수 공격 투사체 수집
     for (const enemy of enemies) {
       if (!enemy.isDead) {
         enemy.update(dt, player.x, player.y);
+        // 이벤트 몹 특수 공격 투사체 수집
+        const shots = enemy.getAndClearPendingShots();
+        for (const s of shots) {
+          const p = new Projectile(s.x, s.y, s.vx, s.vy, s.damage);
+          p._isBossProjectile = true; // 플레이어 피격 처리 재활용
+          bossProjectiles.push(p);
+          game.addEntity(p);
+        }
       }
     }
 

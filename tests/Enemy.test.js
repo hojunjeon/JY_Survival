@@ -268,3 +268,35 @@ describe('Enemy 피격 색상 오버레이', () => {
     drawSpriteSpy.mockRestore();
   });
 });
+
+describe('이벤트 몹 특수 공격', () => {
+  test('indentation_error — shootCooldown 초과 시 pending shot 생성', () => {
+    const e = createEnemy('indentation_error', 100, 100);
+    e.update(3.0, 200, 100);
+    const shots = e.getAndClearPendingShots();
+    expect(shots.length).toBeGreaterThan(0);
+    expect(shots[0]).toHaveProperty('vx');
+    expect(shots[0]).toHaveProperty('vy');
+    expect(shots[0].damage).toBe(8);
+  });
+
+  test('indentation_error — getAndClearPendingShots() 는 호출 후 비워진다', () => {
+    const e = createEnemy('indentation_error', 100, 100);
+    e.update(3.0, 200, 100);
+    e.getAndClearPendingShots();
+    const shots2 = e.getAndClearPendingShots();
+    expect(shots2.length).toBe(0);
+  });
+
+  test('env_error — dashCooldown 초과 시 isDashing = true', () => {
+    const e = createEnemy('env_error', 100, 100);
+    e.update(3.5, 200, 100);
+    expect(e.isDashing).toBe(true);
+  });
+
+  test('일반 몹(syntax_error)은 getAndClearPendingShots 반환값이 항상 빈 배열', () => {
+    const e = createEnemy('syntax_error', 0, 0);
+    e.update(5.0, 100, 100);
+    expect(e.getAndClearPendingShots()).toEqual([]);
+  });
+});

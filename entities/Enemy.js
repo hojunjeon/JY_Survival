@@ -15,6 +15,25 @@ export class Enemy {
     this.type = type;
     this.isDead = false;
     this.hitFlashTimer = 0;
+
+    // 특수 공격 필드
+    this._pendingShots = [];
+    this.specialCooldown = this._initialSpecialCooldown();
+    this.isDashing = false;
+    this._dashTimer = 0;
+    this._normalSpeed = speed;
+  }
+
+  _initialSpecialCooldown() {
+    if (this.type === 'indentation_error') return 2.5;
+    if (this.type === 'env_error') return 3.0;
+    return Infinity;
+  }
+
+  getAndClearPendingShots() {
+    const shots = [...this._pendingShots];
+    this._pendingShots = [];
+    return shots;
   }
 
   takeDamage(amount) {
@@ -35,6 +54,40 @@ export class Enemy {
     const dirX = dx / dist;
     const dirY = dy / dist;
 
+    // EnvError 돌진 처리
+    if (this.type === 'env_error') {
+      this.specialCooldown -= dt;
+      if (this.isDashing) {
+        this._dashTimer -= dt;
+        if (this._dashTimer <= 0) {
+          this.isDashing = false;
+          this.speed = this._normalSpeed;
+        }
+      } else if (this.specialCooldown <= 0) {
+        this.isDashing = true;
+        this._dashTimer = 0.4;
+        this.speed = 400;
+        this.specialCooldown = 3.0;
+      }
+    }
+
+    // IndentationError 총알 발사
+    if (this.type === 'indentation_error') {
+      this.specialCooldown -= dt;
+      if (this.specialCooldown <= 0) {
+        this.specialCooldown = 2.5;
+        const speed = 100;
+        this._pendingShots.push({
+          x: this.x,
+          y: this.y,
+          vx: dirX * speed,
+          vy: dirY * speed,
+          damage: 8,
+        });
+      }
+    }
+
+    // 이동 처리
     if (this.flees) {
       this.x -= dirX * this.speed * dt;
       this.y -= dirY * this.speed * dt;

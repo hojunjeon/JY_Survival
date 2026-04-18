@@ -11,6 +11,16 @@ export class WaveSystem {
     this.eventMode = null;       // null | { type, remaining }
   }
 
+  setEventMode(type, count) {
+    this.eventMode = { type, remaining: count };
+    this.elapsed = 0;
+  }
+
+  clearEventMode() {
+    this.eventMode = null;
+  }
+
+  // 하위 호환 별칭
   setEventEnemyType(type) {
     this.eventMode = { type, remaining: Infinity };
   }
@@ -29,13 +39,23 @@ export class WaveSystem {
   }
 
   _spawnWave(playerX, playerY) {
-    const count = 3;
+    if (this.eventMode && this.eventMode.remaining <= 0) return [];
+
+    const maxCount = this.eventMode
+      ? Math.min(3, this.eventMode.remaining)
+      : 3;
+
     const spawned = [];
-    for (let i = 0; i < count; i++) {
+    for (let i = 0; i < maxCount; i++) {
       const { x, y } = this._edgePosition(playerX, playerY);
       const type = this.eventMode?.type ?? WAVE_TYPES[Math.floor(Math.random() * WAVE_TYPES.length)];
       spawned.push(createEnemy(type, x, y));
     }
+
+    if (this.eventMode) {
+      this.eventMode.remaining -= spawned.length;
+    }
+
     return spawned;
   }
 
