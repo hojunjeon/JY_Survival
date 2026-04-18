@@ -121,6 +121,9 @@ export class Enemy {
       ctx.save();
       ctx.globalAlpha = 0.6;
       ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.rect(this.x - this.width / 2, this.y - this.height / 2, this.width, this.height);
+      ctx.clip();
       ctx.fillRect(this.x - this.width / 2, this.y - this.height / 2, this.width, this.height);
       ctx.restore();
     }
@@ -130,6 +133,9 @@ export class Enemy {
       ctx.save();
       ctx.globalAlpha = 0.8;
       ctx.fillStyle = '#ff0000';
+      ctx.beginPath();
+      ctx.rect(this.x - this.width / 2, this.y - this.height / 2, this.width, this.height);
+      ctx.clip();
       ctx.fillRect(this.x - this.width / 2, this.y - this.height / 2, this.width, this.height);
       ctx.restore();
     }
