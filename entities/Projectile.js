@@ -10,7 +10,10 @@ export class Projectile {
     chainHops = 0,
     chainRadius = 0,
     hitEnemyIds = null,
-    isRailgun = false
+    isRailgun = false,
+    isBlackhole = false,
+    blackholeRadius = 100,
+    blackholeLifetime = 2.0,
   } = {}) {
     this.x = x;
     this.y = y;
@@ -28,6 +31,10 @@ export class Projectile {
     this.chainRadius = chainRadius;
     this.hitEnemyIds = hitEnemyIds;
     this.isRailgun = isRailgun;
+    this.isBlackhole = isBlackhole;
+    this.blackholeRadius = blackholeRadius;
+    this.blackholeLifetime = blackholeLifetime;
+    this._bhTimer = blackholeLifetime;
     this.active = true;
     this.width = 8;
     this.height = 8;

@@ -232,6 +232,32 @@ function startGame() {
   function tryFireWeapon(weapon, player) {
     if (!weapon) return;
 
+    // Java 블랙홀 소환
+    if (weapon.name === 'Java' && weapon._pendingBlackhole) {
+      weapon._pendingBlackhole = false;
+      // 가장 가까운 적 탐색
+      let nearestEnemy = null;
+      let nearestDist = Infinity;
+      const allTargets = [...enemies, ...(boss && !boss.isDead ? [boss] : [])];
+      for (const e of allTargets) {
+        if (e.isDead) continue;
+        const dx = e.x - player.x;
+        const dy = e.y - player.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < nearestDist) { nearestDist = dist; nearestEnemy = e; }
+      }
+      if (nearestEnemy) {
+        const bh = new Projectile(nearestEnemy.x, nearestEnemy.y, 0, 0, 30, {
+          isBlackhole: true,
+          blackholeRadius: 120,
+          blackholeLifetime: 2.0,
+          color: '#220044',
+        });
+        projectiles.push(bh);
+        game.addEntity(bh);
+      }
+    }
+
     // Java 오비탈은 fire() 없음 — update에서 자동 처리
     if (weapon.name === 'Java') return;
 
@@ -342,6 +368,41 @@ function startGame() {
     // 3. 투사체 업데이트 + 범위 이탈 제거
     for (const proj of projectiles) {
       if (proj.active) proj.update(dt, worldBounds);
+    }
+
+    // 3-1. 블랙홀 흡입 + 폭발 처리
+    for (const proj of projectiles) {
+      if (!proj.active || !proj.isBlackhole) continue;
+      proj._bhTimer -= dt;
+
+      // 주변 적 흡입
+      const allBhTargets = [...enemies, ...(boss && !boss.isDead ? [boss] : [])];
+      for (const e of allBhTargets) {
+        if (e.isDead) continue;
+        const dx = proj.x - e.x;
+        const dy = proj.y - e.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist > 0 && dist < proj.blackholeRadius) {
+          const pull = 60 * dt;
+          e.x += (dx / dist) * pull;
+          e.y += (dy / dist) * pull;
+        }
+      }
+
+      // 수명 종료 → 폭발
+      if (proj._bhTimer <= 0) {
+        for (const e of allBhTargets) {
+          if (e.isDead) continue;
+          const dx = e.x - proj.x;
+          const dy = e.y - proj.y;
+          if (Math.sqrt(dx * dx + dy * dy) <= proj.blackholeRadius) {
+            e.takeDamage(proj.damage);
+          }
+        }
+        triggerScreenShake(6, 0.2);
+        floatingTextManager.add('GC!', proj.x, proj.y, '#aa44ff');
+        proj.deactivate();
+      }
     }
 
     // 4. 웨이브 스폰 (보스 등장 전까지만)
@@ -751,6 +812,26 @@ function startGame() {
         ctx.arc(orb.x, orb.y, orb.width / 2, 0, Math.PI * 2);
         ctx.fill();
       });
+    }
+
+    // 블랙홀 렌더
+    for (const proj of projectiles) {
+      if (!proj.active || !proj.isBlackhole) continue;
+      const ratio = proj._bhTimer / proj.blackholeLifetime;
+      const radius = 8 + (1 - ratio) * 20;
+      ctx.save();
+      // 외곽 보라 테두리
+      ctx.beginPath();
+      ctx.arc(proj.x, proj.y, proj.blackholeRadius * 0.3, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(170, 68, 255, ${0.3 + ratio * 0.4})`;
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      // 검은 원
+      ctx.beginPath();
+      ctx.arc(proj.x, proj.y, radius, 0, Math.PI * 2);
+      ctx.fillStyle = '#110022';
+      ctx.fill();
+      ctx.restore();
     }
 
     // C/C++ 조준선 렌더

@@ -20,6 +20,9 @@ export class JavaWeapon extends WeaponBase {
       // 동일 적 다중피격 방지: enemyId → 남은 무적시간(초)
       hitCooldowns: new Map(),
     }));
+
+    this._blackholeTimer = 5.0;
+    this._pendingBlackhole = false;
   }
 
   // 오비탈은 canFire가 항상 false — 투사체를 발사하지 않는다
@@ -42,6 +45,13 @@ export class JavaWeapon extends WeaponBase {
         else orb.hitCooldowns.set(id, next);
       }
     });
+
+    // 블랙홀 타이머
+    this._blackholeTimer -= dt;
+    if (this._blackholeTimer <= 0) {
+      this._pendingBlackhole = true;
+      this._blackholeTimer = 5.0;
+    }
   }
 
   /**
