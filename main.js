@@ -268,6 +268,25 @@ function startGame() {
       return;
     }
 
+    // SQL DROP TABLE — 발동
+    if (weapon.name === 'SQL' && weapon.canFire()) {
+      // 가장 가까운 적 탐색
+      let nearestTarget = null;
+      let nearestDist = Infinity;
+      const sqlTargets = [...enemies, ...(boss && !boss.isDead ? [boss] : [])];
+      for (const e of sqlTargets) {
+        if (e.isDead) continue;
+        const dx = e.x - player.x;
+        const dy = e.y - player.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < nearestDist) { nearestDist = dist; nearestTarget = e; }
+      }
+      const tx = nearestTarget ? nearestTarget.x : player.x + player.lastDirX * 150;
+      const ty = nearestTarget ? nearestTarget.y : player.y + player.lastDirY * 150;
+      weapon.startDrop(tx, ty);
+      return;
+    }
+
     // Java 블랙홀 소환
     if (weapon.name === 'Java' && weapon._pendingBlackhole) {
       weapon._pendingBlackhole = false;
@@ -417,6 +436,24 @@ function startGame() {
         floatingTextManager.add('GC!', proj.x, proj.y, '#aa44ff');
         proj.deactivate();
       }
+    }
+
+    // SQL 착지 폭발
+    const sqlWeapon2 = ownedWeapons.find(w => w.name === 'SQL');
+    if (sqlWeapon2 && sqlWeapon2.dropPhase === 'landed' && sqlWeapon2.phaseTimer > 0.35) {
+      // phaseTimer가 0.4에서 막 시작됐을 때 한 번만 실행
+      const sqlTargets2 = [...enemies, ...(boss && !boss.isDead ? [boss] : [])];
+      for (const e of sqlTargets2) {
+        if (e.isDead) continue;
+        const dx = e.x - sqlWeapon2.targetX;
+        const dy = e.y - sqlWeapon2.targetY;
+        if (Math.sqrt(dx * dx + dy * dy) <= 120) {
+          e.takeDamage(sqlWeapon2.damage);
+        }
+      }
+      triggerScreenShake(8, 0.3);
+      floatingTextManager.add('DROP TABLE!', sqlWeapon2.targetX, sqlWeapon2.targetY - 20, '#4499ff');
+      sqlWeapon2.phaseTimer = 0.34; // 다음 프레임에 재실행 방지
     }
 
     // 4. 웨이브 스폰 (보스 등장 전까지만)
@@ -890,6 +927,46 @@ function startGame() {
       ctx.lineTo(player.x, player.y);
       ctx.stroke();
       ctx.setLineDash([]);
+      ctx.restore();
+    }
+
+    // SQL DROP TABLE 렌더
+    const sqlWeapon = ownedWeapons.find(w => w.name === 'SQL');
+    if (sqlWeapon && sqlWeapon.dropPhase !== 'idle') {
+      ctx.save();
+      const tx = sqlWeapon.targetX;
+      const ty = sqlWeapon.targetY;
+
+      if (sqlWeapon.dropPhase === 'targeting') {
+        // 표적 십자선
+        ctx.strokeStyle = 'rgba(68, 153, 255, 0.8)';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(tx - 20, ty); ctx.lineTo(tx + 20, ty);
+        ctx.moveTo(tx, ty - 20); ctx.lineTo(tx, ty + 20);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(tx, ty, 25, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(68, 153, 255, 0.5)';
+        ctx.stroke();
+      }
+
+      if (sqlWeapon.dropPhase === 'dropping' || sqlWeapon.dropPhase === 'landed') {
+        // 낙하 블록
+        const bY = sqlWeapon.blockY;
+        ctx.fillStyle = '#1a3a6b';
+        ctx.fillRect(tx - 30, bY - 20, 60, 40);
+        ctx.fillStyle = '#4499ff';
+        ctx.font = 'bold 9px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('DROP', tx, bY - 4);
+        ctx.fillText('TABLE', tx, bY + 8);
+        // 착지 시 플래시
+        if (sqlWeapon.flashTimer > 0) {
+          ctx.fillStyle = `rgba(255,255,255,${sqlWeapon.flashTimer / 0.15 * 0.5})`;
+          ctx.fillRect(tx - 120, ty - 120, 240, 240);
+        }
+      }
       ctx.restore();
     }
 
