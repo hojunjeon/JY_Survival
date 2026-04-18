@@ -195,6 +195,14 @@ function startGame() {
   let bossDialogueTimer = 0;
   let stageClearDialogue = null;
 
+  // ─── Screen Shake 상태 ──────────────────────────────────────────────────
+  let screenShake = { intensity: 0, duration: 0 };
+
+  function triggerScreenShake(intensity, duration) {
+    screenShake.intensity = Math.max(screenShake.intensity, intensity);
+    screenShake.duration = Math.max(screenShake.duration, duration);
+  }
+
   const REWARD_WEAPON_POOL = [
     GitWeapon, SQLWeapon, JavaScriptWeapon, DjangoWeapon, LinuxBashWeapon,
   ];
@@ -232,9 +240,15 @@ function startGame() {
       // LinuxBash: 모든 적 즉시 데미지
       if (p.isAllEnemy) {
         for (const enemy of enemies) {
-          if (!enemy.isDead) enemy.takeDamage(p.damage);
+          if (!enemy.isDead) {
+            enemy.takeDamage(p.damage);
+            triggerScreenShake(3, 0.1);
+          }
         }
-        if (boss && !boss.isDead) boss.takeDamage(p.damage);
+        if (boss && !boss.isDead) {
+          boss.takeDamage(p.damage);
+          triggerScreenShake(6, 0.15);
+        }
         continue;
       }
       // Git: 지역 효과 (폭발)
@@ -245,6 +259,7 @@ function startGame() {
             const dy = enemy.y - p.y;
             if (Math.sqrt(dx * dx + dy * dy) <= p.areaRadius) {
               enemy.takeDamage(p.areaRadius > 0 ? p.damage : p.areaRadius);
+              triggerScreenShake(3, 0.1);
             }
           }
         }
@@ -253,6 +268,7 @@ function startGame() {
           const dy = boss.y - p.y;
           if (Math.sqrt(dx * dx + dy * dy) <= p.areaRadius) {
             boss.takeDamage(p.damage);
+            triggerScreenShake(6, 0.15);
           }
         }
         continue;
@@ -277,6 +293,15 @@ function startGame() {
   // ── Game.update 오버라이드 ───────────────────────────────────────────────
   game.update = (dt) => {
     if (paused) return;
+
+    // Screen Shake 감쇠
+    if (screenShake.duration > 0) {
+      screenShake.duration -= dt;
+      if (screenShake.duration <= 0) {
+        screenShake.intensity = 0;
+        screenShake.duration = 0;
+      }
+    }
 
     // 사망 감지
     if (player.isDead) {
@@ -473,10 +498,12 @@ function startGame() {
           if (proj.piercing) {
             if (!proj.hitEnemies.has(enemy)) {
               enemy.takeDamage(proj.damage);
+              triggerScreenShake(3, 0.1);
               proj.hitEnemies.add(enemy);
             }
           } else {
             enemy.takeDamage(proj.damage);
+            triggerScreenShake(3, 0.1);
             proj.deactivate();
             break;
           }
@@ -494,10 +521,12 @@ function startGame() {
             if (!proj.hitEnemies) proj.hitEnemies = new Set();
             if (!proj.hitEnemies.has(boss)) {
               boss.takeDamage(proj.damage);
+              triggerScreenShake(6, 0.15);
               proj.hitEnemies.add(boss);
             }
           } else {
             boss.takeDamage(proj.damage);
+            triggerScreenShake(6, 0.15);
             proj.deactivate();
           }
 
@@ -530,6 +559,7 @@ function startGame() {
           if (checkCollision(orb, enemy)) {
             if (selectedWeapon.tryHit(orbIdx, enemy)) {
               enemy.takeDamage(orb.damage);
+              triggerScreenShake(3, 0.1);
             }
           }
         }
@@ -595,6 +625,7 @@ function startGame() {
             const dy = enemy.y - p.y;
             if (Math.sqrt(dx * dx + dy * dy) <= p.areaRadius) {
               enemy.takeDamage(p.damage);
+              triggerScreenShake(3, 0.1);
             }
           }
         }
@@ -603,6 +634,7 @@ function startGame() {
           const dy = boss.y - p.y;
           if (Math.sqrt(dx * dx + dy * dy) <= p.areaRadius) {
             boss.takeDamage(p.damage);
+            triggerScreenShake(6, 0.15);
           }
         }
       }
@@ -627,6 +659,15 @@ function startGame() {
 
     // ── 월드 공간 ──────────────────────────────────────────────────
     ctx.save();
+
+    // Screen Shake 적용
+    if (screenShake.duration > 0) {
+      const ratio = screenShake.duration;
+      const dx = (Math.random() - 0.5) * 2 * screenShake.intensity * ratio;
+      const dy = (Math.random() - 0.5) * 2 * screenShake.intensity * ratio;
+      ctx.translate(dx, dy);
+    }
+
     ctx.translate(-camX, -camY);
 
     // 그리드 배경 (뷰포트 범위만 그림)
