@@ -12,6 +12,8 @@ const PHASE1_SPEED = 70;
 const PHASE2_SPEED = 120;
 const SHOOT_INTERVAL = 2; // 2초마다 발사
 
+import { PixelRenderer, BOSS_SPRITE } from '../sprites/PixelRenderer.js';
+
 export class Boss {
   constructor(x, y) {
     this.x = x;
@@ -25,10 +27,12 @@ export class Boss {
     this.type = 'boss';
     this.shootCooldown = 0;
     this._phaseTransitioned = false;
+    this.hitFlashTimer = 0;
   }
 
   takeDamage(amount) {
     this.hp = Math.max(0, this.hp - amount);
+    this.hitFlashTimer = 0.1;
     if (this.hp === 0) this.isDead = true;
   }
 
@@ -56,6 +60,7 @@ export class Boss {
     }
 
     this.shootCooldown = Math.max(0, this.shootCooldown - dt);
+    this.hitFlashTimer = Math.max(0, this.hitFlashTimer - dt);
   }
 
   shoot(targetX, targetY) {
@@ -97,17 +102,29 @@ export class Boss {
   }
 
   render(ctx) {
-    ctx.fillStyle = this.phase === 2 ? '#cc0066' : '#990099';
-    ctx.fillRect(
-      this.x - this.width / 2,
-      this.y - this.height / 2,
-      this.width,
-      this.height
-    );
-    // 보스 이름 표시
-    ctx.fillStyle = '#ffffff';
-    ctx.font = '10px monospace';
-    ctx.textAlign = 'center';
-    ctx.fillText('장선형', this.x, this.y - this.height / 2 - 4);
+    if (BOSS_SPRITE) {
+      PixelRenderer.drawSprite(ctx, BOSS_SPRITE, this.x - this.width / 2, this.y - this.height / 2, 2);
+      // 2페이즈: 빨간 오버레이
+      if (this.phase === 2) {
+        ctx.save();
+        ctx.globalAlpha = 0.3;
+        ctx.fillStyle = '#cc0044';
+        ctx.fillRect(this.x - this.width / 2, this.y - this.height / 2, this.width, this.height);
+        ctx.restore();
+      }
+    } else {
+      // 폴백: 기존 단색 렌더
+      ctx.fillStyle = this.phase === 2 ? '#cc0066' : '#990099';
+      ctx.fillRect(this.x - this.width / 2, this.y - this.height / 2, this.width, this.height);
+    }
+
+    // 피격 플래시
+    if (this.hitFlashTimer > 0) {
+      ctx.save();
+      ctx.globalAlpha = 0.5;
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(this.x - this.width / 2, this.y - this.height / 2, this.width, this.height);
+      ctx.restore();
+    }
   }
 }
