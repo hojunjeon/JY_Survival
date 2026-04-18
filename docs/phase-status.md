@@ -196,10 +196,10 @@
 
 - [x] T6: 무기 8종 전면 재구현 (Python/C/Java/Git/SQL/JavaScript/Django/Linux)
 - [x] T7: Screen Shake — 모든 적 피격 시 화면 미세 흔들림
-- [ ] T8: 처치/피격 텍스트 이펙트 ("Bug Fixed!" 등 플로팅 텍스트)
+- [x] T8: 처치/피격 텍스트 이펙트 ("Bug Fixed!" 등 플로팅 텍스트)
 - [ ] T9: 플레이어 아웃라인 + 보스 저체력 강조 연출
 
-## 현재 Phase: Phase 6 진행 중 (Cycle 2 추가 — T7 완료)
+## 현재 Phase: Phase 6 진행 중 (Cycle 2 추가 — T8 완료)
 
 ## 블로그 초안 현황
 

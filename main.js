@@ -10,6 +10,7 @@ import { Boss } from './entities/Boss.js';
 import { Projectile } from './entities/Projectile.js';
 import { EventModal } from './ui/EventModal.js';
 import { HUD } from './ui/HUD.js';
+import { FloatingTextManager } from './ui/FloatingText.js';
 import { GitWeapon } from './weapons/Git.js';
 import { SQLWeapon } from './weapons/SQL.js';
 import { JavaScriptWeapon } from './weapons/JavaScript.js';
@@ -172,6 +173,7 @@ function startGame() {
   const player = new Player(canvas.width / 2, canvas.height / 2, playerRenderer);
 
   const hud = new HUD({ canvasWidth: canvas.width, canvasHeight: canvas.height });
+  const floatingTextManager = new FloatingTextManager();
 
   const waveSystem = new WaveSystem({
     spawnInterval: 3,
@@ -293,6 +295,9 @@ function startGame() {
   // ── Game.update 오버라이드 ───────────────────────────────────────────────
   game.update = (dt) => {
     if (paused) return;
+
+    // FloatingText 업데이트
+    floatingTextManager.update(dt);
 
     // Screen Shake 감쇠
     if (screenShake.duration > 0) {
@@ -534,6 +539,8 @@ function startGame() {
             bossDialogue = boss.getDialogue('death');
             bossDialogueTimer = 4;
             giveRewardWeapon();
+            // 보스 처치 플로팅 텍스트
+            floatingTextManager.add('BOSS DEFEATED!', canvas.width / 2, canvas.height / 2, '#ffd700');
             const killNotifs = eventSystem.notifyBossKill();
             for (const n of killNotifs) {
               if (n.type === 'stage_clear') {
@@ -596,6 +603,10 @@ function startGame() {
     const dead = enemies.filter(e => e.isDead);
     for (const e of dead) {
       if (e.dropsHpItem) player.heal(20);
+      // 플로팅 텍스트 이펙트
+      const floatingTexts = ['Bug Fixed!', 'Error Resolved!'];
+      const randomText = floatingTexts[Math.floor(Math.random() * floatingTexts.length)];
+      floatingTextManager.add(randomText, e.x, e.y, '#ffffff');
       const killNotifs = eventSystem.notifyKill(e.type);
       for (const n of killNotifs) {
         if (n.type === 'event_cleared') {
@@ -700,6 +711,9 @@ function startGame() {
       });
     }
 
+    // FloatingText 렌더 (월드 좌표)
+    floatingTextManager.render(ctx, camX, camY);
+
     ctx.restore();
     // ── 화면 공간 (HUD) ───────────────────────────────────────────
 
@@ -788,6 +802,9 @@ function startGame() {
 
     ctx.textAlign = 'left';
   };
+
+  // 게임 재시작 시 플로팅 텍스트 초기화
+  floatingTextManager.texts = [];
 
   game.addEntity(player);
   game.start();
