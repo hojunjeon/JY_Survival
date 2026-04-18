@@ -198,10 +198,20 @@
 - [x] T7: Screen Shake — 모든 적 피격 시 화면 미세 흔들림
 - [x] T8: 처치/피격 텍스트 이펙트 ("Bug Fixed!" 등 플로팅 텍스트)
 - [x] T9: 플레이어 아웃라인 + 보스 저체력 강조 연출
+- [x] TDD: 누적 테스트 308개 GREEN
+- [x] 문서화: `blog/game-dev/draft-15-수정2.md`, `blog/game-dev/draft-16-추가2.md`
 
 ### Cycle 2 — 완료 ✅
 
-## 현재 Phase: Phase 6 진행 중 (Cycle 2 추가 완료)
+### Cycle 3 — 제안
+
+> phase_6.md #제안 없음 → 스킵
+
+### Cycle 3 — 완료 ✅ (스킵)
+
+## Phase 6 — 완료 ✅
+
+## 현재 Phase: Phase 7 대기 중
 
 ## 블로그 초안 현황
 
