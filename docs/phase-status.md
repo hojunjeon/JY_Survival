@@ -177,9 +177,27 @@
 
 ---
 
-## 현재 Phase: Phase 6 대기 중
+## Phase 6 — 게임 완성도 3차 개선
 
-> `phase_feedback/phase_6.md` 작성 후 진입 예정
+> 실행 방식: **Subagent-Driven** (서브에이전트 per 태스크)
+> 설계 문서: `phase_feedback/phase_6.md`
+
+### Cycle 1 — 수정
+
+- [ ] T1: 이벤트 화면 글자 배치 (위아래 중앙 배치)
+- [ ] T2: 몬스터 피격 반짝임 범위 수정 (몬스터 크기에 맞게 클리핑)
+- [ ] T3: 이벤트 화면 픽셀 이미지 상반신만 표시
+- [ ] T4: E3→E2 개명 + 무한 스폰 + 30초 생존 미션으로 교체
+- [ ] T5: 보스 폭주 2페이즈 붉은 사각형 버그 수정
+
+### Cycle 2 — 추가
+
+- [ ] T6: 무기 8종 전면 재구현 (Python/C/Java/Git/SQL/JavaScript/Django/Linux)
+- [ ] T7: Screen Shake — 모든 적 피격 시 화면 미세 흔들림
+- [ ] T8: 처치/피격 텍스트 이펙트 ("Bug Fixed!" 등 플로팅 텍스트)
+- [ ] T9: 플레이어 아웃라인 + 보스 저체력 강조 연출
+
+## 현재 Phase: Phase 6 진행 중 (Cycle 1 수정 — 준비 완료)
 
 ## 블로그 초안 현황
 
