@@ -103,14 +103,10 @@ export class Boss {
 
   render(ctx) {
     if (BOSS_SPRITE) {
-      PixelRenderer.drawSprite(ctx, BOSS_SPRITE, this.x - this.width / 2, this.y - this.height / 2, 2);
-      // 2페이즈: 빨간 오버레이
       if (this.phase === 2) {
-        ctx.save();
-        ctx.globalAlpha = 0.3;
-        ctx.fillStyle = '#cc0044';
-        ctx.fillRect(this.x - this.width / 2, this.y - this.height / 2, this.width, this.height);
-        ctx.restore();
+        PixelRenderer.drawSpriteTinted(ctx, BOSS_SPRITE, this.x - this.width / 2, this.y - this.height / 2, 2, '#cc0044', 0.3);
+      } else {
+        PixelRenderer.drawSprite(ctx, BOSS_SPRITE, this.x - this.width / 2, this.y - this.height / 2, 2);
       }
     } else {
       // 폴백: 기존 단색 렌더
