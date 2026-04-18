@@ -158,9 +158,9 @@
 - [x] 장선형 보스 픽셀 스프라이트 + NPC 픽셀 스프라이트 박진우·이한정 (32×32) — `9c9bdce`
 - [x] 기본 버그 체력 조정 (2/3/4대 기준) — `9f9dfa8`
 - [x] 이벤트 몹 특수 공격 (E1: 느린 총알 / E3: 돌진) + 소환 수 제한 — `2a9d3d3`
-- [ ] 보상 무기 5종 구현 (Git/SQL/JavaScript/Django/Linux) + 랜덤 지급
+- [x] 보상 무기 5종 구현 (Git/SQL/JavaScript/Django/Linux) — `768c841` 커밋 확인
 - [x] 몬스터 피격 색상 변화 효과 (흰색 플래시 + 사망 빨간 오버레이) — `1eea67e`
-- [x] TDD: 누적 테스트 308개 GREEN
+- [x] TDD: 누적 테스트 323개 GREEN (308 + 15 새 무기 테스트)
 - [ ] 문서화: `blog/game-dev/draft-14-추가.md`
 
 ### Cycle 3 — 제안
