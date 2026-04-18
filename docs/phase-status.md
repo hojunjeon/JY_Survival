@@ -256,10 +256,10 @@
 ### Cycle 1 — 수정 (무기 기믹 재구현 6종)
 
 - [x] T1: Python — Chain Lightning (Projectile 체이닝 + 초록 뱀 궤적) — `1157ec7`
-- [x] T2: C/C++ — Railgun (조준선 + 빔 이펙트 + Screen Shake) — `TBD`
-- [ ] T3: Java — GC Blackhole (5초마다 블랙홀 소환 + 흡입 + 폭발)
-- [ ] T4: Git — Branch & Merge (분신 저장 → 3초 후 라인 데미지)
-- [ ] T5: SQL — DROP TABLE (표적 → 낙하 블록 → 착지 폭발)
+- [x] T2: C/C++ — Railgun (조준선 + 빔 이펙트 + Screen Shake) — `ef7d7b1`
+- [x] T3: Java — GC Blackhole (5초마다 블랙홀 소환 + 흡입 + 폭발) — `c550130`
+- [x] T4: Git — Branch & Merge (분신 저장 → 3초 후 라인 데미지) — `3e672d4`
+- [x] T5: SQL — DROP TABLE (표적 → 낙하 블록 → 착지 폭발) — `7c32481`
 - [ ] T6: JavaScript — Tornado (확장 토네이도 범위 데미지)
 
 ### Cycle 2 — 추가 (신규 몬스터 5종)
