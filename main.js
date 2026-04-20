@@ -865,7 +865,7 @@ function startGame() {
           if (!player._codeWallDebuffTimer || player._codeWallDebuffTimer <= 0) {
             player._originalCodeWallSpeed = player.speed;
             player.speed *= 0.3;
-            player._codeWallDebuffTimer = dt;
+            player._codeWallDebuffTimer = 0.5;
           }
           // 매 틱마다 3 데미지
           codeWallDamageThisFrame += 3 * dt;
@@ -907,10 +907,9 @@ function startGame() {
     const dead = enemies.filter(e => e.isDead);
     for (const e of dead) {
       // infinite_loop 적 사망 시 소유한 모든 코드 벽 제거
-      if (e.type === 'infinite_loop' && e.codeWalls) {
-        for (const wall of e.codeWalls) {
-          codeWalls = codeWalls.filter(w => w !== wall);
-        }
+      if (e.type === 'infinite_loop' && e.codeWalls && e.codeWalls.length > 0) {
+        const wallSet = new Set(e.codeWalls);
+        codeWalls = codeWalls.filter(w => !wallSet.has(w));
         e.codeWalls = [];
       }
       if (e.dropsHpItem) player.heal(20);
