@@ -3,7 +3,7 @@ import { WeaponBase } from './WeaponBase.js';
 const ORB_COUNT = 3;
 const ORB_RADIUS = 60;
 const ORB_SPEED = 2.0; // rad/s
-const ORB_DAMAGE = 18;
+const ORB_DAMAGE = 25;
 
 export class JavaWeapon extends WeaponBase {
   constructor() {
@@ -63,7 +63,7 @@ export class JavaWeapon extends WeaponBase {
   tryHit(orbIndex, enemyId) {
     const orb = this.orbs[orbIndex];
     if (orb.hitCooldowns.has(enemyId)) return false;
-    orb.hitCooldowns.set(enemyId, 0.5); // 0.5초 무적
+    orb.hitCooldowns.set(enemyId, 0.4); // 0.4초 무적
     return true;
   }
 
