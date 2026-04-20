@@ -3,7 +3,7 @@ import { Projectile } from '../entities/Projectile.js';
 
 export class PythonWeapon extends WeaponBase {
   constructor() {
-    super({ damage: 15, cooldown: 1.0, projectileSpeed: 200, piercing: false });
+    super({ damage: 15, cooldown: 0.9, projectileSpeed: 240, piercing: false });
     this.name = 'Python';
   }
 
