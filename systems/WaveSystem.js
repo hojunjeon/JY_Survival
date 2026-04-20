@@ -1,6 +1,6 @@
 import { createEnemy } from '../entities/Enemy.js';
 
-const WAVE_TYPES = ['syntax_error', 'null_pointer', 'seg_fault'];
+const WAVE_TYPES = ['syntax_error', 'null_pointer', 'seg_fault', 'race_condition'];
 
 export class WaveSystem {
   constructor({ spawnInterval, canvasWidth, canvasHeight }) {
@@ -49,7 +49,22 @@ export class WaveSystem {
     for (let i = 0; i < maxCount; i++) {
       const { x, y } = this._edgePosition(playerX, playerY);
       const type = this.eventMode?.type ?? WAVE_TYPES[Math.floor(Math.random() * WAVE_TYPES.length)];
-      spawned.push(createEnemy(type, x, y));
+
+      if (type === 'race_condition') {
+        const offset = 60;
+        const angle = Math.random() * Math.PI * 2;
+        const x2 = x + Math.cos(angle) * offset;
+        const y2 = y + Math.sin(angle) * offset;
+
+        const enemy1 = createEnemy(type, x, y);
+        const enemy2 = createEnemy(type, x2, y2);
+        enemy1.linkedEnemy = enemy2;
+        enemy2.linkedEnemy = enemy1;
+
+        spawned.push(enemy1, enemy2);
+      } else {
+        spawned.push(createEnemy(type, x, y));
+      }
     }
 
     if (this.eventMode) {

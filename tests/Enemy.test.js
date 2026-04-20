@@ -303,3 +303,79 @@ describe('이벤트 몹 특수 공격', () => {
     expect(e.getAndClearPendingShots()).toEqual([]);
   });
 });
+
+describe('race_condition 몬스터', () => {
+  test('race_condition 타입을 생성할 수 있다', () => {
+    const e = createEnemy('race_condition', 100, 100);
+    expect(e.type).toBe('race_condition');
+    expect(e.hp).toBe(30);
+    expect(e.speed).toBe(70);
+    expect(e.contactDamage).toBe(10);
+  });
+
+  test('linkedEnemy가 null로 초기화된다', () => {
+    const e = createEnemy('race_condition', 100, 100);
+    expect(e.linkedEnemy).toBeNull();
+  });
+
+  test('dyingTimer가 0으로 초기화된다', () => {
+    const e = createEnemy('race_condition', 100, 100);
+    expect(e.dyingTimer).toBe(0);
+  });
+
+  test('takeDamage로 hp=0이 되면 dyingTimer=1.0으로 설정된다', () => {
+    const e = createEnemy('race_condition', 100, 100);
+    e.takeDamage(30);
+    expect(e.hp).toBe(0);
+    expect(e.dyingTimer).toBe(1.0);
+    expect(e.isDead).toBe(false);
+  });
+
+  test('dyingTimer 카운트다운: 1초 경과 후 linkedEnemy 없으면 isDead=true', () => {
+    const e = createEnemy('race_condition', 100, 100);
+    e.takeDamage(30);
+    e.update(1.0, 0, 0);
+    expect(e.isDead).toBe(true);
+  });
+
+  test('dyingTimer 카운트다운: 1초 경과 후 linkedEnemy가 살아있으면 부활', () => {
+    const e1 = createEnemy('race_condition', 100, 100);
+    const e2 = createEnemy('race_condition', 160, 100);
+    e1.linkedEnemy = e2;
+    e2.linkedEnemy = e1;
+
+    e1.takeDamage(30);
+    expect(e1.hp).toBe(0);
+    expect(e1.dyingTimer).toBe(1.0);
+
+    e1.update(1.0, 0, 0);
+    expect(e1.hp).toBe(30);
+    expect(e1.isDead).toBe(false);
+    expect(e1.dyingTimer).toBe(0);
+  });
+
+  test('두 마리 모두 dyingTimer 상태면 둘 다 isDead=true', () => {
+    const e1 = createEnemy('race_condition', 100, 100);
+    const e2 = createEnemy('race_condition', 160, 100);
+    e1.linkedEnemy = e2;
+    e2.linkedEnemy = e1;
+
+    e1.takeDamage(30);
+    e2.takeDamage(30);
+
+    e1.update(1.0, 0, 0);
+    expect(e1.isDead).toBe(true);
+    expect(e2.isDead).toBe(false);
+    expect(e2.dyingTimer).toBe(1.0);
+
+    e2.update(1.0, 0, 0);
+    expect(e2.isDead).toBe(true);
+  });
+
+  test('일반 몬스터는 dyingTimer를 사용하지 않는다', () => {
+    const e = createEnemy('syntax_error', 100, 100);
+    e.takeDamage(24);
+    expect(e.isDead).toBe(true);
+    expect(e.dyingTimer).toBe(0);
+  });
+});

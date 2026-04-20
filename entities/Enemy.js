@@ -22,6 +22,10 @@ export class Enemy {
     this.isDashing = false;
     this._dashTimer = 0;
     this._normalSpeed = speed;
+
+    // race_condition 필드
+    this.linkedEnemy = null;
+    this.dyingTimer = 0;
   }
 
   _initialSpecialCooldown() {
@@ -38,12 +42,33 @@ export class Enemy {
 
   takeDamage(amount) {
     this.hp = Math.max(0, this.hp - amount);
-    if (this.hp === 0) this.isDead = true;
+    if (this.hp === 0) {
+      if (this.type === 'race_condition') {
+        this.dyingTimer = 1.0;
+      } else {
+        this.isDead = true;
+      }
+    }
     this.hitFlashTimer = 0.1;
   }
 
   update(dt, targetX, targetY) {
     if (this.hitFlashTimer > 0) this.hitFlashTimer -= dt;
+
+    // race_condition: dyingTimer 처리
+    if (this.type === 'race_condition' && this.dyingTimer > 0) {
+      this.dyingTimer -= dt;
+      if (this.dyingTimer <= 0) {
+        if (this.linkedEnemy && !this.linkedEnemy.isDead && this.linkedEnemy.dyingTimer <= 0) {
+          this.hp = this.maxHp;
+          this.dyingTimer = 0;
+        } else {
+          this.isDead = true;
+        }
+      }
+      return;
+    }
+
     if (dt === 0) return;
 
     const dx = targetX - this.x;
@@ -110,10 +135,23 @@ export class Enemy {
         heal_bug:          '#44ff88',
         indentation_error: '#ffaa44',
         env_error:         '#4488ff',
+        race_condition:    '#ff88cc',
         enemy:             '#ff8800',
       };
       ctx.fillStyle = colors[this.type] || colors.enemy;
       ctx.fillRect(this.x - this.width / 2, this.y - this.height / 2, this.width, this.height);
+    }
+
+    // race_condition: 연결선 그리기
+    if (this.type === 'race_condition' && this.linkedEnemy && !this.isDead && !this.linkedEnemy.isDead) {
+      ctx.save();
+      ctx.strokeStyle = '#ff0000';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(this.x, this.y);
+      ctx.lineTo(this.linkedEnemy.x, this.linkedEnemy.y);
+      ctx.stroke();
+      ctx.restore();
     }
 
     // 피격 플래시 오버레이 — 스프라이트가 있으면 tinted, 없으면 사각형
@@ -155,6 +193,7 @@ const ENEMY_STATS = {
   heal_bug:          { hp: 15,  speed: 150, contactDamage: 0,  flees: true,  dropsHpItem: true  },
   indentation_error: { hp: 36,  speed: 70,  contactDamage: 15, flees: false, dropsHpItem: false },
   env_error:         { hp: 48,  speed: 35,  contactDamage: 15, flees: false, dropsHpItem: false },
+  race_condition:    { hp: 30,  speed: 70,  contactDamage: 10, flees: false, dropsHpItem: false },
 };
 
 export function createEnemy(type, x, y) {
