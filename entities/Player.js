@@ -44,6 +44,13 @@ export class Player {
     this.contactInvulTimer = 0.5;
   }
 
+  applyKnockback(dx, dy, force) {
+    if (this.contactInvulTimer > 0) return;
+    const len = Math.sqrt(dx * dx + dy * dy) || 1;
+    this.x -= (dx / len) * force;
+    this.y -= (dy / len) * force;
+  }
+
   heal(amount) {
     this.hp = Math.min(this.maxHp, this.hp + amount);
   }

@@ -942,9 +942,10 @@ function startGame() {
     // 13. 플레이어 ↔ 적 충돌
     for (const enemy of enemies) {
       if (!enemy.isDead && checkCollision(player, enemy)) {
-        player.takeDamageFromContact(enemy.contactDamage);
         const dx = enemy.x - player.x;
         const dy = enemy.y - player.y;
+        player.takeDamageFromContact(enemy.contactDamage);
+        player.applyKnockback(dx, dy, 70);
         const len = Math.sqrt(dx * dx + dy * dy) || 1;
         enemy.x += (dx / len) * 16;
         enemy.y += (dy / len) * 16;
