@@ -1,6 +1,6 @@
 import { createEnemy } from '../entities/Enemy.js';
 
-const WAVE_TYPES = ['syntax_error', 'null_pointer', 'seg_fault', 'race_condition', 'memory_leak', 'infinite_loop', 'input_mismatch'];
+const WAVE_TYPES = ['syntax_error', 'null_pointer', 'seg_fault', 'race_condition', 'memory_leak', 'infinite_loop', 'input_mismatch', 'library_dependency'];
 
 export class WaveSystem {
   constructor({ spawnInterval, canvasWidth, canvasHeight }) {

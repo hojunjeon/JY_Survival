@@ -568,3 +568,21 @@ describe('input_mismatch 몬스터', () => {
     expect(shots[0].vy).toBeCloseTo(0);
   });
 });
+
+describe('library_dependency 몬스터', () => {
+  test('library_dependency 생성 시 올바른 스탯을 가진다', () => {
+    const e = createEnemy('library_dependency', 100, 100);
+    expect(e.type).toBe('library_dependency');
+    expect(e.hp).toBe(40);
+    expect(e.speed).toBe(35);
+    expect(e.contactDamage).toBe(8);
+  });
+
+  test('library_dependency는 일반 이동(플레이어 추적)을 한다', () => {
+    const e = createEnemy('library_dependency', 100, 100);
+    const before = { x: e.x, y: e.y };
+    e.update(1, 200, 100); // 플레이어가 오른쪽
+    expect(e.x).toBeGreaterThan(before.x);
+    expect(e.y).toBe(before.y);
+  });
+});

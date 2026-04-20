@@ -517,6 +517,11 @@ function startGame() {
           const infiniteLoopCount = enemies.filter(en => en.type === 'infinite_loop').length;
           if (infiniteLoopCount >= 2) continue;
         }
+        // library_dependency 제한: 이미 1마리 이상이면 스킵
+        if (e.type === 'library_dependency') {
+          const libraryDependencyCount = enemies.filter(en => en.type === 'library_dependency').length;
+          if (libraryDependencyCount >= 1) continue;
+        }
         enemies.push(e);
         game.addEntity(e);
       }
@@ -599,6 +604,20 @@ function startGame() {
           }
         }
       }
+    }
+
+    // 6.5. library_dependency 버프 계산
+    const pkgEnemies = enemies.filter(e => !e.isDead && e.type === 'library_dependency');
+    for (const e of enemies) {
+      if (e.isDead || e.type === 'library_dependency') {
+        e._isBuffed = false;
+        continue;
+      }
+      e._isBuffed = pkgEnemies.some(pkg => {
+        const dx = e.x - pkg.x;
+        const dy = e.y - pkg.y;
+        return Math.sqrt(dx * dx + dy * dy) <= 150;
+      });
     }
 
     // 7. 보스 업데이트
@@ -720,12 +739,16 @@ function startGame() {
           // piercing이면 적 ID 추적하여 중복 피격 방지
           if (proj.piercing) {
             if (!proj.hitEnemies.has(enemy)) {
-              enemy.takeDamage(proj.damage);
+              let dmg = proj.damage;
+              if (enemy._isBuffed) dmg = Math.max(1, Math.floor(dmg * 0.2));
+              enemy.takeDamage(dmg);
               triggerScreenShake(3, 0.1);
               proj.hitEnemies.add(enemy);
             }
           } else {
-            enemy.takeDamage(proj.damage);
+            let dmg = proj.damage;
+            if (enemy._isBuffed) dmg = Math.max(1, Math.floor(dmg * 0.2));
+            enemy.takeDamage(dmg);
             triggerScreenShake(3, 0.1);
 
             // Chain Lightning 체이닝

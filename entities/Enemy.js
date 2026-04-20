@@ -49,6 +49,8 @@ export class Enemy {
       this._chargeTimer = 0;
       this._isCharging = false;
     }
+
+    // library_dependency 필드 (no special initialization needed)
   }
 
   _initialSpecialCooldown() {
@@ -293,6 +295,31 @@ export class Enemy {
       ctx.restore();
     }
 
+    // library_dependency: 시각화
+    if (this.type === 'library_dependency') {
+      // aura ring
+      ctx.save();
+      ctx.globalAlpha = 0.15;
+      ctx.fillStyle = '#ff8800';
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, 150, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+      // box body
+      ctx.fillStyle = '#8B6914';
+      ctx.strokeStyle = '#5a4008';
+      ctx.lineWidth = 2;
+      ctx.fillRect(this.x - 16, this.y - 16, 32, 32);
+      ctx.strokeRect(this.x - 16, this.y - 16, 32, 32);
+      // text
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '8px monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('[pkg]', this.x, this.y);
+      ctx.restore();
+    }
+
     // 피격 플래시 오버레이 — 스프라이트가 있으면 tinted, 없으면 사각형
     if (this.hitFlashTimer > 0) {
       const sprite = PixelRenderer.BUG_SPRITES[this.type];
@@ -336,6 +363,7 @@ const ENEMY_STATS = {
   memory_leak:       { hp: 20,  speed: 40,  contactDamage: 12, flees: false, dropsHpItem: false },
   infinite_loop:     { hp: 35,  speed: 0,   contactDamage: 8,  flees: false, dropsHpItem: false },
   input_mismatch:    { hp: 28,  speed: 60,  contactDamage: 10, flees: false, dropsHpItem: false },
+  library_dependency: { hp: 40,  speed: 35,  contactDamage: 8, flees: false, dropsHpItem: false },
 };
 
 export function createEnemy(type, x, y) {
