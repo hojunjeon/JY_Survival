@@ -335,19 +335,23 @@ function startGame() {
     const autoTargets = [...enemies, ...(boss && !boss.isDead ? [boss] : [])];
     let autoNearest = null;
     let autoNearestDist = Infinity;
+    let bestDx = 0, bestDy = 0;
     for (const e of autoTargets) {
       if (e.isDead) continue;
       const dx = e.x - player.x;
       const dy = e.y - player.y;
       const dist = dx * dx + dy * dy;
-      if (dist < autoNearestDist) { autoNearestDist = dist; autoNearest = e; }
+      if (dist < autoNearestDist) {
+        autoNearestDist = dist;
+        autoNearest = e;
+        bestDx = dx;
+        bestDy = dy;
+      }
     }
     if (autoNearest) {
-      const dx = autoNearest.x - player.x;
-      const dy = autoNearest.y - player.y;
-      const len = Math.sqrt(dx * dx + dy * dy) || 1;
-      dirX = dx / len;
-      dirY = dy / len;
+      const len = Math.sqrt(bestDx * bestDx + bestDy * bestDy) || 1;
+      dirX = bestDx / len;
+      dirY = bestDy / len;
     }
 
     const newProjs = weapon.fire(player.x, player.y, dirX, dirY);
