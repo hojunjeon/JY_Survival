@@ -203,3 +203,25 @@
 - [x] 문서화: `blog/game-dev/draft-19-추가3.md`
 
 ### Cycle 3 — 제안 ✅ (게임 관련 항목 → phase_9.md에 반영)
+
+---
+
+## Phase 9 — 게임플레이 개선 + 밸런스 ✅
+
+### Cycle 1 — 수정 ✅
+
+- [x] T1: 자동 에임 (nearest-enemy 타겟팅, bestDx/bestDy 최적화)
+- [x] T2: Input Mismatch / Infinite Loop 웨이브 8+ 제한 (WaveSystem minWave 통합)
+- [x] T3: 플레이어 넉백 70px (무적 시간 중 없음)
+- [x] T4: REVERSED CONTROLS 텍스트 y=60 고정
+- [x] T5: Python 속도 240 / 쿨타임 0.9
+- [x] 문서화: `blog/game-dev/draft-20-수정4.md`
+
+### Cycle 2 — 추가 ✅
+
+- [x] T1: WaveSystem.js minWave 필드 공식 도입 (Cycle 1과 통합 구현)
+- [x] 문서화: `blog/game-dev/draft-21-추가4.md`
+
+### Cycle 3 — 제안 ✅ (게임 관련 항목 → phase_10.md 작성 시 참고)
+
+- Java 무기 재검토 → 다음 Phase 피드백에 반영 예정

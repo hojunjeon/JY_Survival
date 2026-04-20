@@ -6,30 +6,21 @@
 
 ---
 
-## 현재 Phase: Phase 9 진행 중
+## 현재 Phase: Phase 10 진행 대기 중
 
 **업데이트**: 2026-04-20
 
-Phase 8 완료 / Phase 9 진행 중
+Phase 9 완료 / Phase 10 진행 대기 중
 
 ---
 
-## Phase 9 — 게임플레이 개선 + 밸런스
+## Phase 10 — (미정)
 
-> 설계 문서: `phase_feedback/phase_9.md`
-> 상태: 진행 중
+> 설계 문서: `phase_feedback/phase_10.md` (미작성)
+> 상태: 대기 중 — phase_10.md 작성 후 진입
 
-### Cycle 1 — 수정 ✅ 완료
-
-- [x] T1: 공격 방향 개선 — 자동 에임 (가장 가까운 적 타겟팅)
-- [x] T2: Input Mismatch / Infinite Loop 스폰 타이밍 수정 (웨이브 8+ 조건)
-- [x] T3: 적 접촉 시 넉백 추가 (60~80px, 무적 시간 중 없음)
-- [x] T4: 'REVERSED CONTROLS' 텍스트 화면 상단 고정 (y: 60px)
-- [x] T5: Python 무기 밸런스 상향 (속도 +20%, 쿨타임 -10%)
-
-### Cycle 2 — 추가
-
-- [x] T1: WaveSystem.js minWave 필드 도입 (타입별 최소 등장 웨이브)
+### 참고 사항 (Phase 9 제안 사이클에서 이월)
+- Java 무기 기믹 밸런스 재검토 (블랙홀 오라 방식 — 근접해야 맞는 문제)
 
 ---
 
@@ -54,6 +45,7 @@ Phase 8 완료 / Phase 9 진행 중
 | 17편 (Phase7 수정) | `blog/game-dev/draft-17-수정3.md` | Phase 7 Cycle 1 | ✅ 작성 완료 (퇴고 후 발행) |
 | 19편 (Phase8 추가) | `blog/game-dev/draft-19-추가3.md` | Phase 8 Cycle 2 | ✅ 작성 완료 (퇴고 후 발행) |
 | 20편 (Phase9 수정) | `blog/game-dev/draft-20-수정4.md` | Phase 9 Cycle 1 | ✅ 작성 완료 (퇴고 후 발행) |
+| 21편 (Phase9 추가) | `blog/game-dev/draft-21-추가4.md` | Phase 9 Cycle 2 | ✅ 작성 완료 (퇴고 후 발행) |
 
 ### prompt-diary 시리즈
 
