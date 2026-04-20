@@ -102,8 +102,9 @@ YOU MUST 사이클 순서를 임의로 변경하지 마라.
 3. git commit && push (사이클 완료 커밋)
 
 **Phase 내 모든 사이클(수정+추가+제안) 완료 시 추가 처리:**
-4. `docs/phase-status.md` 에 Phase N 완료 표시
-5. `docs/phase-status.md` 의 현재 Phase를 Phase N+1 대기 상태로 업데이트
+4. `docs/finished-phase.md` — 완료된 Phase N 섹션 전체를 이 파일 하단에 추가
+5. `docs/phase-status.md` — Phase N 섹션 전체 삭제 후 한 줄 요약으로 교체: `Phase N 완료 / Phase N+1 진행 대기 중`
+6. `docs/phase-status.md` — 현재 Phase를 Phase N+1 섹션으로 교체 (빈 체크리스트 준비)
 
 ### On-demand 액션
 사이클과 무관하게 언제든 실행 가능:
