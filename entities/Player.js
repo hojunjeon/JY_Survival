@@ -15,6 +15,8 @@ export class Player {
     // 마지막 이동 방향 (C 무기 등 방향 지정 무기에 사용). 초기값: 오른쪽
     this.lastDirX = 1;
     this.lastDirY = 0;
+    this._aimDirX = 1;
+    this._aimDirY = 0;
     this.contactInvulTimer = 0;
     this.hitFlashTimer = 0;
   }

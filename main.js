@@ -352,6 +352,8 @@ function startGame() {
       const len = Math.sqrt(bestDx * bestDx + bestDy * bestDy) || 1;
       dirX = bestDx / len;
       dirY = bestDy / len;
+      player._aimDirX = dirX;
+      player._aimDirY = dirY;
     }
 
     const newProjs = weapon.fire(player.x, player.y, dirX, dirY);
@@ -1136,8 +1138,8 @@ function startGame() {
     // C/C++ 조준선 렌더
     const cWeapon = ownedWeapons.find(w => w.name === 'C/C++');
     if (cWeapon) {
-      const aimX = player.lastDirX || 0;
-      const aimY = player.lastDirY || 0;
+      const aimX = player._aimDirX || 0;
+      const aimY = player._aimDirY || 0;
       if (aimX !== 0 || aimY !== 0) {
         ctx.save();
         ctx.strokeStyle = 'rgba(200, 200, 255, 0.4)';
