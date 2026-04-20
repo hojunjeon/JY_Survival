@@ -21,7 +21,8 @@ Superpowers + GSD + Gstack 유기적 연동 워크플로우를 실제 게임 토
 
 - Phase 1 진입점: Superpowers (브레인스토밍)
 - Phase 2 진입점: GSD (태스크 선택)
-- Phase 3+ 진입점: `phase_feedback/phase_N.md` 확인 → Phase 개발 사이클 규칙 적용
+- Phase 3+ 진입점: `docs/phase-status.md` 의 태스크 목록을 우선 사용 → Phase 개발 사이클 규칙 적용
+  - `phase_feedback/phase_N.md` 가 있으면 보조 참고로 활용하되, **phase-status.md가 항상 우선**이다.
 
 ---
 
@@ -51,18 +52,17 @@ YOU MUST 사이클 순서를 임의로 변경하지 마라.
 - 사람이 새 Phase 피드백을 작성할 때도 `phase_feedback/phase_N.md` 로 저장한다.
 
 ### 진입 조건
-1. `docs/phase-status.md` 에서 현재 Phase 번호 확인
-2. `phase_feedback/phase_N.md` 존재 여부 확인
-3. 파일이 존재하고 `docs/phase-status.md` 에 해당 Phase가 미완료 상태이면 → Phase 진입
-4. 파일이 없거나 이미 완료 상태이면 → 이전 Phase 계속 진행
+1. `docs/phase-status.md` 에서 현재 Phase 번호 및 태스크 목록 확인
+2. 해당 Phase가 미완료 상태이면 → Phase 진입 (태스크 목록이 있으면 즉시 사용)
+3. 이미 완료 상태이면 → 다음 Phase로 전환
 
-### [필수] phase_N.md 검토 단계
-`phase_N.md`를 읽은 후 즉시 실행하지 않는다. 먼저:
+### [선택] phase_N.md 검토 단계
+`phase_feedback/phase_N.md` 가 존재하는 경우에만 실행한다:
 1. 모호하거나 해석이 갈리는 항목 명시
 2. 코드 분석으로 누락된 수정 항목 발굴 및 개선 방향 제안
-3. 사람의 승인을 받은 후:
-   - `docs/phase-status.md` 에 Phase N 섹션 생성 (수정/추가/제안 항목을 체크리스트로 등록)
-   - 각 사이클 실행 시작
+3. 사람의 승인을 받은 후 `docs/phase-status.md` 태스크 목록 보강
+
+> `phase_feedback/phase_N.md` 가 없으면 이 단계를 스킵하고 `docs/phase-status.md` 의 태스크 목록으로 즉시 진입한다.
 
 ### 사이클 진입 vs 재진입 판단 (IMPORTANT)
 
