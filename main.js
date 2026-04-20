@@ -329,8 +329,26 @@ function startGame() {
 
     if (!weapon.canFire()) return;
 
-    const dirX = player.lastDirX;
-    const dirY = player.lastDirY;
+    let dirX = player.lastDirX;
+    let dirY = player.lastDirY;
+
+    const autoTargets = [...enemies, ...(boss && !boss.isDead ? [boss] : [])];
+    let autoNearest = null;
+    let autoNearestDist = Infinity;
+    for (const e of autoTargets) {
+      if (e.isDead) continue;
+      const dx = e.x - player.x;
+      const dy = e.y - player.y;
+      const dist = dx * dx + dy * dy;
+      if (dist < autoNearestDist) { autoNearestDist = dist; autoNearest = e; }
+    }
+    if (autoNearest) {
+      const dx = autoNearest.x - player.x;
+      const dy = autoNearest.y - player.y;
+      const len = Math.sqrt(dx * dx + dy * dy) || 1;
+      dirX = dx / len;
+      dirY = dy / len;
+    }
 
     const newProjs = weapon.fire(player.x, player.y, dirX, dirY);
     for (const p of newProjs) {
