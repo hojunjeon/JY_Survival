@@ -119,7 +119,7 @@ describe('WaveSystem 이벤트 모드', () => {
     ws.elapsed = ws.spawnInterval;
     const batch = ws.update(0, 300, 300);
     for (const e of batch) {
-      expect(['syntax_error', 'null_pointer', 'seg_fault']).toContain(e.type);
+      expect(['syntax_error', 'null_pointer', 'seg_fault', 'race_condition']).toContain(e.type);
     }
   });
 });
