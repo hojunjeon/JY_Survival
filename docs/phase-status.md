@@ -33,7 +33,7 @@
 - [x] T2: Memory Leak — 거대해지는 슬라임 (크기 증가 + 가비지 장판) — `d47a4b3`
 - [x] T3: Infinite Loop — 가두리 양식러 (코드 벽 생성) — `ffa3246`
 - [x] T4: Input Mismatch — 컨트롤 반전술사 (3초 방향키 반전) — `a0dd829`
-- [ ] T5: Library Dependency — 패키지 버퍼 (주변 적 방어력 버프)
+- [x] T5: Library Dependency — 패키지 버퍼 (주변 적 방어력 버프) — `0672eba`
 
 ---
 
