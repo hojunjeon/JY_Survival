@@ -6,30 +6,30 @@
 
 ---
 
-## 현재 Phase: Phase 9 진행 대기 중
+## 현재 Phase: Phase 9 진행 중
 
 **업데이트**: 2026-04-20
 
-Phase 8 완료 / Phase 9 진행 대기 중
+Phase 8 완료 / Phase 9 진행 중
 
 ---
 
 ## Phase 9 — 게임플레이 개선 + 밸런스
 
 > 설계 문서: `phase_feedback/phase_9.md`
-> 상태: 대기 중 (phase_9.md 작성 완료, 구현 미시작)
+> 상태: 진행 중
 
 ### Cycle 1 — 수정
 
 - [ ] T1: 공격 방향 개선 — 자동 에임 (가장 가까운 적 타겟팅)
-- [ ] T2: Input Mismatch / Infinite Loop 스폰 타이밍 수정 (웨이브 8+ 조건)
+- [x] T2: Input Mismatch / Infinite Loop 스폰 타이밍 수정 (웨이브 8+ 조건)
 - [ ] T3: 적 접촉 시 넉백 추가 (60~80px, 무적 시간 중 없음)
 - [ ] T4: 'REVERSED CONTROLS' 텍스트 화면 상단 고정 (y: 60px)
 - [ ] T5: Python 무기 밸런스 상향 (속도 +20%, 쿨타임 -10%)
 
 ### Cycle 2 — 추가
 
-- [ ] T1: WaveSystem.js minWave 필드 도입 (타입별 최소 등장 웨이브)
+- [x] T1: WaveSystem.js minWave 필드 도입 (타입별 최소 등장 웨이브)
 
 ---
 
