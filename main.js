@@ -199,6 +199,7 @@ function startGame() {
   let bossDialogue = null;
   let bossDialogueTimer = 0;
   let garbageObjects = [];
+  let codeWalls = []; // 초기화
   let stageClearDialogue = null;
 
   // ─── Screen Shake 상태 ──────────────────────────────────────────────────
@@ -390,8 +391,14 @@ function startGame() {
 
     // 1. 플레이어 입력 → 이동
     const { x, y } = input.getAxis();
-    player.vx = x * player.speed;
-    player.vy = y * player.speed;
+    // 코드 벽이 5개 이상이면 이동 완전 금지
+    if (codeWalls.length >= 5) {
+      player.vx = 0;
+      player.vy = 0;
+    } else {
+      player.vx = x * player.speed;
+      player.vy = y * player.speed;
+    }
     player.update(dt);
     // 월드 경계 클램핑
     player.x = Math.max(player.width / 2, Math.min(WORLD_W - player.width / 2, player.x));
@@ -489,6 +496,11 @@ function startGame() {
           const memoryLeakCount = enemies.filter(en => en.type === 'memory_leak').length;
           if (memoryLeakCount >= 2) continue;
         }
+        // infinite_loop 제한: 이미 2마리 이상이면 스킵
+        if (e.type === 'infinite_loop') {
+          const infiniteLoopCount = enemies.filter(en => en.type === 'infinite_loop').length;
+          if (infiniteLoopCount >= 2) continue;
+        }
         enemies.push(e);
         game.addEntity(e);
       }
@@ -543,10 +555,19 @@ function startGame() {
         // 이벤트 몹 특수 공격 투사체 수집
         const shots = enemy.getAndClearPendingShots();
         for (const s of shots) {
-          const p = new Projectile(s.x, s.y, s.vx, s.vy, s.damage);
-          p._isBossProjectile = true; // 플레이어 피격 처리 재활용
-          bossProjectiles.push(p);
-          game.addEntity(p);
+          // infinite_loop: 코드 벽 투사체 처리
+          if (s.isCodeWallProjectile) {
+            const p = new Projectile(s.x, s.y, s.vx, s.vy, s.damage);
+            p.isCodeWallProjectile = true;
+            p.ownerEnemy = s.ownerEnemy;
+            projectiles.push(p);
+            game.addEntity(p);
+          } else {
+            const p = new Projectile(s.x, s.y, s.vx, s.vy, s.damage);
+            p._isBossProjectile = true; // 플레이어 피격 처리 재활용
+            bossProjectiles.push(p);
+            game.addEntity(p);
+          }
         }
         // memory_leak 가비지 수집
         if (enemy.type === 'memory_leak') {
@@ -643,9 +664,30 @@ function startGame() {
       }
     }
 
-    // 9. 투사체 ↔ 적 충돌
+    // 9. 투사체 ↔ 적 충돌 + 코드 벽 생성 처리
     for (const proj of projectiles) {
       if (!proj.active) continue;
+
+      // infinite_loop: 코드 벽 투사체 → 플레이어 주변에 벽 생성
+      if (proj.isCodeWallProjectile) {
+        const dx = player.x - proj.x;
+        const dy = player.y - proj.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist <= 40) {
+          // 코드 벽 생성
+          const wall = {
+            x: proj.x,
+            y: proj.y,
+            width: 32,
+            height: 32,
+            ownerEnemy: proj.ownerEnemy,
+          };
+          codeWalls.push(wall);
+          proj.ownerEnemy.codeWalls.push(wall);
+          proj.deactivate();
+        }
+        continue;
+      }
 
       // piercing: 중복 피격 방지 Set
       if (!proj.hitEnemies) proj.hitEnemies = new Set();
@@ -804,6 +846,46 @@ function startGame() {
       }
     }
 
+    // 12-4. 코드 벽 타이머 & 플레이어 충돌 처리
+    let isMovementFrozen = false;
+    let codeWallDamageThisFrame = 0;
+    if (codeWalls.length > 0) {
+      // 벽이 5개 이상이면 이동 완전 금지
+      if (codeWalls.length >= 5) {
+        isMovementFrozen = true;
+      }
+      // 각 벽과의 충돌 체크
+      for (const wall of codeWalls) {
+        const dx = wall.x - player.x;
+        const dy = wall.y - player.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        // 벽 크기 16px (radius)
+        if (dist <= 16 + 16) { // 플레이어 16px + 벽 16px
+          // 슬로우 적용: 70% 감속 = 속도 0.3배
+          if (!player._codeWallDebuffTimer || player._codeWallDebuffTimer <= 0) {
+            player._originalCodeWallSpeed = player.speed;
+            player.speed *= 0.3;
+            player._codeWallDebuffTimer = dt;
+          }
+          // 매 틱마다 3 데미지
+          codeWallDamageThisFrame += 3 * dt;
+        }
+      }
+    }
+
+    // 코드 벽 슬로우 업데이트
+    if (player._codeWallDebuffTimer && player._codeWallDebuffTimer > 0) {
+      player._codeWallDebuffTimer -= dt;
+      if (player._codeWallDebuffTimer <= 0) {
+        player.speed = player._originalCodeWallSpeed;
+      }
+    }
+
+    // 누적된 코드 벽 데미지 적용
+    if (codeWallDamageThisFrame > 0) {
+      player.takeDamageFromContact(codeWallDamageThisFrame);
+    }
+
     // 13. 플레이어 ↔ 적 충돌
     for (const enemy of enemies) {
       if (!enemy.isDead && checkCollision(player, enemy)) {
@@ -821,9 +903,16 @@ function startGame() {
       player.takeDamage(20);
     }
 
-    // 15. 죽은 적 제거 + HP 드롭 + 이벤트 통보
+    // 15. 죽은 적 제거 + HP 드롭 + 이벤트 통보 + 코드 벽 제거
     const dead = enemies.filter(e => e.isDead);
     for (const e of dead) {
+      // infinite_loop 적 사망 시 소유한 모든 코드 벽 제거
+      if (e.type === 'infinite_loop' && e.codeWalls) {
+        for (const wall of e.codeWalls) {
+          codeWalls = codeWalls.filter(w => w !== wall);
+        }
+        e.codeWalls = [];
+      }
       if (e.dropsHpItem) player.heal(20);
       // 플로팅 텍스트 이펙트
       const floatingTexts = ['Bug Fixed!', 'Error Resolved!'];
@@ -919,6 +1008,22 @@ function startGame() {
     // 엔티티 렌더 (월드 좌표)
     for (const entity of game.entities) {
       entity.render(ctx);
+    }
+
+    // 코드 벽 렌더 (월드 좌표)
+    for (const wall of codeWalls) {
+      ctx.save();
+      ctx.fillStyle = 'rgba(0, 51, 0, 0.7)';
+      ctx.strokeStyle = '#00ff00';
+      ctx.lineWidth = 2;
+      ctx.fillRect(wall.x - wall.width / 2, wall.y - wall.height / 2, wall.width, wall.height);
+      ctx.strokeRect(wall.x - wall.width / 2, wall.y - wall.height / 2, wall.width, wall.height);
+      ctx.fillStyle = '#00ff00';
+      ctx.font = '8px monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('{ }', wall.x, wall.y);
+      ctx.restore();
     }
 
     // Java 오비탈 렌더 (월드 좌표)

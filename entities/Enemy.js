@@ -34,6 +34,14 @@ export class Enemy {
       this._garbageTimer = 0;
       this._pendingGarbage = [];
     }
+
+    // infinite_loop 필드
+    if (type === 'infinite_loop') {
+      this._orbitAngle = Math.random() * Math.PI * 2;
+      this._orbitRadius = 180;
+      this._shotCooldown = 2.0;
+      this.codeWalls = [];
+    }
   }
 
   _initialSpecialCooldown() {
@@ -144,6 +152,31 @@ export class Enemy {
       }
     }
 
+    // Infinite Loop 공전 + 투사체 발사
+    if (this.type === 'infinite_loop') {
+      this._orbitAngle += 0.8 * dt;
+      this.x = targetX + Math.cos(this._orbitAngle) * this._orbitRadius;
+      this.y = targetY + Math.sin(this._orbitAngle) * this._orbitRadius;
+
+      this._shotCooldown -= dt;
+      if (this._shotCooldown <= 0) {
+        this._shotCooldown = 2.0;
+        const dx = targetX - this.x;
+        const dy = targetY - this.y;
+        const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+        this._pendingShots.push({
+          x: this.x,
+          y: this.y,
+          vx: (dx / dist) * 120,
+          vy: (dy / dist) * 120,
+          damage: 0,
+          isCodeWallProjectile: true,
+          ownerEnemy: this,
+        });
+      }
+      return; // skip normal movement
+    }
+
     // 이동 처리
     if (this.flees) {
       this.x -= dirX * this.speed * dt;
@@ -184,6 +217,22 @@ export class Enemy {
       ctx.moveTo(this.x, this.y);
       ctx.lineTo(this.linkedEnemy.x, this.linkedEnemy.y);
       ctx.stroke();
+      ctx.restore();
+    }
+
+    // infinite_loop: 시각화
+    if (this.type === 'infinite_loop') {
+      ctx.save();
+      ctx.fillStyle = '#003300';
+      ctx.strokeStyle = '#00ff00';
+      ctx.lineWidth = 2;
+      ctx.fillRect(this.x - 16, this.y - 16, 32, 32);
+      ctx.strokeRect(this.x - 16, this.y - 16, 32, 32);
+      ctx.fillStyle = '#00ff00';
+      ctx.font = '10px monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('{ }', this.x, this.y);
       ctx.restore();
     }
 
@@ -228,6 +277,7 @@ const ENEMY_STATS = {
   env_error:         { hp: 48,  speed: 35,  contactDamage: 15, flees: false, dropsHpItem: false },
   race_condition:    { hp: 30,  speed: 70,  contactDamage: 10, flees: false, dropsHpItem: false },
   memory_leak:       { hp: 20,  speed: 40,  contactDamage: 12, flees: false, dropsHpItem: false },
+  infinite_loop:     { hp: 35,  speed: 0,   contactDamage: 8,  flees: false, dropsHpItem: false },
 };
 
 export function createEnemy(type, x, y) {

@@ -457,3 +457,61 @@ describe('memory_leak 적 타입', () => {
     expect(garbage).toEqual([]);
   });
 });
+
+describe('infinite_loop 몬스터', () => {
+  test('infinite_loop 타입을 생성할 수 있다', () => {
+    const e = createEnemy('infinite_loop', 100, 100);
+    expect(e.type).toBe('infinite_loop');
+    expect(e.hp).toBe(35);
+    expect(e.speed).toBe(0);
+    expect(e.contactDamage).toBe(8);
+  });
+
+  test('infinite_loop 생성 시 codeWalls 배열이 빈 배열이다', () => {
+    const e = createEnemy('infinite_loop', 100, 100);
+    expect(e.codeWalls).toEqual([]);
+  });
+
+  test('infinite_loop는 update 후 위치가 플레이어 주변 궤도에 있다', () => {
+    const e = createEnemy('infinite_loop', 100, 100);
+    const playerX = 500;
+    const playerY = 500;
+    e.update(1.0, playerX, playerY);
+
+    // 플레이어로부터 거리 확인 (180px ± 약간의 공차)
+    const dx = e.x - playerX;
+    const dy = e.y - playerY;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+
+    expect(dist).toBeCloseTo(180, 0);
+  });
+
+  test('infinite_loop는 2초마다 투사체를 발사한다', () => {
+    const e = createEnemy('infinite_loop', 100, 100);
+
+    // 첫 번째 발사 (2초 후)
+    e.update(2.0, 200, 100);
+    let shots = e.getAndClearPendingShots();
+    expect(shots.length).toBe(1);
+
+    // 두 번째 발사 (2초 더 지난 후)
+    e.update(2.0, 200, 100);
+    shots = e.getAndClearPendingShots();
+    expect(shots.length).toBe(1);
+  });
+
+  test('infinite_loop 투사체는 isCodeWallProjectile: true를 가진다', () => {
+    const e = createEnemy('infinite_loop', 100, 100);
+    e.update(2.0, 200, 100);
+    const shots = e.getAndClearPendingShots();
+    expect(shots[0]).toHaveProperty('isCodeWallProjectile', true);
+  });
+
+  test('infinite_loop 투사체는 ownerEnemy 참조를 가진다', () => {
+    const e = createEnemy('infinite_loop', 100, 100);
+    e.update(2.0, 200, 100);
+    const shots = e.getAndClearPendingShots();
+    expect(shots[0]).toHaveProperty('ownerEnemy');
+    expect(shots[0].ownerEnemy).toBe(e);
+  });
+});
