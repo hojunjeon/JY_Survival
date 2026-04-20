@@ -353,8 +353,8 @@ export class Enemy {
 }
 
 const ENEMY_STATS = {
-  syntax_error:      { hp: 24,  speed: 80,  contactDamage: 10, flees: false, dropsHpItem: false },
-  null_pointer:      { hp: 20,  speed: 140, contactDamage: 5,  flees: false, dropsHpItem: false },
+  syntax_error:      { hp: 24,  speed: 65,  contactDamage: 10, flees: false, dropsHpItem: false },
+  null_pointer:      { hp: 20,  speed: 110, contactDamage: 5,  flees: false, dropsHpItem: false },
   seg_fault:         { hp: 48,  speed: 40,  contactDamage: 25, flees: false, dropsHpItem: false },
   heal_bug:          { hp: 15,  speed: 150, contactDamage: 0,  flees: true,  dropsHpItem: true  },
   indentation_error: { hp: 36,  speed: 70,  contactDamage: 15, flees: false, dropsHpItem: false },
