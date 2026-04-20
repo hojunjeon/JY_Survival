@@ -176,3 +176,30 @@
 
 ### Cycle 2 — 추가 ✅ (스킵)
 ### Cycle 3 — 제안 ✅ (스킵)
+
+---
+
+## Phase 8 — 무기 기믹 + 신규 몬스터 ✅
+
+> 설계 문서: `phase_feedback/phase_8.md`
+> 구현 계획: `docs/superpowers/plans/2026-04-18-phase8-cycle1-수정.md`
+
+### Cycle 1 — 수정 (무기 기믹 재구현 6종) ✅
+- [x] T1: Python — Chain Lightning (Projectile 체이닝 + 초록 뱀 궤적) — `1157ec7`
+- [x] T2: C/C++ — Railgun (조준선 + 빔 이펙트 + Screen Shake) — `ef7d7b1`
+- [x] T3: Java — GC Blackhole (5초마다 블랙홀 소환 + 흡입 + 폭발) — `c550130`
+- [x] T4: Git — Branch & Merge (분신 저장 → 3초 후 라인 데미지) — `3e672d4`
+- [x] T5: SQL — DROP TABLE (표적 → 낙하 블록 → 착지 폭발) — `7c32481`
+- [x] T6: JavaScript — Tornado (확장 토네이도 범위 데미지) — `9754ed6`
+- [x] 문서화: `blog/game-dev/draft-18-수정3.md`
+
+### Cycle 2 — 추가 (신규 몬스터 5종) ✅
+- [x] T1: Race Condition — 샴쌍둥이 버그 (동시 처치 필요) — `071fe9c`
+- [x] T2: Memory Leak — 거대해지는 슬라임 (크기 증가 + 가비지 장판) — `d47a4b3`
+- [x] T3: Infinite Loop — 가두리 양식러 (코드 벽 생성) — `ffa3246`
+- [x] T4: Input Mismatch — 컨트롤 반전술사 (3초 방향키 반전) — `a0dd829`
+- [x] T5: Library Dependency — 패키지 버퍼 (주변 적 방어력 버프) — `0672eba`
+- [x] TDD: 누적 테스트 340개 (327 GREEN, 13 pre-existing failures)
+- [x] 문서화: `blog/game-dev/draft-19-추가3.md`
+
+### Cycle 3 — 제안 ✅ (게임 관련 항목 → phase_9.md에 반영)
