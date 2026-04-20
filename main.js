@@ -608,6 +608,7 @@ function startGame() {
 
     // 6.5. library_dependency 버프 계산
     const pkgEnemies = enemies.filter(e => !e.isDead && e.type === 'library_dependency');
+    const _radiusSq = 150 * 150;
     for (const e of enemies) {
       if (e.isDead || e.type === 'library_dependency') {
         e._isBuffed = false;
@@ -616,7 +617,7 @@ function startGame() {
       e._isBuffed = pkgEnemies.some(pkg => {
         const dx = e.x - pkg.x;
         const dy = e.y - pkg.y;
-        return Math.sqrt(dx * dx + dy * dy) <= 150;
+        return (dx * dx + dy * dy) <= _radiusSq;
       });
     }
 
@@ -740,6 +741,7 @@ function startGame() {
           if (proj.piercing) {
             if (!proj.hitEnemies.has(enemy)) {
               let dmg = proj.damage;
+              // library_dependency 버프: 받는 데미지를 20%로 감소 (5배 방어력)
               if (enemy._isBuffed) dmg = Math.max(1, Math.floor(dmg * 0.2));
               enemy.takeDamage(dmg);
               triggerScreenShake(3, 0.1);
@@ -747,6 +749,7 @@ function startGame() {
             }
           } else {
             let dmg = proj.damage;
+            // library_dependency 버프: 받는 데미지를 20%로 감소 (5배 방어력)
             if (enemy._isBuffed) dmg = Math.max(1, Math.floor(dmg * 0.2));
             enemy.takeDamage(dmg);
             triggerScreenShake(3, 0.1);
