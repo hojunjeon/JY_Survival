@@ -41,7 +41,7 @@ export class Player {
   takeDamageFromContact(amount) {
     if (this.contactInvulTimer > 0) return;
     this.takeDamage(amount);
-    this.contactInvulTimer = 0.5;
+    this.contactInvulTimer = 1.0;
   }
 
   applyKnockback(dx, dy, force) {

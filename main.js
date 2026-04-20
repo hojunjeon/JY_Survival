@@ -976,7 +976,7 @@ function startGame() {
 
     // 14. 플레이어 ↔ 보스 접촉 데미지
     if (boss && !boss.isDead && checkCollision(player, boss)) {
-      player.takeDamage(20);
+      player.takeDamageFromContact(20);
     }
 
     // 15. 죽은 적 제거 + HP 드롭 + 이벤트 통보 + 코드 벽 제거
