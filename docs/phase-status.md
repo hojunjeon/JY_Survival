@@ -19,7 +19,7 @@ Phase 8 완료 / Phase 9 진행 중
 > 설계 문서: `phase_feedback/phase_9.md`
 > 상태: 진행 중
 
-### Cycle 1 — 수정
+### Cycle 1 — 수정 ✅ 완료
 
 - [x] T1: 공격 방향 개선 — 자동 에임 (가장 가까운 적 타겟팅)
 - [x] T2: Input Mismatch / Infinite Loop 스폰 타이밍 수정 (웨이브 8+ 조건)
@@ -53,6 +53,7 @@ Phase 8 완료 / Phase 9 진행 중
 | 12편 (Phase4 추가) | `blog/draft-12-추가.md` | Phase 4 Cycle 2 | ✅ 작성 완료 (퇴고 후 발행) |
 | 17편 (Phase7 수정) | `blog/game-dev/draft-17-수정3.md` | Phase 7 Cycle 1 | ✅ 작성 완료 (퇴고 후 발행) |
 | 19편 (Phase8 추가) | `blog/game-dev/draft-19-추가3.md` | Phase 8 Cycle 2 | ✅ 작성 완료 (퇴고 후 발행) |
+| 20편 (Phase9 수정) | `blog/game-dev/draft-20-수정4.md` | Phase 9 Cycle 1 | ✅ 작성 완료 (퇴고 후 발행) |
 
 ### prompt-diary 시리즈
 
