@@ -379,3 +379,81 @@ describe('race_condition 몬스터', () => {
     expect(e.dyingTimer).toBe(0);
   });
 });
+
+describe('memory_leak 적 타입', () => {
+  it('memory_leak 적을 생성한다', () => {
+    const e = createEnemy('memory_leak', 100, 100);
+    expect(e.type).toBe('memory_leak');
+    expect(e.hp).toBe(20);
+    expect(e.speed).toBe(40);
+    expect(e.contactDamage).toBe(12);
+  });
+
+  it('생성 시 growTimer, scale, _pendingGarbage를 초기화한다', () => {
+    const e = createEnemy('memory_leak', 100, 100);
+    expect(e.growTimer).toBe(0);
+    expect(e.scale).toBe(1.0);
+    expect(e._pendingGarbage).toEqual([]);
+  });
+
+  it('초기 크기는 32×32이다', () => {
+    const e = createEnemy('memory_leak', 100, 100);
+    expect(e.width).toBe(32);
+    expect(e.height).toBe(32);
+  });
+
+  it('3초마다 scale이 0.3씩 증가한다 (최대 3.0)', () => {
+    const e = createEnemy('memory_leak', 100, 100);
+    e.update(3.0, 200, 200);
+    expect(e.scale).toBeCloseTo(1.3);
+    expect(e.width).toBeCloseTo(32 * 1.3);
+    expect(e.height).toBeCloseTo(32 * 1.3);
+  });
+
+  it('6초 경과 후 scale은 1.6이 된다', () => {
+    const e = createEnemy('memory_leak', 100, 100);
+    e.update(6.0, 200, 200);
+    expect(e.scale).toBeCloseTo(1.6);
+  });
+
+  it('scale은 3.0을 초과하지 않는다', () => {
+    const e = createEnemy('memory_leak', 100, 100);
+    e.update(3.0, 200, 200);
+    expect(e.scale).toBeCloseTo(1.3);
+    e.update(3.0, 200, 200);
+    expect(e.scale).toBeCloseTo(1.6);
+    e.update(3.0, 200, 200);
+    expect(e.scale).toBeCloseTo(1.9);
+    e.update(3.6, 200, 200);
+    expect(e.scale).toBe(3.0);
+    expect(e.width).toBe(96);
+    expect(e.height).toBe(96);
+  });
+
+  it('0.5초마다 가비지 객체를 생성한다', () => {
+    const e = createEnemy('memory_leak', 100, 100);
+    e.update(0.5, 200, 200);
+    expect(e._pendingGarbage.length).toBe(1);
+    expect(e._pendingGarbage[0]).toEqual({ x: 100, y: 100, timer: 3.0 });
+  });
+
+  it('1초 경과 후 가비지 객체 2개가 생성된다', () => {
+    const e = createEnemy('memory_leak', 100, 100);
+    e.update(1.0, 200, 200);
+    expect(e._pendingGarbage.length).toBe(2);
+  });
+
+  it('getAndClearPendingGarbage는 가비지 배열을 반환하고 초기화한다', () => {
+    const e = createEnemy('memory_leak', 100, 100);
+    e.update(0.5, 200, 200);
+    const garbage = e.getAndClearPendingGarbage();
+    expect(garbage.length).toBe(1);
+    expect(e._pendingGarbage.length).toBe(0);
+  });
+
+  it('비 memory_leak 적은 getAndClearPendingGarbage 호출 시 빈 배열을 반환한다', () => {
+    const e = createEnemy('syntax_error', 100, 100);
+    const garbage = e.getAndClearPendingGarbage();
+    expect(garbage).toEqual([]);
+  });
+});

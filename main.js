@@ -198,6 +198,7 @@ function startGame() {
   let bossProjectiles = [];
   let bossDialogue = null;
   let bossDialogueTimer = 0;
+  let garbageObjects = [];
   let stageClearDialogue = null;
 
   // ─── Screen Shake 상태 ──────────────────────────────────────────────────
@@ -483,6 +484,11 @@ function startGame() {
     if (!boss) {
       const newEnemies = waveSystem.update(dt, player.x, player.y);
       for (const e of newEnemies) {
+        // memory_leak 제한: 이미 2마리 이상이면 스킵
+        if (e.type === 'memory_leak') {
+          const memoryLeakCount = enemies.filter(en => en.type === 'memory_leak').length;
+          if (memoryLeakCount >= 2) continue;
+        }
         enemies.push(e);
         game.addEntity(e);
       }
@@ -530,7 +536,7 @@ function startGame() {
     // 5-1. 적 킬 이벤트 시스템 통보 (죽은 적 처리 직전)
     // (아래 9번에서 처리)
 
-    // 6. 적 이동 + 특수 공격 투사체 수집
+    // 6. 적 이동 + 특수 공격 투사체 수집 + 가비지 수집
     for (const enemy of enemies) {
       if (!enemy.isDead) {
         enemy.update(dt, player.x, player.y);
@@ -541,6 +547,13 @@ function startGame() {
           p._isBossProjectile = true; // 플레이어 피격 처리 재활용
           bossProjectiles.push(p);
           game.addEntity(p);
+        }
+        // memory_leak 가비지 수집
+        if (enemy.type === 'memory_leak') {
+          const garbage = enemy.getAndClearPendingGarbage();
+          for (const g of garbage) {
+            garbageObjects.push(g);
+          }
         }
       }
     }
@@ -756,6 +769,38 @@ function startGame() {
       if (checkCollision(proj, player)) {
         player.takeDamage(proj.damage);
         proj.deactivate();
+      }
+    }
+
+    // 12-1. 가비지 타이머 업데이트
+    for (let i = garbageObjects.length - 1; i >= 0; i--) {
+      garbageObjects[i].timer -= dt;
+      if (garbageObjects[i].timer <= 0) {
+        garbageObjects.splice(i, 1);
+      }
+    }
+
+    // 12-2. 플레이어 ↔ 가비지 충돌 (반경 16px)
+    for (const garbage of garbageObjects) {
+      const dx = garbage.x - player.x;
+      const dy = garbage.y - player.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist <= 16) {
+        player.takeDamageFromContact(5);
+        // 속도 감소 (중복 적용 방지)
+        if (!player._speedDebuffTimer || player._speedDebuffTimer <= 0) {
+          player._originalSpeed = player.speed;
+          player.speed *= 0.5;
+          player._speedDebuffTimer = 1.0;
+        }
+      }
+    }
+
+    // 12-3. 플레이어 속도 debuff 업데이트
+    if (player._speedDebuffTimer && player._speedDebuffTimer > 0) {
+      player._speedDebuffTimer -= dt;
+      if (player._speedDebuffTimer <= 0) {
+        player.speed = player._originalSpeed;
       }
     }
 
@@ -1024,6 +1069,17 @@ function startGame() {
       ctx.restore();
     }
 
+    // 가비지 오브젝트 렌더 (반투명 초록 원)
+    for (const garbage of garbageObjects) {
+      ctx.save();
+      ctx.globalAlpha = 0.5;
+      ctx.fillStyle = '#00dd44';
+      ctx.beginPath();
+      ctx.arc(garbage.x, garbage.y, 8, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+
     // FloatingText 렌더 (월드 좌표)
     floatingTextManager.render(ctx, camX, camY);
 
@@ -1116,8 +1172,9 @@ function startGame() {
     ctx.textAlign = 'left';
   };
 
-  // 게임 재시작 시 플로팅 텍스트 초기화
+  // 게임 재시작 시 플로팅 텍스트 + 가비지 초기화
   floatingTextManager.texts = [];
+  garbageObjects = [];
 
   game.addEntity(player);
   game.start();

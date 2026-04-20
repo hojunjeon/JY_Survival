@@ -26,6 +26,14 @@ export class Enemy {
     // race_condition 필드
     this.linkedEnemy = null;
     this.dyingTimer = 0;
+
+    // memory_leak 필드
+    if (type === 'memory_leak') {
+      this.growTimer = 0;
+      this.scale = 1.0;
+      this._garbageTimer = 0;
+      this._pendingGarbage = [];
+    }
   }
 
   _initialSpecialCooldown() {
@@ -38,6 +46,13 @@ export class Enemy {
     const shots = [...this._pendingShots];
     this._pendingShots = [];
     return shots;
+  }
+
+  getAndClearPendingGarbage() {
+    if (this.type !== 'memory_leak') return [];
+    const garbage = [...this._pendingGarbage];
+    this._pendingGarbage = [];
+    return garbage;
   }
 
   takeDamage(amount) {
@@ -67,6 +82,23 @@ export class Enemy {
         }
       }
       return;
+    }
+
+    // memory_leak: 크기 증가 + 가비지 생성
+    if (this.type === 'memory_leak') {
+      this.growTimer += dt;
+      while (this.growTimer >= 3.0) {
+        this.growTimer -= 3.0;
+        this.scale = Math.min(this.scale + 0.3, 3.0);
+        this.width = 32 * this.scale;
+        this.height = 32 * this.scale;
+      }
+
+      this._garbageTimer += dt;
+      while (this._garbageTimer >= 0.5) {
+        this._garbageTimer -= 0.5;
+        this._pendingGarbage.push({ x: this.x, y: this.y, timer: 3.0 });
+      }
     }
 
     if (dt === 0) return;
@@ -136,6 +168,7 @@ export class Enemy {
         indentation_error: '#ffaa44',
         env_error:         '#4488ff',
         race_condition:    '#ff88cc',
+        memory_leak:       '#00dd44',
         enemy:             '#ff8800',
       };
       ctx.fillStyle = colors[this.type] || colors.enemy;
@@ -194,6 +227,7 @@ const ENEMY_STATS = {
   indentation_error: { hp: 36,  speed: 70,  contactDamage: 15, flees: false, dropsHpItem: false },
   env_error:         { hp: 48,  speed: 35,  contactDamage: 15, flees: false, dropsHpItem: false },
   race_condition:    { hp: 30,  speed: 70,  contactDamage: 10, flees: false, dropsHpItem: false },
+  memory_leak:       { hp: 20,  speed: 40,  contactDamage: 12, flees: false, dropsHpItem: false },
 };
 
 export function createEnemy(type, x, y) {
