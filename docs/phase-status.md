@@ -29,7 +29,7 @@
 
 ### Cycle 2 — 추가 (신규 몬스터 5종)
 
-- [ ] T1: Race Condition — 샴쌍둥이 버그 (동시 처치 필요)
+- [x] T1: Race Condition — 샴쌍둥이 버그 (동시 처치 필요) — `071fe9c`
 - [ ] T2: Memory Leak — 거대해지는 슬라임 (크기 증가 + 가비지 장판)
 - [ ] T3: Infinite Loop — 가두리 양식러 (코드 벽 생성)
 - [ ] T4: Input Mismatch — 컨트롤 반전술사 (3초 방향키 반전)
