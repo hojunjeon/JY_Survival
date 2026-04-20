@@ -174,6 +174,9 @@ function startGame() {
     drawWithOutline(ctx, x, y) { PixelRenderer.drawPlayerWithOutline(ctx, x, y, 2); },
   };
   const player = new Player(canvas.width / 2, canvas.height / 2, playerRenderer);
+  // 컨트롤 반전 효과 초기화
+  player.controlsReversed = false;
+  player.controlsReversedTimer = 0;
 
   const hud = new HUD({ canvasWidth: canvas.width, canvasHeight: canvas.height });
   const floatingTextManager = new FloatingTextManager();
@@ -390,7 +393,12 @@ function startGame() {
     }
 
     // 1. 플레이어 입력 → 이동
-    const { x, y } = input.getAxis();
+    let { x, y } = input.getAxis();
+    // 컨트롤 반전 효과 적용
+    if (player.controlsReversed && player.controlsReversedTimer > 0) {
+      x = -x;
+      y = -y;
+    }
     // 코드 벽이 5개 이상이면 이동 완전 금지
     if (codeWalls.length >= 5) {
       player.vx = 0;
@@ -398,6 +406,14 @@ function startGame() {
     } else {
       player.vx = x * player.speed;
       player.vy = y * player.speed;
+    }
+    // 컨트롤 반전 타이머 업데이트
+    if (player.controlsReversedTimer && player.controlsReversedTimer > 0) {
+      player.controlsReversedTimer -= dt;
+      if (player.controlsReversedTimer <= 0) {
+        player.controlsReversed = false;
+        player.controlsReversedTimer = 0;
+      }
     }
     player.update(dt);
     // 월드 경계 클램핑
@@ -561,6 +577,12 @@ function startGame() {
             p.isCodeWallProjectile = true;
             p.ownerEnemy = s.ownerEnemy;
             projectiles.push(p);
+            game.addEntity(p);
+          } else if (s.isControlReversal) {
+            const p = new Projectile(s.x, s.y, s.vx, s.vy, s.damage);
+            p.isControlReversal = true;
+            p._isBossProjectile = true; // 플레이어 피격 처리 재활용
+            bossProjectiles.push(p);
             game.addEntity(p);
           } else {
             const p = new Projectile(s.x, s.y, s.vx, s.vy, s.damage);
@@ -809,7 +831,12 @@ function startGame() {
     for (const proj of bossProjectiles) {
       if (!proj.active) continue;
       if (checkCollision(proj, player)) {
-        player.takeDamage(proj.damage);
+        if (proj.isControlReversal) {
+          player.controlsReversed = true;
+          player.controlsReversedTimer = 3.0;
+        } else {
+          player.takeDamage(proj.damage);
+        }
         proj.deactivate();
       }
     }
@@ -1225,6 +1252,14 @@ function startGame() {
       ctx.fillText(`[${i + 1}] ${w.name}`, canvas.width - 12, 56 + i * 20);
     });
     ctx.textAlign = 'left';
+
+    // 컨트롤 반전 상태 표시
+    if (player.controlsReversed && player.controlsReversedTimer > 0) {
+      ctx.fillStyle = '#aa00ff';
+      ctx.font = 'bold 16px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('CONTROLS REVERSED', canvas.width / 2, 40);
+    }
 
     // 무기 획득 알림
     if (rewardNotice) {

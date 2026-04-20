@@ -515,3 +515,56 @@ describe('infinite_loop 몬스터', () => {
     expect(shots[0].ownerEnemy).toBe(e);
   });
 });
+
+describe('input_mismatch 몬스터', () => {
+  test('input_mismatch 생성 시 올바른 스탯을 가진다', () => {
+    const e = createEnemy('input_mismatch', 100, 100);
+    expect(e.type).toBe('input_mismatch');
+    expect(e.hp).toBe(28);
+    expect(e.speed).toBe(60);
+    expect(e.contactDamage).toBe(10);
+  });
+
+  test('input_mismatch는 4초마다 충전 후 투사체를 발사한다', () => {
+    const e = createEnemy('input_mismatch', 100, 100);
+    // 처음 4초: 쿨타임 감소, 0초: 충전 시작
+    e.update(4.0, 200, 100);
+    expect(e._isCharging).toBe(true);
+    expect(e._chargeTimer).toBeCloseTo(0.7);
+
+    // 충전 0.7초 후: 투사체 발사
+    e.update(0.7, 200, 100);
+    expect(e._isCharging).toBe(false);
+    const shots = e.getAndClearPendingShots();
+    expect(shots.length).toBe(1);
+  });
+
+  test('충전 중 _isCharging이 true이다', () => {
+    const e = createEnemy('input_mismatch', 100, 100);
+    e.update(4.0, 200, 100);
+    expect(e._isCharging).toBe(true);
+  });
+
+  test('발사된 투사체는 isControlReversal: true를 가진다', () => {
+    const e = createEnemy('input_mismatch', 100, 100);
+    // 첫 4초: 초기 cooldown
+    e.update(4.0, 200, 100);
+    expect(e._isCharging).toBe(true);
+    // 0.7초 더: 충전 완료 → 발사
+    e.update(0.7, 200, 100);
+    const shots = e.getAndClearPendingShots();
+    expect(shots.length).toBe(1);
+    expect(shots[0]).toHaveProperty('isControlReversal', true);
+  });
+
+  test('투사체는 150 px/s 속도로 플레이어 방향으로 날아간다', () => {
+    const e = createEnemy('input_mismatch', 100, 100);
+    e._attackCooldown = -1;
+    e._isCharging = true;
+    e._chargeTimer = 0;
+    e.update(0.01, 200, 100); // targetX=200, targetY=100 (오른쪽)
+    const shots = e.getAndClearPendingShots();
+    expect(shots[0].vx).toBeCloseTo(150); // 오른쪽
+    expect(shots[0].vy).toBeCloseTo(0);
+  });
+});

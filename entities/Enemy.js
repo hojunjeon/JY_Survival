@@ -42,6 +42,13 @@ export class Enemy {
       this._shotCooldown = 2.0;
       this.codeWalls = [];
     }
+
+    // input_mismatch 필드
+    if (type === 'input_mismatch') {
+      this._attackCooldown = 4.0;
+      this._chargeTimer = 0;
+      this._isCharging = false;
+    }
   }
 
   _initialSpecialCooldown() {
@@ -152,6 +159,34 @@ export class Enemy {
       }
     }
 
+    // Input Mismatch 충전 + 투사체 발사
+    if (this.type === 'input_mismatch') {
+      this._attackCooldown -= dt;
+      if (this._isCharging) {
+        this._chargeTimer -= dt;
+        if (this._chargeTimer <= 0) {
+          this._isCharging = false;
+          this._attackCooldown = 4.0;
+          // fire projectile
+          const dx = targetX - this.x;
+          const dy = targetY - this.y;
+          const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+          this._pendingShots.push({
+            x: this.x,
+            y: this.y,
+            vx: (dx / dist) * 150,
+            vy: (dy / dist) * 150,
+            damage: 0,
+            isControlReversal: true,
+          });
+        }
+      } else if (this._attackCooldown <= 0) {
+        this._isCharging = true;
+        this._chargeTimer = 0.7;
+      }
+      // still moves toward player while charging
+    }
+
     // Infinite Loop 공전 + 투사체 발사
     if (this.type === 'infinite_loop') {
       this._orbitAngle += 0.8 * dt;
@@ -220,6 +255,28 @@ export class Enemy {
       ctx.restore();
     }
 
+    // input_mismatch: 시각화
+    if (this.type === 'input_mismatch') {
+      ctx.save();
+      ctx.fillStyle = '#aa00ff';
+      ctx.fillRect(this.x - 16, this.y - 16, 32, 32);
+      // charging glow
+      if (this._isCharging) {
+        ctx.globalAlpha = 0.5 + 0.5 * (1 - this._chargeTimer / 0.7);
+        ctx.fillStyle = '#ff88ff';
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, 24, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+      }
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '10px monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('!=', this.x, this.y);
+      ctx.restore();
+    }
+
     // infinite_loop: 시각화
     if (this.type === 'infinite_loop') {
       ctx.save();
@@ -278,6 +335,7 @@ const ENEMY_STATS = {
   race_condition:    { hp: 30,  speed: 70,  contactDamage: 10, flees: false, dropsHpItem: false },
   memory_leak:       { hp: 20,  speed: 40,  contactDamage: 12, flees: false, dropsHpItem: false },
   infinite_loop:     { hp: 35,  speed: 0,   contactDamage: 8,  flees: false, dropsHpItem: false },
+  input_mismatch:    { hp: 28,  speed: 60,  contactDamage: 10, flees: false, dropsHpItem: false },
 };
 
 export function createEnemy(type, x, y) {
