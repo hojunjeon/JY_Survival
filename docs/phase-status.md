@@ -56,6 +56,7 @@
 | 11편 (Phase4 수정) | `blog/draft-11-수정.md` | Phase 4 Cycle 1 | ✅ 작성 완료 (퇴고 후 발행) |
 | 12편 (Phase4 추가) | `blog/draft-12-추가.md` | Phase 4 Cycle 2 | ✅ 작성 완료 (퇴고 후 발행) |
 | 17편 (Phase7 수정) | `blog/game-dev/draft-17-수정3.md` | Phase 7 Cycle 1 | ✅ 작성 완료 (퇴고 후 발행) |
+| 19편 (Phase8 추가) | `blog/game-dev/draft-19-추가3.md` | Phase 8 Cycle 2 | ✅ 작성 완료 (퇴고 후 발행) |
 
 ### prompt-diary 시리즈
 
