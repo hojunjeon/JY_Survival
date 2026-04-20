@@ -7,7 +7,7 @@ const WAVE_TABLE = [
   { type: 'memory_leak',        minWave: 1  },
   { type: 'race_condition',     minWave: 5  },
   { type: 'infinite_loop',      minWave: 8  },
-  { type: 'input_mismatch',     minWave: 8  },
+  { type: 'input_mismatch',     minWave: 25 },
   { type: 'library_dependency', minWave: 10 },
 ];
 
