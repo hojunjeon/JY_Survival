@@ -1307,7 +1307,7 @@ function startGame() {
       ctx.fillStyle = '#aa00ff';
       ctx.font = 'bold 16px monospace';
       ctx.textAlign = 'center';
-      ctx.fillText('CONTROLS REVERSED', canvas.width / 2, 60);
+      ctx.fillText('CONTROLS REVERSED', canvas.width / 2, 28);
     }
 
     // 무기 획득 알림
