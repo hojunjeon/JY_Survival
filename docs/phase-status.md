@@ -21,7 +21,7 @@ Phase 8 완료 / Phase 9 진행 중
 
 ### Cycle 1 — 수정
 
-- [ ] T1: 공격 방향 개선 — 자동 에임 (가장 가까운 적 타겟팅)
+- [x] T1: 공격 방향 개선 — 자동 에임 (가장 가까운 적 타겟팅)
 - [x] T2: Input Mismatch / Infinite Loop 스폰 타이밍 수정 (웨이브 8+ 조건)
 - [x] T3: 적 접촉 시 넉백 추가 (60~80px, 무적 시간 중 없음)
 - [ ] T4: 'REVERSED CONTROLS' 텍스트 화면 상단 고정 (y: 60px)
