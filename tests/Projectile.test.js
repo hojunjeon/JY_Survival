@@ -86,3 +86,15 @@ describe('Projectile 관통 여부', () => {
     expect(proj.piercing).toBe(true);
   });
 });
+
+describe('Projectile weaponType', () => {
+  it('기본 weaponType은 "default"이다', () => {
+    const p = new Projectile(0, 0, 100, 0, 10);
+    expect(p.weaponType).toBe('default');
+  });
+
+  it('생성 시 weaponType을 지정할 수 있다', () => {
+    const p = new Projectile(0, 0, 100, 0, 10, { weaponType: 'python' });
+    expect(p.weaponType).toBe('python');
+  });
+});

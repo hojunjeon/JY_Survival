@@ -14,7 +14,8 @@ export class PythonWeapon extends WeaponBase {
       color: '#44ff44',
       chainHops: 2,
       chainRadius: 130,
-      hitEnemyIds: new Set()
+      hitEnemyIds: new Set(),
+      weaponType: 'python',
     });
     proj.width = 6;
     proj.height = 6;

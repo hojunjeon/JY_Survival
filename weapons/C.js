@@ -11,7 +11,8 @@ export class CWeapon extends WeaponBase {
     return [new Projectile(x, y, dirX * this.projectileSpeed, dirY * this.projectileSpeed, this.damage, {
       piercing: true,
       color: '#aaaaaa',
-      isRailgun: true
+      isRailgun: true,
+      weaponType: 'c',
     })];
   }
 }

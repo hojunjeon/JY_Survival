@@ -14,6 +14,7 @@ export class Projectile {
     isBlackhole = false,
     blackholeRadius = 100,
     blackholeLifetime = 2.0,
+    weaponType = 'default',
   } = {}) {
     this.x = x;
     this.y = y;
@@ -38,6 +39,7 @@ export class Projectile {
     this.active = true;
     this.width = 8;
     this.height = 8;
+    this.weaponType = weaponType;
   }
 
   update(dt, bounds = null) {
@@ -70,6 +72,24 @@ export class Projectile {
       ctx.fillRect(-20, -2, 40, 4);
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(-20, -1, 40, 2);
+      ctx.restore();
+      return;
+    }
+    if (this.weaponType === 'python') {
+      ctx.save();
+      ctx.fillStyle = this.color;
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, 5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+      return;
+    }
+    if (this.weaponType === 'c') {
+      ctx.save();
+      ctx.translate(this.x, this.y);
+      ctx.rotate(Math.PI / 4);
+      ctx.fillStyle = this.color;
+      ctx.fillRect(-4, -4, 8, 8);
       ctx.restore();
       return;
     }
