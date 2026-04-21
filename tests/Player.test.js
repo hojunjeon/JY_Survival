@@ -72,6 +72,22 @@ describe('Player', () => {
   });
 });
 
+describe('Player hitFlash', () => {
+  it('takeDamage 호출 후 hitFlashTimer가 양수이다', () => {
+    const player = new Player(0, 0);
+    player.takeDamage(10);
+    expect(player.hitFlashTimer).toBeGreaterThan(0);
+  });
+
+  it('update 후 hitFlashTimer가 감소한다', () => {
+    const player = new Player(0, 0);
+    player.takeDamage(10);
+    const before = player.hitFlashTimer;
+    player.update(0.05);
+    expect(player.hitFlashTimer).toBeLessThan(before);
+  });
+});
+
 describe('접촉 데미지 쿨다운', () => {
   it('takeDamageFromContact 호출 시 contactInvulTimer가 0.5로 설정된다', () => {
     const p = new Player(0, 0);

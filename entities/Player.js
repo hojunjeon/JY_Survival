@@ -68,5 +68,12 @@ export class Player {
       ctx.lineWidth = 2;
       ctx.strokeRect(this.x - this.width / 2 - 1, this.y - this.height / 2 - 1, this.width + 2, this.height + 2);
     }
+    if (this.hitFlashTimer > 0) {
+      ctx.save();
+      ctx.globalAlpha = 0.45;
+      ctx.fillStyle = '#ff0000';
+      ctx.fillRect(this.x - this.width / 2, this.y - this.height / 2, this.width, this.height);
+      ctx.restore();
+    }
   }
 }
