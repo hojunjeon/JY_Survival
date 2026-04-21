@@ -11,6 +11,7 @@ import { Projectile } from './entities/Projectile.js';
 import { EventModal } from './ui/EventModal.js';
 import { HUD } from './ui/HUD.js';
 import { FloatingTextManager } from './ui/FloatingText.js';
+import { ParticleSystem } from './systems/ParticleSystem.js';
 import { GitWeapon } from './weapons/Git.js';
 import { SQLWeapon } from './weapons/SQL.js';
 import { JavaScriptWeapon } from './weapons/JavaScript.js';
@@ -180,6 +181,18 @@ function startGame() {
 
   const hud = new HUD({ canvasWidth: canvas.width, canvasHeight: canvas.height });
   const floatingTextManager = new FloatingTextManager();
+  const particleSystem = new ParticleSystem();
+
+  const WEAPON_COLOR = {
+    'Python':     '#3572A5',
+    'Java':       '#b07219',
+    'C/C++':      '#555555',
+    'Git':        '#f05033',
+    'SQL':        '#e38c00',
+    'JavaScript': '#f1e05a',
+    'Django':     '#0c4b33',
+    'LinuxBash':  '#89e051',
+  };
 
   const waveSystem = new WaveSystem({
     spawnInterval: 3,
@@ -363,12 +376,16 @@ function startGame() {
         for (const enemy of enemies) {
           if (!enemy.isDead) {
             enemy.takeDamage(p.damage);
-            triggerScreenShake(3, 0.1);
+            triggerScreenShake(2, 0.1);
+            particleSystem.addHitSpark(enemy.x, enemy.y, '#89e051', 4);
+            floatingTextManager.add(`-${p.damage}`, enemy.x, enemy.y - 20, '#89e051', { size: 14 });
           }
         }
         if (boss && !boss.isDead) {
           boss.takeDamage(p.damage);
-          triggerScreenShake(6, 0.15);
+          triggerScreenShake(6, 0.3);
+          particleSystem.addHitSpark(boss.x, boss.y, '#89e051', 8);
+          floatingTextManager.add(`-${p.damage}`, boss.x, boss.y - 30, '#89e051', { size: 16 });
         }
         continue;
       }
@@ -398,6 +415,9 @@ function startGame() {
 
     // FloatingText 업데이트
     floatingTextManager.update(dt);
+
+    // ParticleSystem 업데이트
+    particleSystem.update(dt);
 
     // Screen Shake 감쇠
     if (screenShake.duration > 0) {
@@ -768,7 +788,9 @@ function startGame() {
               // library_dependency 버프: 받는 데미지를 20%로 감소 (5배 방어력)
               if (enemy._isBuffed) dmg = Math.max(1, Math.floor(dmg * 0.2));
               enemy.takeDamage(dmg);
-              triggerScreenShake(3, 0.1);
+              triggerScreenShake(2, 0.1);
+              particleSystem.addHitSpark(enemy.x, enemy.y, proj.color, 5);
+              { const isCrit = dmg >= 20; floatingTextManager.add(isCrit ? `!!-${dmg}!!` : `-${dmg}`, enemy.x, enemy.y - 20, proj.color, { size: isCrit ? 22 : 14, duration: isCrit ? 1.3 : 1.0 }); }
               proj.hitEnemies.add(enemy);
             }
           } else {
@@ -776,7 +798,9 @@ function startGame() {
             // library_dependency 버프: 받는 데미지를 20%로 감소 (5배 방어력)
             if (enemy._isBuffed) dmg = Math.max(1, Math.floor(dmg * 0.2));
             enemy.takeDamage(dmg);
-            triggerScreenShake(3, 0.1);
+            triggerScreenShake(2, 0.1);
+            particleSystem.addHitSpark(enemy.x, enemy.y, proj.color, 5);
+            { const isCrit = dmg >= 20; floatingTextManager.add(isCrit ? `!!-${dmg}!!` : `-${dmg}`, enemy.x, enemy.y - 20, proj.color, { size: isCrit ? 22 : 14, duration: isCrit ? 1.3 : 1.0 }); }
 
             // Chain Lightning 체이닝
             if (proj.chainHops > 0 && proj.chainRadius > 0) {
@@ -830,12 +854,16 @@ function startGame() {
             if (!proj.hitEnemies) proj.hitEnemies = new Set();
             if (!proj.hitEnemies.has(boss)) {
               boss.takeDamage(proj.damage);
-              triggerScreenShake(6, 0.15);
+              triggerScreenShake(6, 0.3);
+              particleSystem.addHitSpark(boss.x, boss.y, '#ff4444', 8);
+              { const isCrit = proj.damage >= 20; floatingTextManager.add(isCrit ? `!!-${proj.damage}!!` : `-${proj.damage}`, boss.x, boss.y - 30, '#ff4444', { size: isCrit ? 22 : 18 }); }
               proj.hitEnemies.add(boss);
             }
           } else {
             boss.takeDamage(proj.damage);
-            triggerScreenShake(6, 0.15);
+            triggerScreenShake(6, 0.3);
+            particleSystem.addHitSpark(boss.x, boss.y, '#ff4444', 8);
+            { const isCrit = proj.damage >= 20; floatingTextManager.add(isCrit ? `!!-${proj.damage}!!` : `-${proj.damage}`, boss.x, boss.y - 30, '#ff4444', { size: isCrit ? 22 : 18 }); }
             proj.deactivate();
           }
 
@@ -871,6 +899,8 @@ function startGame() {
             if (selectedWeapon.tryHit(orbIdx, enemy)) {
               enemy.takeDamage(orb.damage);
               triggerScreenShake(3, 0.1);
+              particleSystem.addHitSpark(enemy.x, enemy.y, '#b07219', 5);
+              { const jd = orb.damage; const isCrit = jd >= 20; floatingTextManager.add(isCrit ? `!!-${jd}!!` : `-${jd}`, enemy.x, enemy.y - 20, '#b07219', { size: isCrit ? 22 : 14, duration: isCrit ? 1.3 : 1.0 }); }
             }
           }
         }
@@ -886,6 +916,8 @@ function startGame() {
           player.controlsReversedTimer = 3.0;
         } else {
           player.takeDamage(proj.damage);
+          floatingTextManager.add(`-${proj.damage}HP`, player.x, player.y - 40, '#ff4444', { size: 16 });
+          triggerScreenShake(5, 0.2);
         }
         proj.deactivate();
       }
@@ -968,7 +1000,12 @@ function startGame() {
       if (!enemy.isDead && checkCollision(player, enemy)) {
         const dx = enemy.x - player.x;
         const dy = enemy.y - player.y;
+        const willHit = player.contactInvulTimer <= 0;
         player.takeDamageFromContact(enemy.contactDamage);
+        if (willHit) {
+          floatingTextManager.add(`-${enemy.contactDamage}HP`, player.x, player.y - 40, '#ff4444', { size: 16 });
+          triggerScreenShake(5, 0.2);
+        }
         player.applyKnockback(dx, dy, 70);
         const len = Math.sqrt(dx * dx + dy * dy) || 1;
         enemy.x += (dx / len) * 16;
@@ -990,11 +1027,17 @@ function startGame() {
         codeWalls = codeWalls.filter(w => !wallSet.has(w));
         e.codeWalls = [];
       }
-      if (e.dropsHpItem) player.heal(20);
+      if (e.dropsHpItem) {
+        player.heal(20);
+        particleSystem.addHeal(player.x, player.y);
+        floatingTextManager.add('+20HP', player.x, player.y - 40, '#4caf50', { size: 14 });
+      }
       // 플로팅 텍스트 이펙트
       const floatingTexts = ['Bug Fixed!', 'Error Resolved!'];
       const randomText = floatingTexts[Math.floor(Math.random() * floatingTexts.length)];
       floatingTextManager.add(randomText, e.x, e.y, '#ffffff');
+      particleSystem.addEnemyDeath(e.x, e.y, 8);
+      triggerScreenShake(3, 0.15);
       const killNotifs = eventSystem.notifyKill(e.type);
       for (const n of killNotifs) {
         if (n.type === 'event_cleared') {
@@ -1261,6 +1304,9 @@ function startGame() {
       ctx.fill();
       ctx.restore();
     }
+
+    // ParticleSystem 렌더 (월드 좌표)
+    particleSystem.render(ctx, camX, camY);
 
     // FloatingText 렌더 (월드 좌표)
     floatingTextManager.render(ctx, camX, camY);
