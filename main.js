@@ -377,15 +377,15 @@ function startGame() {
           if (!enemy.isDead) {
             enemy.takeDamage(p.damage);
             triggerScreenShake(2, 0.1);
-            particleSystem.addHitSpark(enemy.x, enemy.y, '#89e051', 4);
-            floatingTextManager.add(`-${p.damage}`, enemy.x, enemy.y - 20, '#89e051', { size: 14 });
+            particleSystem.addHitSpark(enemy.x, enemy.y, WEAPON_COLOR['LinuxBash'], 4);
+            floatingTextManager.add(`-${p.damage}`, enemy.x, enemy.y - 20, WEAPON_COLOR['LinuxBash'], { size: 14 });
           }
         }
         if (boss && !boss.isDead) {
           boss.takeDamage(p.damage);
           triggerScreenShake(6, 0.3);
-          particleSystem.addHitSpark(boss.x, boss.y, '#89e051', 8);
-          floatingTextManager.add(`-${p.damage}`, boss.x, boss.y - 30, '#89e051', { size: 16 });
+          particleSystem.addHitSpark(boss.x, boss.y, WEAPON_COLOR['LinuxBash'], 8);
+          floatingTextManager.add(`-${p.damage}`, boss.x, boss.y - 30, WEAPON_COLOR['LinuxBash'], { size: 16 });
         }
         continue;
       }
