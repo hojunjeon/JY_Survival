@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Django Attack Effect - Style 2: Admin Insight</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #000;
+            color: #44b78b;
+            font-family: 'Outfit', 'Inter', sans-serif;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        .container {
+            position: relative;
+            padding: 20px;
+            background: rgba(68, 183, 139, 0.03);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(68, 183, 139, 0.2);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+        }
+        canvas {
+            border-radius: 12px;
+            background: #050505;
+        }
+        .info {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        h1 { 
+            margin: 0; 
+            font-size: 2rem; 
+            font-weight: 800;
+            background: linear-gradient(90deg, #44b78b, #092e20);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase; 
+            letter-spacing: 4px; 
+        }
+        p { opacity: 0.6; font-size: 1rem; margin-top: 8px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="info">
+            <h1>Django: Admin Insight</h1>
+            <p>데이터베이스 모델을 관리하듯 전방의 버그들을 정렬하여 타격하는 그리드 공격</p>
+        </div>
+        <canvas id="canvas"></canvas>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = 800;
+        canvas.height = 600;
+
+        class GridStrike {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.life = 1.0;
+                this.rows = 4;
+                this.cols = 6;
+                this.cellSize = 40;
+            }
+            update() {
+                this.life -= 0.02;
+                return this.life > 0;
+            }
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.globalAlpha = this.life;
+                
+                for(let r=0; r<this.rows; r++) {
+                    for(let c=0; c<this.cols; c++) {
+                        const px = c * this.cellSize - (this.cols * this.cellSize) / 2;
+                        const py = r * this.cellSize - (this.rows * this.cellSize) / 2;
+                        
+                        ctx.strokeStyle = '#44b78b';
+                        ctx.lineWidth = 1;
+                        ctx.strokeRect(px, py, this.cellSize-4, this.cellSize-4);
+                        
+                        if (Math.random() < 0.3) {
+                            ctx.fillStyle = 'rgba(68, 183, 139, 0.4)';
+                            ctx.fillRect(px+2, py+2, this.cellSize-8, this.cellSize-8);
+                        }
+                    }
+                }
+                
+                ctx.fillStyle = '#fff';
+                ctx.font = 'bold 12px Arial';
+                ctx.fillText("Model: Bug.objects.filter(status='STRIKE').delete()", -150, 100);
+                
+                ctx.restore();
+            }
+        }
+
+        const strikes = [];
+        function animate() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            if (Math.random() < 0.05) {
+                strikes.push(new GridStrike(400, 300));
+            }
+
+            for (let i = strikes.length - 1; i >= 0; i--) {
+                if (strikes[i].update()) {
+                    strikes[i].draw();
+                } else {
+                    strikes.splice(i, 1);
+                }
+            }
+
+            requestAnimationFrame(animate);
+        }
+        animate();
+    </script>
+</body>
+</html>

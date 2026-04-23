@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>김지윤의 디버그 서바이벌 — UI 스크린 레퍼런스</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #f5f4f0; font-family: 'JetBrains Mono', monospace; }
+
+  .print-page {
+    width: 277mm;
+    min-height: 190mm;
+    background: #f5f4f0;
+    padding: 10mm 12mm 8mm;
+    break-before: page;
+    page-break-before: always;
+  }
+  .print-page:first-child { break-before: avoid; page-break-before: avoid; }
+
+  .page-header {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 8mm;
+    padding-bottom: 4px;
+    border-bottom: 1.5px solid #1e1e1e;
+  }
+  .page-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1e1e1e;
+    letter-spacing: -0.3px;
+  }
+  .page-subtitle {
+    font-size: 9px;
+    color: #888;
+  }
+  .page-num {
+    margin-left: auto;
+    font-size: 9px;
+    color: #aaa;
+  }
+
+  .artboard-row {
+    display: flex;
+    gap: 6mm;
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .artboard-slot {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    break-inside: avoid;
+  }
+
+  .artboard-label {
+    font-size: 8px;
+    color: #666;
+    letter-spacing: 0.3px;
+    padding-left: 2px;
+  }
+
+  /* scale wrapper: artboard is 280×420, scaled to fit */
+  .artboard-scale-wrap {
+    position: relative;
+    overflow: hidden;
+    border-radius: 2px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.12), 0 4px 16px rgba(0,0,0,0.08);
+  }
+  .artboard-inner {
+    transform-origin: top left;
+  }
+
+  /* 3-up row: scale ~0.76 → slot 213×319 */
+  .row-3 .artboard-scale-wrap { width: 213px; height: 319px; }
+  .row-3 .artboard-inner { width: 280px; height: 420px; transform: scale(0.761); }
+
+  /* 2-up row: scale ~0.98 → slot 274×411 */
+  .row-2 .artboard-scale-wrap { width: 274px; height: 411px; }
+  .row-2 .artboard-inner { width: 280px; height: 420px; transform: scale(0.978); }
+
+  /* 2x2 grid for 4-up */
+  .row-2x2 { display: grid; grid-template-columns: 1fr 1fr; gap: 6mm; }
+  .row-2x2 .artboard-scale-wrap { width: 213px; height: 319px; }
+  .row-2x2 .artboard-inner { width: 280px; height: 420px; transform: scale(0.761); }
+
+  @media print {
+    @page { size: A4 landscape; margin: 0; }
+    body { background: #f5f4f0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .print-page { margin: 0; padding: 10mm 12mm 8mm; }
+    @keyframes pulse { from{opacity:0.4} to{opacity:1} }
+  }
+
+  @keyframes pulse { from{opacity:0.4} to{opacity:1} }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+const T = {
+  bg:'#1e1e1e', sidebar:'#252526', panel:'#2d2d2d', border:'#3e3e3e',
+  teal:'#4ec9b0', red:'#f44747', orange:'#ce9178', yellow:'#dcdcaa',
+  blue:'#9cdcfe', green:'#b5cea8', comment:'#6a9955', status:'#007acc',
+  white:'#d4d4d4', dim:'#858585', dimmer:'#3e3e3e',
+  mono:"'JetBrains Mono', monospace",
+};
+
+function WinChrome({ title, children, statusLeft, statusRight, noStatus }) {
+  return (
+    <div style={{ width:'100%', height:'100%', display:'flex', flexDirection:'column', background:T.bg, fontFamily:T.mono }}>
+      <div style={{ background:'#323233', padding:'6px 10px', display:'flex', alignItems:'center', gap:6, borderBottom:`1px solid ${T.border}`, flexShrink:0 }}>
+        <span style={{ width:9, height:9, borderRadius:'50%', background:'#f55', display:'inline-block' }}/>
+        <span style={{ width:9, height:9, borderRadius:'50%', background:'#fb0', display:'inline-block' }}/>
+        <span style={{ width:9, height:9, borderRadius:'50%', background:'#5c5', display:'inline-block' }}/>
+        <span style={{ marginLeft:8, fontSize:9, color:'#999', letterSpacing:0.3 }}>{title}</span>
+      </div>
+      <div style={{ flex:1, overflow:'hidden', position:'relative' }}>{children}</div>
+      {!noStatus && (
+        <div style={{ background:T.status, height:20, padding:'0 10px', display:'flex', alignItems:'center', gap:14, fontSize:8, color:'rgba(255,255,255,0.9)', flexShrink:0 }}>
+          <span>{statusLeft || '⎇  main'}</span>
+          <span style={{ marginLeft:'auto' }}>{statusRight || 'Stage 1 · Python 기초'}</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function PixelChar({ size=32, color='#4ec9b0' }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" style={{ imageRendering:'pixelated', display:'block' }}>
+      <rect x="4" y="1" width="8" height="3" fill="#2a1200"/>
+      <rect x="3" y="2" width="1" height="4" fill="#2a1200"/>
+      <rect x="12" y="2" width="1" height="4" fill="#2a1200"/>
+      <rect x="4" y="4" width="8" height="6" fill="#ffd09b"/>
+      <rect x="5" y="6" width="2" height="2" fill="#1e1e1e"/>
+      <rect x="9" y="6" width="2" height="2" fill="#1e1e1e"/>
+      <rect x="6" y="9" width="4" height="1" fill="#d4826a"/>
+      <rect x="5" y="10" width="6" height="4" fill={color}/>
+      <rect x="3" y="11" width="2" height="3" fill={color}/>
+      <rect x="11" y="11" width="2" height="3" fill={color}/>
+      <rect x="5" y="12" width="6" height="2" fill="#111"/>
+      <rect x="6" y="13" width="4" height="1" fill="#4ec9b0" opacity="0.7"/>
+    </svg>
+  );
+}
+
+function PixelBoss({ size=40 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" style={{ imageRendering:'pixelated', display:'block' }}>
+      <rect x="3" y="0" width="2" height="3" fill="#1a0a00"/>
+      <rect x="6" y="0" width="1" height="2" fill="#1a0a00"/>
+      <rect x="9" y="0" width="1" height="2" fill="#1a0a00"/>
+      <rect x="11" y="0" width="2" height="3" fill="#1a0a00"/>
+      <rect x="4" y="1" width="8" height="3" fill="#1a0a00"/>
+      <rect x="4" y="4" width="8" height="6" fill="#ffd09b"/>
+      <rect x="5" y="5" width="2" height="1" fill="#1e1e1e"/>
+      <rect x="9" y="5" width="2" height="1" fill="#1e1e1e"/>
+      <rect x="5" y="6" width="2" height="2" fill="#1e1e1e"/>
+      <rect x="9" y="6" width="2" height="2" fill="#1e1e1e"/>
+      <rect x="4" y="4" width="3" height="1" fill="#8B4513"/>
+      <rect x="9" y="4" width="3" height="1" fill="#8B4513"/>
+      <rect x="5" y="9" width="1" height="1" fill="#d4826a"/>
+      <rect x="6" y="10" width="4" height="1" fill="#d4826a"/>
+      <rect x="10" y="9" width="1" height="1" fill="#d4826a"/>
+      <rect x="4" y="10" width="8" height="4" fill="#c0392b"/>
+      <rect x="2" y="11" width="2" height="3" fill="#c0392b"/>
+      <rect x="12" y="11" width="2" height="3" fill="#c0392b"/>
+      <rect x="6" y="11" width="4" height="1" fill="#e74c3c"/>
+    </svg>
+  );
+}
+
+function PixelClassmate({ size=40, hairColor='#8B4513', shirtColor='#5c7cfa', expression='panic' }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" style={{ imageRendering:'pixelated', display:'block' }}>
+      <rect x="4" y="1" width="8" height="4" fill={hairColor}/>
+      <rect x="3" y="2" width="1" height="5" fill={hairColor}/>
+      <rect x="12" y="2" width="1" height="5" fill={hairColor}/>
+      <rect x="5" y="0" width="6" height="2" fill={hairColor}/>
+      <rect x="4" y="5" width="8" height="5" fill="#ffd09b"/>
+      {expression === 'panic' ? <>
+        <rect x="5" y="6" width="2" height="3" fill="#1e1e1e"/>
+        <rect x="9" y="6" width="2" height="3" fill="#1e1e1e"/>
+        <rect x="5" y="6" width="1" height="1" fill="#fff" opacity="0.5"/>
+        <rect x="9" y="6" width="1" height="1" fill="#fff" opacity="0.5"/>
+        <rect x="12" y="5" width="1" height="2" fill="#9cdcfe" opacity="0.8"/>
+        <rect x="5" y="9" width="1" height="1" fill="#c0705a"/>
+        <rect x="7" y="10" width="2" height="1" fill="#c0705a"/>
+        <rect x="10" y="9" width="1" height="1" fill="#c0705a"/>
+      </> : <>
+        <rect x="5" y="7" width="2" height="2" fill="#1e1e1e"/>
+        <rect x="9" y="7" width="2" height="2" fill="#1e1e1e"/>
+        <rect x="6" y="9" width="4" height="1" fill="#c0705a"/>
+      </>}
+      <rect x="4" y="10" width="8" height="4" fill={shirtColor}/>
+      <rect x="2" y="11" width="2" height="3" fill={shirtColor}/>
+      <rect x="12" y="11" width="2" height="3" fill={shirtColor}/>
+      <rect x="6" y="11" width="4" height="2" fill="#fff" opacity="0.15"/>
+    </svg>
+  );
+}
+
+function BugToken({ type='syntax', c=T.red }) {
+  const labels = { syntax:'SyntaxError', null:'NullPointerException', seg:'SegFault', heal:'HealBug', env:'EnvError', indent:'IndentationError' };
+  return (
+    <div style={{ display:'inline-block', padding:'1px 5px', background:`${c}18`, border:`1px solid ${c}44`, borderRadius:2, fontSize:8, color:c, fontFamily:T.mono, whiteSpace:'nowrap' }}>
+      {labels[type] || type}
+    </div>
+  );
+}
+
+function HpBar({ current=67, max=100, width=80 }) {
+  const pct = Math.round(current/max*100);
+  const color = pct > 60 ? T.teal : pct > 30 ? T.yellow : T.red;
+  return (
+    <div style={{ display:'flex', alignItems:'center', gap:6 }}>
+      <div style={{ width, height:5, background:'#333', borderRadius:1, overflow:'hidden' }}>
+        <div style={{ width:`${pct}%`, height:'100%', background:color }}/>
+      </div>
+      <span style={{ fontSize:8, color, fontFamily:T.mono }}>{current}/{max}</span>
+    </div>
+  );
+}
+
+// ── ALL SCREENS ────────────────────────────────────────────────
+
+function TitleScreen() {
+  const boot = [
+    { c:T.comment, t:'# debug-survival v1.0.0 — SSAFY 15기 서울 6반' },
+    { c:T.dim,     t:'Initializing runtime...' },
+    { c:T.green,   t:'[OK] Player loaded: 김지윤 (HP 100, SPD 1.0x)' },
+    { c:T.green,   t:'[OK] Stage 1 assets ready' },
+    { c:T.yellow,  t:'[WARN] Multiple bugs detected in vicinity' },
+    { c:T.red,     t:'[CRIT] SyntaxError swarm incoming (×47)' },
+  ];
+  return (
+    <WinChrome title="debug-survival — zsh" statusLeft="⎇  main" statusRight="김지윤 · HP 100">
+      <div style={{ height:'100%', display:'flex', flexDirection:'column', padding:'14px 16px', overflow:'hidden' }}>
+        <div style={{ fontSize:6, color:T.teal, lineHeight:1.6, letterSpacing:0.5, marginBottom:12, opacity:0.9 }}>
+          {['██████╗ ███████╗██████╗ ██╗   ██╗ ██████╗','██╔══██╗██╔════╝██╔══██╗██║   ██║██╔════╝','██║  ██║█████╗  ██████╔╝██║   ██║██║  ███╗','██║  ██║██╔══╝  ██╔══██╗██║   ██║██║   ██║','██████╔╝███████╗██████╔╝╚██████╔╝╚██████╔╝'].map((l,i)=><div key={i}>{l}</div>)}
+        </div>
+        <div style={{ fontSize:7, color:T.blue, letterSpacing:1, marginBottom:14 }}>
+          <span style={{ color:T.dim }}>//</span> 김지윤의 디버그 서바이벌
+        </div>
+        <div style={{ flex:1, overflow:'hidden' }}>
+          {boot.map((l,i)=>(
+            <div key={i} style={{ fontSize:8, color:l.c, lineHeight:2, display:'flex', gap:8 }}>
+              <span style={{ color:T.dim, flexShrink:0 }}>{String(i+1).padStart(2,'0')}</span>
+              <span>{l.t}</span>
+            </div>
+          ))}
+        </div>
+        <div style={{ marginTop:10, paddingTop:10, borderTop:`1px solid ${T.border}` }}>
+          <div style={{ fontSize:9, color:T.white }}>
+            <span style={{ color:T.teal }}>jiyoon@ssafy</span>
+            <span style={{ color:T.dim }}>:</span>
+            <span style={{ color:T.blue }}>~/stage1</span>
+            <span style={{ color:T.dim }}>$ </span>
+            game.start()<span style={{ color:T.white }}>█</span>
+          </div>
+          <div style={{ marginTop:8, fontSize:8, color:T.dim }}>
+            press <span style={{ color:T.yellow, border:`1px solid ${T.border}`, padding:'1px 4px' }}>ENTER</span> to run
+          </div>
+        </div>
+      </div>
+    </WinChrome>
+  );
+}
+
+function WeaponSelect() {
+  const weapons = [
+    { id:'python', file:'Python.py',  desc:'360° 자동 투사체 (범위 넓음, 느림)', type:'파일 확장자: .py',  col:T.blue,   lv:'★★★ 입문 추천', active:true },
+    { id:'c',      file:'C_Cpp.c',    desc:'전방 고속 단일 관통탄',              type:'파일 확장자: .c',   col:T.yellow, lv:'★★☆ 정밀형',   active:false },
+    { id:'java',   file:'Java.class', desc:'주변 오비탈 오브젝트 자동 공격',     type:'파일 확장자: .java',col:T.orange, lv:'★★☆ 관리형',   active:false },
+  ];
+  const cur = weapons[0];
+  return (
+    <WinChrome title="weapon-select.js — Debug Survival" statusLeft="⎇  main" statusRight="Stage 1 시작">
+      <div style={{ height:'100%', display:'flex', flexDirection:'column' }}>
+        <div style={{ background:T.sidebar, borderBottom:`1px solid ${T.border}`, display:'flex', fontSize:8 }}>
+          <div style={{ padding:'6px 12px', background:T.bg, borderRight:`1px solid ${T.border}`, color:T.white }}>weapon-select.js</div>
+        </div>
+        <div style={{ flex:1, display:'flex', overflow:'hidden' }}>
+          <div style={{ width:100, background:T.sidebar, borderRight:`1px solid ${T.border}`, padding:'8px 0', fontSize:8 }}>
+            <div style={{ padding:'3px 10px', color:T.dim, letterSpacing:1, fontSize:7, marginBottom:4 }}>EXPLORER</div>
+            <div style={{ padding:'2px 8px', color:T.dim, marginBottom:2 }}><span style={{ color:T.yellow }}>▾</span> weapons/</div>
+            {weapons.map(w=>(
+              <div key={w.id} style={{ padding:'4px 8px 4px 16px', background: w.active?'rgba(78,201,176,0.12)':'transparent', color:w.active?T.teal:T.dim, borderLeft:`2px solid ${w.active?T.teal:T.border}`, display:'flex', alignItems:'center', gap:5 }}>
+                <span style={{ color:w.col, fontSize:9 }}>⬡</span> {w.file}
+              </div>
+            ))}
+            <div style={{ padding:'2px 8px', color:T.dim, marginTop:6, opacity:0.4 }}><span style={{ color:T.yellow }}>▸</span> [locked ×5]</div>
+          </div>
+          <div style={{ flex:1, padding:'12px 14px', overflow:'hidden' }}>
+            <div style={{ fontSize:8, lineHeight:1.9, color:T.white }}>
+              <div><span style={{ color:T.dim }}>1  </span><span style={{ color:T.blue }}>import</span> <span style={{ color:T.white }}>Weapon</span> <span style={{ color:T.blue }}>from</span> <span style={{ color:T.orange }}>'{cur.file}'</span></div>
+              <div><span style={{ color:T.dim }}>2  </span></div>
+              <div><span style={{ color:T.dim }}>3  </span><span style={{ color:T.comment }}>/** {cur.desc} */</span></div>
+              <div><span style={{ color:T.dim }}>4  </span><span style={{ color:T.blue }}>const</span> <span style={{ color:T.teal }}> weapon</span> <span style={{ color:T.dim }}>=</span> <span style={{ color:T.blue }}> new</span> <span style={{ color:T.yellow }}> Python</span><span style={{ color:T.white }}>()</span></div>
+              <div><span style={{ color:T.dim }}>5  </span></div>
+              <div><span style={{ color:T.dim }}>6  </span><span style={{ color:T.comment }}>// {cur.type}</span></div>
+              <div><span style={{ color:T.dim }}>7  </span><span style={{ color:T.comment }}>// 추천도: {cur.lv}</span></div>
+            </div>
+            <div style={{ position:'absolute', bottom:28, left:108, right:0, padding:'0 14px' }}>
+              <div style={{ background:`${T.teal}18`, border:`1px solid ${T.teal}`, padding:'8px 12px', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+                <span style={{ fontSize:8, color:T.teal }}>선택됨: <span style={{ color:T.white }}>Python.py</span></span>
+                <div style={{ background:T.teal, color:T.bg, padding:'4px 12px', fontSize:8, fontWeight:700 }}>Stage 1 시작 →</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </WinChrome>
+  );
+}
+
+function GameHUD() {
+  return (
+    <WinChrome title="stage1.run() — Debug Survival" statusLeft="● Stage 1: Python 기초" statusRight="Wave 3 · 02:34">
+      <div style={{ height:'100%', display:'flex', overflow:'hidden' }}>
+        <div style={{ width:108, background:T.sidebar, borderRight:`1px solid ${T.border}`, display:'flex', flexDirection:'column', padding:'8px 0' }}>
+          <div style={{ padding:'6px 10px', borderBottom:`1px solid ${T.border}`, marginBottom:6 }}>
+            <div style={{ fontSize:7, color:T.dim, marginBottom:4 }}>PLAYER</div>
+            <div style={{ display:'flex', alignItems:'center', gap:6, marginBottom:4 }}><PixelChar size={20} color={T.teal}/><span style={{ fontSize:8, color:T.white }}>김지윤</span></div>
+            <HpBar current={67} max={100} width={76}/>
+          </div>
+          <div style={{ padding:'0 10px', marginBottom:8 }}>
+            <div style={{ fontSize:7, color:T.dim, marginBottom:4 }}>STATS</div>
+            {[{k:'SPD',v:'1.0x',c:T.blue},{k:'ATK',v:'1.2x',c:T.yellow},{k:'TIME',v:'02:34',c:T.orange}].map(s=>(
+              <div key={s.k} style={{ display:'flex', justifyContent:'space-between', fontSize:8, marginBottom:2 }}>
+                <span style={{ color:T.dim }}>{s.k}</span><span style={{ color:s.c }}>{s.v}</span>
+              </div>
+            ))}
+          </div>
+          <div style={{ padding:'0 10px', marginBottom:8, borderTop:`1px solid ${T.border}`, paddingTop:8 }}>
+            <div style={{ fontSize:7, color:T.dim, marginBottom:4 }}>QUEST</div>
+            <div style={{ fontSize:7, color:T.comment, marginBottom:3 }}>Q1: 버그 처치</div>
+            <div style={{ width:'100%', height:3, background:'#333', marginBottom:3 }}><div style={{ width:'47%', height:'100%', background:T.teal }}/></div>
+            <div style={{ fontSize:7, color:T.white }}>47 <span style={{ color:T.dim }}>/ 100</span></div>
+          </div>
+          <div style={{ padding:'0 10px', borderTop:`1px solid ${T.border}`, paddingTop:8 }}>
+            <div style={{ fontSize:7, color:T.dim, marginBottom:4 }}>WEAPONS</div>
+            {[{n:'Python.py',lv:3,active:true},{n:'Java.class',lv:1,active:true},{n:'[empty]',active:false},{n:'[empty]',active:false}].map((w,i)=>(
+              <div key={i} style={{ fontSize:7, padding:'3px 6px', marginBottom:2, background:w.active?`${T.teal}14`:'transparent', borderLeft:`2px solid ${w.active?T.teal:T.border}`, display:'flex', justifyContent:'space-between', color:w.active?T.teal:T.dimmer }}>
+                <span>{w.n}</span>{w.lv&&<span style={{ color:T.yellow }}>Lv{w.lv}</span>}
+              </div>
+            ))}
+          </div>
+        </div>
+        <div style={{ flex:1, position:'relative', overflow:'hidden', background:T.bg, backgroundImage:`linear-gradient(${T.teal}08 1px,transparent 1px),linear-gradient(90deg,${T.teal}08 1px,transparent 1px)`, backgroundSize:'18px 18px' }}>
+          {[{x:15,y:20,type:'syntax',c:T.red},{x:62,y:15,type:'null',c:'#d7ba7d'},{x:78,y:50,type:'syntax',c:T.red},{x:12,y:58,type:'seg',c:T.orange},{x:68,y:68,type:'null',c:'#d7ba7d'},{x:40,y:75,type:'syntax',c:T.red}].map((e,i)=>(
+            <div key={i} style={{ position:'absolute', left:`${e.x}%`, top:`${e.y}%` }}><BugToken type={e.type} c={e.c}/></div>
+          ))}
+          {[[55,44],[59,40],[51,49],[63,42]].map(([x,y],i)=>(
+            <div key={i} style={{ position:'absolute', left:`${x}%`, top:`${y}%`, width:4, height:4, background:T.teal, boxShadow:`0 0 6px ${T.teal}` }}/>
+          ))}
+          <div style={{ position:'absolute', left:'48%', top:'46%', transform:'translate(-50%,-50%)', textAlign:'center' }}>
+            <div style={{ width:50, height:5, background:'#333', marginBottom:3, position:'relative' }}>
+              <div style={{ width:'67%', height:'100%', background:T.teal }}/>
+              <span style={{ position:'absolute', top:'-14px', left:0, right:0, textAlign:'center', fontSize:7, color:T.teal }}>HP 67</span>
+            </div>
+            <PixelChar size={28} color={T.teal}/>
+          </div>
+          <div style={{ position:'absolute', left:'28%', top:'18%', fontSize:9, color:T.red, fontWeight:700, opacity:0.8 }}>-12</div>
+          <div style={{ position:'absolute', bottom:8, right:8, width:52, height:40, background:'rgba(0,0,0,0.6)', border:`1px solid ${T.border}`, overflow:'hidden' }}>
+            <div style={{ fontSize:6, color:T.dim, padding:'2px 4px' }}>minimap</div>
+            <div style={{ position:'relative', margin:'0 4px', height:22 }}>
+              <div style={{ position:'absolute', left:'50%', top:'50%', width:4, height:4, background:T.teal, transform:'translate(-50%,-50%)' }}/>
+              {[[20,30],[60,20],[75,55],[10,60],[65,70]].map(([x,y],i)=>(
+                <div key={i} style={{ position:'absolute', left:`${x}%`, top:`${y}%`, width:2, height:2, background:T.red }}/>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </WinChrome>
+  );
+}
+
+const CLASSMATES = [
+  { name:'박민준', hair:'#3a1a00', shirt:'#5c7cfa', line1:'야 이거 IndentationError가', line2:'왜 자꾸 뜨는 거야?!', expression:'panic' },
+];
+
+function EventToast() {
+  const char = CLASSMATES[0];
+  return (
+    <WinChrome title="stage1.run() — Debug Survival [PAUSED]" statusLeft="⏸ PAUSED" statusRight="01:45 · Wave 2">
+      <div style={{ height:'100%', position:'relative', overflow:'hidden' }}>
+        <div style={{ position:'absolute', inset:0, backgroundImage:`linear-gradient(${T.teal}05 1px,transparent 1px),linear-gradient(90deg,${T.teal}05 1px,transparent 1px)`, backgroundSize:'18px 18px' }}/>
+        <div style={{ position:'absolute', inset:0, background:'rgba(20,20,20,0.82)' }}/>
+        <div style={{ position:'absolute', inset:0, zIndex:10, display:'flex', flexDirection:'column', justifyContent:'center', padding:'0 14px', gap:10 }}>
+          <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+            <div style={{ height:1, flex:1, background:`${T.yellow}44` }}/>
+            <div style={{ fontSize:7, color:T.yellow, letterSpacing:2, padding:'2px 8px', border:`1px solid ${T.yellow}55`, background:`${T.yellow}0f` }}>⚡ EVENT TRIGGER — E1</div>
+            <div style={{ height:1, flex:1, background:`${T.yellow}44` }}/>
+          </div>
+          <div style={{ background:T.sidebar, border:`1px solid ${T.border}`, boxShadow:`0 8px 32px rgba(0,0,0,0.6),0 0 0 1px ${T.yellow}18`, overflow:'hidden' }}>
+            <div style={{ background:`${T.yellow}14`, borderBottom:`1px solid ${T.yellow}33`, padding:'5px 10px', display:'flex', alignItems:'center', gap:6, fontSize:8 }}>
+              <span style={{ color:T.dim }}>동기</span>
+              <span style={{ color:T.white, fontWeight:700 }}>{char.name}</span>
+              <span style={{ marginLeft:'auto', color:T.comment, fontSize:7 }}>SSAFY 15기 서울 6반</span>
+            </div>
+            <div style={{ display:'flex' }}>
+              <div style={{ width:64, flexShrink:0, background:'#1a1a2e', borderRight:`1px solid ${T.border}`, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'flex-end', padding:'10px 0 0', position:'relative', overflow:'hidden' }}>
+                <div style={{ position:'absolute', inset:0, backgroundImage:`linear-gradient(${T.yellow}08 1px,transparent 1px),linear-gradient(90deg,${T.yellow}08 1px,transparent 1px)`, backgroundSize:'8px 8px' }}/>
+                <div style={{ position:'relative', zIndex:1, border:`2px solid ${T.yellow}88`, padding:4 }}>
+                  <PixelClassmate size={36} hairColor={char.hair} shirtColor={char.shirt} expression={char.expression}/>
+                </div>
+                <div style={{ position:'relative', zIndex:1, width:'100%', textAlign:'center', padding:'4px 2px', background:`${T.yellow}18`, fontSize:6, color:T.yellow, fontWeight:700, borderTop:`1px solid ${T.yellow}33` }}>{char.name}</div>
+              </div>
+              <div style={{ flex:1, padding:'10px 12px' }}>
+                <div style={{ fontSize:9, color:T.white, lineHeight:1.8, fontFamily:"'Noto Sans KR', sans-serif", marginBottom:8 }}>
+                  <span style={{ color:T.orange, fontStyle:'italic' }}>"{char.line1}<br/>{char.line2}"</span>
+                </div>
+                <div style={{ background:T.bg, border:`1px solid ${T.border}`, padding:'6px 8px', fontSize:7, color:T.dim, lineHeight:1.7 }}>
+                  <span style={{ color:T.comment }}>// </span><span style={{ color:T.teal }}>들여쓰기 지옥</span><br/>
+                  <BugToken type="indent" c={T.red}/><span style={{ color:T.dim }}> × 15 처치 → </span><span style={{ color:T.yellow }}>강화 재화 +3</span>
+                </div>
+              </div>
+            </div>
+            <div style={{ padding:'7px 10px', borderTop:`1px solid ${T.border}`, display:'flex', justifyContent:'flex-end', gap:6 }}>
+              <button style={{ padding:'4px 12px', background:'transparent', border:`1px solid ${T.border}`, color:T.dim, fontFamily:T.mono, fontSize:7 }}>무시하기</button>
+              <button style={{ padding:'4px 14px', background:T.yellow, border:'none', color:T.bg, fontFamily:T.mono, fontSize:7, fontWeight:700 }}>도와주기 →</button>
+            </div>
+          </div>
+          <div style={{ textAlign:'center', fontSize:7, color:T.dimmer }}>이벤트 중 일반 버그도 계속 등장합니다</div>
+        </div>
+      </div>
+    </WinChrome>
+  );
+}
+
+function EventModal() {
+  return (
+    <WinChrome title="event.IndentationError — Debug Survival" statusLeft="● PAUSED · E1" statusRight="처치: 8/15">
+      <div style={{ height:'100%', display:'flex', flexDirection:'column' }}>
+        <div style={{ background:T.sidebar, borderBottom:`1px solid ${T.border}`, display:'flex', fontSize:8 }}>
+          <div style={{ padding:'5px 12px', background:T.bg, borderRight:`1px solid ${T.border}`, color:T.white, display:'flex', alignItems:'center', gap:5 }}>
+            <span style={{ width:6, height:6, borderRadius:'50%', background:T.yellow, display:'inline-block' }}/>event.E1.js
+          </div>
+        </div>
+        <div style={{ flex:1, padding:'12px 14px', overflow:'hidden', fontSize:8, lineHeight:1.9 }}>
+          <div style={{ color:T.comment, marginBottom:8 }}>{'// [EVENT E1] 들여쓰기 지옥'}</div>
+          <div><span style={{ color:T.blue }}>const</span><span style={{ color:T.teal }}> event</span><span style={{ color:T.white }}> = </span><span style={{ color:T.yellow }}>Event</span><span style={{ color:T.white }}>.trigger(</span><span style={{ color:T.orange }}>'E1'</span><span style={{ color:T.white }}>)</span></div>
+          <div style={{ marginBottom:10 }}><span style={{ color:T.comment }}>// "동기가 IndentationError 패닉!"</span></div>
+          <div style={{ background:T.sidebar, border:`1px solid ${T.border}`, padding:'8px 10px', marginBottom:10 }}>
+            <div style={{ color:T.dim, fontSize:7, marginBottom:4 }}>MISSION</div>
+            <div style={{ display:'flex', justifyContent:'space-between', marginBottom:5 }}>
+              <div style={{ display:'flex', alignItems:'center', gap:5 }}><BugToken type="indent" c={T.red}/><span style={{ color:T.white }}>× 15</span></div>
+              <span style={{ color:T.green }}>8 / 15</span>
+            </div>
+            <div style={{ height:5, background:'#333' }}><div style={{ width:'53%', height:'100%', background:T.teal }}/></div>
+            <div style={{ fontSize:7, color:T.dim, marginTop:3 }}>53% complete</div>
+          </div>
+          <div style={{ background:`${T.yellow}10`, border:`1px solid ${T.yellow}33`, padding:'8px 10px' }}>
+            <div style={{ color:T.dim, fontSize:7, marginBottom:3 }}>REWARD</div>
+            <div style={{ color:T.yellow }}>
+              <span style={{ color:T.blue }}>return</span><span style={{ color:T.white }}> &#123; </span><span style={{ color:T.teal }}>enhance</span><span style={{ color:T.dim }}>: </span><span style={{ color:T.green }}>3</span><span style={{ color:T.white }}> &#125;</span>
+            </div>
+          </div>
+        </div>
+        <div style={{ padding:'8px 14px', borderTop:`1px solid ${T.border}`, display:'flex', justifyContent:'flex-end', gap:6 }}>
+          <button style={{ padding:'5px 14px', background:'transparent', border:`1px solid ${T.border}`, color:T.dim, fontFamily:T.mono, fontSize:8 }}>일시정지 해제</button>
+          <button style={{ padding:'5px 14px', background:T.teal, border:'none', color:T.bg, fontFamily:T.mono, fontSize:8, fontWeight:700 }}>계속 플레이</button>
+        </div>
+      </div>
+    </WinChrome>
+  );
+}
+
+function StatUpgrade() {
+  const opts = [
+    { id:'spd', key:'moveSpeed',   val:'+15%', desc:'이동 속도 증가. 버그를 더 잘 피할 수 있다.', c:T.blue },
+    { id:'atk', key:'attackSpeed', val:'+20%', desc:'공격 속도 증가. 투사체 발사 간격 감소.', c:T.yellow },
+    { id:'dmg', key:'damageMulti', val:'+25%', desc:'피해량 증가. 버그를 더 빠르게 처치한다.', c:T.red },
+  ];
+  return (
+    <WinChrome title="upgrade.select() — Debug Survival" statusLeft="✓ Q1 COMPLETE" statusRight="버그 100마리 처치!">
+      <div style={{ height:'100%', display:'flex', flexDirection:'column', padding:'12px 14px', overflow:'hidden' }}>
+        <div style={{ fontSize:8, color:T.comment, marginBottom:6 }}>{'// 퀘스트 Q1 완료 — 스탯 업그레이드 선택'}</div>
+        <div style={{ fontSize:10, color:T.teal, marginBottom:12, fontWeight:600 }}>player.upgrade(<span style={{ color:T.white }}>?</span>)</div>
+        <div style={{ display:'flex', flexDirection:'column', gap:8, flex:1 }}>
+          {opts.map((o,i)=>(
+            <div key={o.id} style={{ border:`1px solid ${i===0?o.c:T.border}`, background:i===0?`${o.c}12`:T.sidebar, padding:'10px 12px' }}>
+              <div style={{ display:'flex', justifyContent:'space-between', marginBottom:4 }}>
+                <span style={{ fontSize:9, color:o.c, fontWeight:600 }}>{o.key}</span>
+                <span style={{ fontSize:10, color:o.c, fontWeight:700 }}>{o.val}</span>
+              </div>
+              <div style={{ fontSize:7, color:T.dim, lineHeight:1.5 }}>{o.desc}</div>
+              {i===0 && <div style={{ marginTop:6, fontSize:7, color:T.teal }}>↵ press to select</div>}
+            </div>
+          ))}
+        </div>
+        <div style={{ marginTop:8, fontSize:7, color:T.dim, textAlign:'center' }}>선택 후 취소 불가 · 스테이지 종료까지 유지</div>
+      </div>
+    </WinChrome>
+  );
+}
+
+function WeaponGet() {
+  return (
+    <WinChrome title="weapon.acquired() — Debug Survival" statusLeft="✓ EVENT E2 COMPLETE" statusRight="무기 획득!">
+      <div style={{ height:'100%', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:'16px', textAlign:'center' }}>
+        <div style={{ border:`1px solid ${T.yellow}`, background:`${T.yellow}0d`, boxShadow:`0 0 40px ${T.yellow}22,inset 0 0 20px ${T.yellow}0a`, padding:'20px 24px', marginBottom:16, width:'100%' }}>
+          <div style={{ fontSize:7, color:T.dim, marginBottom:6, letterSpacing:2 }}>NEW WEAPON ACQUIRED</div>
+          <div style={{ fontSize:10, color:T.yellow, fontWeight:700, marginBottom:4 }}>Git.exe</div>
+          <div style={{ fontSize:8, color:T.dim, marginBottom:12 }}>범위 스턴/롤백 CC기</div>
+          <div style={{ background:T.bg, border:`1px solid ${T.border}`, padding:'8px', textAlign:'left', fontSize:8 }}>
+            <div style={{ color:T.comment, marginBottom:2 }}>{'// git.attack()'}</div>
+            <div><span style={{ color:T.blue }}>await </span><span style={{ color:T.teal }}>git</span><span style={{ color:T.white }}>.</span><span style={{ color:T.yellow }}>rollback</span><span style={{ color:T.white }}>(enemies, </span><span style={{ color:T.orange }}>'HEAD~3'</span><span style={{ color:T.white }}>)</span></div>
+            <div style={{ marginTop:2, color:T.comment }}>{'// 범위 내 모든 버그 2초 스턴'}</div>
+          </div>
+        </div>
+        <div style={{ display:'flex', gap:8, width:'100%' }}>
+          <button style={{ flex:1, padding:'8px', background:'transparent', border:`1px solid ${T.border}`, color:T.dim, fontFamily:T.mono, fontSize:8 }}>버리기</button>
+          <button style={{ flex:2, padding:'8px', background:T.yellow, border:'none', color:T.bg, fontFamily:T.mono, fontSize:8, fontWeight:700 }}>장착 (슬롯 3)</button>
+        </div>
+      </div>
+    </WinChrome>
+  );
+}
+
+function BossIntro() {
+  return (
+    <WinChrome title="boss.spawn('장선형') — DEBUG SURVIVAL" statusLeft="⚠ BOSS DETECTED" statusRight="장선형 — Phase 1">
+      <div style={{ height:'100%', position:'relative', overflow:'hidden' }}>
+        <div style={{ position:'absolute', inset:0, background:`${T.red}08`, backgroundImage:`repeating-linear-gradient(0deg,${T.red}06 0px,${T.red}06 1px,transparent 1px,transparent 4px)` }}/>
+        <div style={{ position:'relative', zIndex:1, height:'100%', display:'flex', flexDirection:'column' }}>
+          <div style={{ background:`${T.red}18`, borderBottom:`1px solid ${T.red}44`, padding:'6px 12px' }}>
+            <div style={{ display:'flex', justifyContent:'space-between', marginBottom:4, fontSize:8 }}>
+              <span style={{ color:T.red, fontWeight:700 }}>BOSS — 장선형</span>
+              <span style={{ color:T.dim }}>Phase 1</span>
+            </div>
+            <div style={{ height:5, background:'#333' }}><div style={{ width:'100%', height:'100%', background:`linear-gradient(90deg,${T.red},#ff8888)` }}/></div>
+          </div>
+          <div style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:12 }}>
+            <PixelBoss size={56}/>
+            <div style={{ width:'90%', background:T.panel, border:`1px solid ${T.red}55`, padding:'10px 12px' }}>
+              <div style={{ fontSize:7, color:T.red, marginBottom:5, letterSpacing:1 }}>▶ 장선형</div>
+              <div style={{ fontSize:8, color:T.white, lineHeight:1.8, fontStyle:'italic' }}>"지윤님... 이번엔 제가 꼭<br/>이깁니다! 두고 보세요!!"</div>
+            </div>
+            <div style={{ width:'90%', display:'flex', gap:8 }}>
+              {[{k:'HP',v:'500',c:T.red},{k:'공격',v:'전방 3방향',c:T.orange},{k:'추적',v:'보통',c:T.yellow}].map(s=>(
+                <div key={s.k} style={{ flex:1, background:T.sidebar, border:`1px solid ${T.border}`, padding:'5px 6px', textAlign:'center', fontSize:7 }}>
+                  <div style={{ color:T.dim, marginBottom:2 }}>{s.k}</div>
+                  <div style={{ color:s.c, fontWeight:600 }}>{s.v}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </WinChrome>
+  );
+}
+
+function BossPhase2() {
+  return (
+    <WinChrome title="boss.phaseChange() — PHASE 2" statusLeft="⚠ HP ≤ 50% — PHASE 2" statusRight="장선형 — Phase 2">
+      <div style={{ height:'100%', position:'relative', overflow:'hidden' }}>
+        <div style={{ position:'absolute', inset:0, background:`${T.orange}08`, backgroundImage:`repeating-linear-gradient(45deg,${T.orange}06 0px,${T.orange}06 1px,transparent 1px,transparent 8px)` }}/>
+        <div style={{ position:'relative', zIndex:1, height:'100%', display:'flex', flexDirection:'column' }}>
+          <div style={{ background:`${T.orange}18`, borderBottom:`1px solid ${T.orange}55`, padding:'6px 12px' }}>
+            <div style={{ display:'flex', justifyContent:'space-between', marginBottom:4, fontSize:8 }}>
+              <span style={{ color:T.orange, fontWeight:700 }}>BOSS — 장선형</span>
+              <span style={{ color:T.red, fontWeight:700 }}>⚠ PHASE 2</span>
+            </div>
+            <div style={{ height:5, background:'#333' }}><div style={{ width:'45%', height:'100%', background:`linear-gradient(90deg,${T.orange},${T.yellow})` }}/></div>
+          </div>
+          <div style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:12 }}>
+            <div style={{ position:'relative' }}>
+              <PixelBoss size={60}/>
+              <div style={{ position:'absolute', inset:-6, border:`2px solid ${T.orange}66`, borderRadius:2 }}/>
+            </div>
+            <div style={{ width:'90%', background:T.panel, border:`1px solid ${T.orange}66`, padding:'10px 12px' }}>
+              <div style={{ fontSize:7, color:T.orange, marginBottom:5 }}>▶ 장선형 (격분)</div>
+              <div style={{ fontSize:8, color:T.white, lineHeight:1.8, fontStyle:'italic' }}>"이게 말이 돼요?! 왜 지윤님만<br/>무기가 그렇게 많아요!! 억울해서<br/>못 살겠네!!"</div>
+            </div>
+            <div style={{ width:'90%', background:T.sidebar, border:`1px solid ${T.border}`, padding:'8px 10px', fontSize:7 }}>
+              <div style={{ color:T.dim, marginBottom:4 }}>PHASE 2 CHANGES</div>
+              <div style={{ color:T.red }}>+ 추적 속도 <span style={{ color:T.orange }}>×1.5</span></div>
+              <div style={{ color:T.red }}>+ 투사체 <span style={{ color:T.orange }}>3방향 → 5방향</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </WinChrome>
+  );
+}
+
+function GameOver() {
+  const stack = ['Error: PlayerHP reached 0','  at Game.checkDeath (Game.js:142)','  at Enemy.onContact (Enemy.js:87)','  at CollisionSystem.resolve (Collision.js:34)','  at GameLoop.update (Game.js:78)'];
+  return (
+    <WinChrome title="FATAL: PlayerDied — Debug Survival" statusLeft="✗ GAME OVER" statusRight="Stage 1 · 03:21">
+      <div style={{ height:'100%', display:'flex', flexDirection:'column', padding:'14px', overflow:'hidden' }}>
+        <div style={{ background:`${T.red}18`, border:`1px solid ${T.red}55`, padding:'8px 12px', marginBottom:12 }}>
+          <div style={{ fontSize:9, color:T.red, fontWeight:700, marginBottom:2 }}>✗ PlayerDied</div>
+          <div style={{ fontSize:8, color:T.dim }}>Process exited with code 1</div>
+        </div>
+        <div style={{ marginBottom:12, fontSize:7, lineHeight:1.8 }}>
+          <div style={{ color:T.dim, marginBottom:4, letterSpacing:1 }}>STACK TRACE</div>
+          {stack.map((l,i)=><div key={i} style={{ color:i===0?T.red:T.dim, paddingLeft:i===0?0:8 }}>{l}</div>)}
+        </div>
+        <div style={{ background:T.sidebar, border:`1px solid ${T.border}`, padding:'10px 12px', marginBottom:12 }}>
+          <div style={{ fontSize:7, color:T.dim, marginBottom:6, letterSpacing:1 }}>RUN SUMMARY</div>
+          {[{k:'생존 시간',v:'03:21',c:T.blue},{k:'버그 처치',v:'82마리',c:T.teal},{k:'최대 콤보',v:'×14',c:T.yellow},{k:'도달 웨이브',v:'Wave 4',c:T.orange}].map(s=>(
+            <div key={s.k} style={{ display:'flex', justifyContent:'space-between', fontSize:8, marginBottom:3 }}>
+              <span style={{ color:T.dim }}>{s.k}</span><span style={{ color:s.c }}>{s.v}</span>
+            </div>
+          ))}
+        </div>
+        <div style={{ display:'flex', gap:6 }}>
+          <button style={{ flex:1, padding:'7px', background:'transparent', border:`1px solid ${T.border}`, color:T.dim, fontFamily:T.mono, fontSize:8 }}>exit</button>
+          <button style={{ flex:2, padding:'7px', background:T.teal, border:'none', color:T.bg, fontFamily:T.mono, fontSize:8, fontWeight:700 }}>game.restart()</button>
+        </div>
+      </div>
+    </WinChrome>
+  );
+}
+
+function StageClear() {
+  const log = [{c:T.teal,t:'  Stage 1 완료'},{c:T.green,t:'  보스 "장선형" 처치 ✓'},{c:T.green,t:'  퀘스트 Q1 달성 ✓'},{c:T.green,t:'  이벤트 E1, E3 클리어 ✓'},{c:T.yellow,t:'  보상: Git.exe, 강화재화 ×5'}];
+  return (
+    <WinChrome title="git commit — Stage 1 완료" statusLeft="✓ STAGE CLEAR" statusRight="main ↑1 commit">
+      <div style={{ height:'100%', padding:'14px', display:'flex', flexDirection:'column', overflow:'hidden' }}>
+        <div style={{ fontSize:8, color:T.comment, marginBottom:8 }}>{'$ git commit -m "feat: Stage 1 Python 기초 완료"'}</div>
+        <div style={{ background:`${T.teal}12`, border:`1px solid ${T.teal}55`, padding:'10px 12px', marginBottom:10 }}>
+          <div style={{ fontSize:7, color:T.dim, marginBottom:3, letterSpacing:1 }}>COMMIT</div>
+          <div style={{ fontSize:9, color:T.teal, fontWeight:700, marginBottom:2 }}>feat: Stage 1 Python 기초 완료</div>
+          <div style={{ fontSize:7, color:T.dim }}>Author: 김지윤 &lt;jiyoon@ssafy.com&gt;</div>
+          <div style={{ fontSize:7, color:T.dim }}>Date: Stage 1 · 04:12 elapsed</div>
+        </div>
+        <div style={{ fontSize:8, lineHeight:1.8, flex:1, overflow:'hidden' }}>
+          {log.map((l,i)=><div key={i} style={{ color:l.c }}>{l.t}</div>)}
+        </div>
+        <div style={{ background:T.sidebar, border:`1px solid ${T.border}`, display:'flex', marginBottom:10 }}>
+          {[{k:'처치',v:'154',c:T.teal},{k:'시간',v:'04:12',c:T.blue},{k:'재화',v:'+5',c:T.yellow}].map(s=>(
+            <div key={s.k} style={{ flex:1, padding:'6px', textAlign:'center', borderRight:`1px solid ${T.border}` }}>
+              <div style={{ fontSize:7, color:T.dim, marginBottom:2 }}>{s.k}</div>
+              <div style={{ fontSize:10, color:s.c, fontWeight:700 }}>{s.v}</div>
+            </div>
+          ))}
+        </div>
+        <button style={{ padding:'8px', background:T.teal, border:'none', color:T.bg, fontFamily:T.mono, fontSize:8, fontWeight:700 }}>git push origin Stage2 →</button>
+      </div>
+    </WinChrome>
+  );
+}
+
+// ── ARTBOARD HELPER ────────────────────────────────────────────
+function Artboard({ label, rowClass, children }) {
+  return (
+    <div className={`artboard-slot ${rowClass}`}>
+      <div className="artboard-label">{label}</div>
+      <div className="artboard-scale-wrap">
+        <div className="artboard-inner">{children}</div>
+      </div>
+    </div>
+  );
+}
+
+// ── PRINT APP ──────────────────────────────────────────────────
+function PrintApp() {
+  return (
+    <div>
+      {/* PAGE 1: 시작 흐름 */}
+      <div className="print-page" style={{ breakBefore:'avoid' }}>
+        <div className="page-header">
+          <span className="page-title">김지윤의 디버그 서바이벌</span>
+          <span className="page-subtitle">다크 터미널 UI — 스크린 레퍼런스</span>
+          <span className="page-num">1 / 4</span>
+        </div>
+        <div style={{ marginBottom:6, fontSize:10, fontWeight:700, color:'#333' }}>시작 흐름</div>
+        <div style={{ fontSize:9, color:'#888', marginBottom:14 }}>타이틀 → 무기 선택 → 게임 진입</div>
+        <div className="artboard-row row-2">
+          <Artboard label="01 · 타이틀" rowClass="row-2"><TitleScreen/></Artboard>
+          <Artboard label="02 · 무기 선택" rowClass="row-2"><WeaponSelect/></Artboard>
+        </div>
+      </div>
+
+      {/* PAGE 2: 인게임 */}
+      <div className="print-page">
+        <div className="page-header">
+          <span className="page-title">인게임</span>
+          <span className="page-subtitle">HUD · 이벤트 트리거 · 이벤트 진행</span>
+          <span className="page-num">2 / 4</span>
+        </div>
+        <div className="artboard-row row-3">
+          <Artboard label="03 · 인게임 HUD" rowClass="row-3"><GameHUD/></Artboard>
+          <Artboard label="04 · 이벤트 트리거 (동기 캐릭터)" rowClass="row-3"><EventToast/></Artboard>
+          <Artboard label="05 · 이벤트 진행" rowClass="row-3"><EventModal/></Artboard>
+        </div>
+      </div>
+
+      {/* PAGE 3: 보상 & 업그레이드 */}
+      <div className="print-page">
+        <div className="page-header">
+          <span className="page-title">보상 & 업그레이드</span>
+          <span className="page-subtitle">Q1 완료 스탯 업그레이드 · 무기 획득</span>
+          <span className="page-num">3 / 4</span>
+        </div>
+        <div className="artboard-row row-2">
+          <Artboard label="06 · 스탯 업그레이드 선택" rowClass="row-2"><StatUpgrade/></Artboard>
+          <Artboard label="07 · 무기 획득 (Git.exe)" rowClass="row-2"><WeaponGet/></Artboard>
+        </div>
+      </div>
+
+      {/* PAGE 4: 보스 & 결말 */}
+      <div className="print-page">
+        <div className="page-header">
+          <span className="page-title">보스 & 결말</span>
+          <span className="page-subtitle">장선형 등장 · Phase 2 · 게임 오버 · 스테이지 클리어</span>
+          <span className="page-num">4 / 4</span>
+        </div>
+        <div className="row-2x2">
+          <Artboard label="08 · 보스 등장" rowClass="row-2x2"><BossIntro/></Artboard>
+          <Artboard label="09 · 보스 Phase 2 (격분)" rowClass="row-2x2"><BossPhase2/></Artboard>
+          <Artboard label="10 · 게임 오버 (스택 트레이스)" rowClass="row-2x2"><GameOver/></Artboard>
+          <Artboard label="11 · 스테이지 클리어 (git commit)" rowClass="row-2x2"><StageClear/></Artboard>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<PrintApp/>);
+
+// auto-print: wait for fonts + Babel
+document.fonts.ready.then(() => {
+  setTimeout(() => window.print(), 500);
+});
+</script>
+</body>
+</html>

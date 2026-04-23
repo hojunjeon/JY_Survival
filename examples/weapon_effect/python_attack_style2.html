@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Python Attack Effect - Style 2: Venomous Fang</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: radial-gradient(circle at center, #0a1a0a 0%, #000 100%);
+            color: #00ff88;
+            font-family: 'Outfit', 'Inter', sans-serif;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        .container {
+            position: relative;
+            padding: 20px;
+            background: rgba(0, 255, 136, 0.03);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 255, 136, 0.1);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
+        }
+        canvas {
+            border-radius: 12px;
+            background: #000;
+        }
+        .info {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        h1 { 
+            margin: 0; 
+            font-size: 2rem; 
+            font-weight: 800;
+            background: linear-gradient(90deg, #00ff88, #44ff44);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase; 
+            letter-spacing: 4px; 
+        }
+        p { opacity: 0.6; font-size: 1rem; margin-top: 8px; }
+        .controls {
+            margin-top: 20px;
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="info">
+            <h1>Venomous Fang</h1>
+            <p>유연하고 치명적인 뱀의 움직임 - 잔상과 유체 역학적 움직임을 강조</p>
+        </div>
+        <canvas id="canvas"></canvas>
+        <div class="controls">유연한 곡선 궤적과 부드러운 잔상 효과</div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = 800;
+        canvas.height = 600;
+
+        class SnakeProjectile {
+            constructor(startX, startY, targetX, targetY) {
+                this.x = startX;
+                this.y = startY;
+                this.targetX = targetX;
+                this.targetY = targetY;
+                this.history = [];
+                this.maxHistory = 15;
+                this.speed = 5;
+                this.time = 0;
+                this.active = true;
+                
+                const angle = Math.atan2(targetY - startY, targetX - startX);
+                this.vx = Math.cos(angle) * this.speed;
+                this.vy = Math.sin(angle) * this.speed;
+            }
+
+            update() {
+                this.time += 0.2;
+                
+                // Add wave motion perpendicular to velocity
+                const waveX = -this.vy * Math.sin(this.time) * 0.5;
+                const waveY = this.vx * Math.sin(this.time) * 0.5;
+                
+                this.x += this.vx + waveX;
+                this.y += this.vy + waveY;
+
+                this.history.unshift({x: this.x, y: this.y});
+                if (this.history.length > this.maxHistory) {
+                    this.history.pop();
+                }
+
+                const dist = Math.hypot(this.targetX - this.x, this.targetY - this.y);
+                if (dist < 10) this.active = false;
+            }
+
+            draw() {
+                if (this.history.length < 2) return;
+
+                // Draw trail
+                for (let i = 0; i < this.history.length - 1; i++) {
+                    const p1 = this.history[i];
+                    const p2 = this.history[i+1];
+                    const alpha = 1 - (i / this.maxHistory);
+                    const width = (1 - (i / this.maxHistory)) * 8;
+
+                    ctx.beginPath();
+                    ctx.strokeStyle = `rgba(0, 255, 136, ${alpha})`;
+                    ctx.lineWidth = width;
+                    ctx.lineCap = 'round';
+                    ctx.moveTo(p1.x, p1.y);
+                    ctx.lineTo(p2.x, p2.y);
+                    ctx.stroke();
+                }
+
+                // Draw head
+                ctx.fillStyle = '#fff';
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = '#00ff88';
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, 4, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            }
+        }
+
+        const projectiles = [];
+        const enemies = [
+            {x: 100, y: 100}, {x: 700, y: 100},
+            {x: 100, y: 500}, {x: 700, y: 500},
+            {x: 400, y: 300}
+        ];
+
+        function animate() {
+            ctx.fillStyle = 'rgba(0, 5, 0, 0.3)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Draw target points
+            ctx.fillStyle = '#222';
+            enemies.forEach(e => {
+                ctx.beginPath();
+                ctx.arc(e.x, e.y, 10, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            if (Math.random() < 0.03) {
+                const start = {x: 400, y: 300};
+                const end = enemies[Math.floor(Math.random() * enemies.length)];
+                projectiles.push(new SnakeProjectile(start.x, start.y, end.x, end.y));
+            }
+
+            for (let i = projectiles.length - 1; i >= 0; i--) {
+                projectiles[i].update();
+                projectiles[i].draw();
+                if (!projectiles[i].active) {
+                    projectiles.splice(i, 1);
+                }
+            }
+
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+    </script>
+</body>
+</html>

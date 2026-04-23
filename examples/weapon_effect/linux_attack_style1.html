@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Linux Attack Effect - Style 1: Root Delete</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #000;
+            color: #00ff00;
+            font-family: 'Outfit', 'Inter', 'Courier New', monospace;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        .container {
+            position: relative;
+            padding: 20px;
+            background: rgba(0, 255, 0, 0.05);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 255, 0, 0.2);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 1.0);
+        }
+        canvas {
+            border-radius: 12px;
+            background: #000;
+        }
+        .info {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        h1 { 
+            margin: 0; 
+            font-size: 2rem; 
+            font-weight: 800;
+            background: linear-gradient(90deg, #00ff00, #008800);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase; 
+            letter-spacing: 4px; 
+        }
+        p { opacity: 0.6; font-size: 1rem; margin-top: 8px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="info">
+            <h1>Linux: sudo rm -rf /</h1>
+            <p>모든 프로세스를 강제 종료하고 화면상의 모든 버그를 소거하는 궁극기</p>
+        </div>
+        <canvas id="canvas"></canvas>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = 800;
+        canvas.height = 600;
+
+        class RootWave {
+            constructor() {
+                this.life = 1.0;
+                this.progress = 0;
+            }
+            update() {
+                this.progress += 15;
+                if (this.progress > 1200) this.life -= 0.02;
+                return this.life > 0;
+            }
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.life;
+                
+                // Dark Wave
+                const grad = ctx.createRadialGradient(400, 300, 0, 400, 300, this.progress);
+                grad.addColorStop(0, 'rgba(0, 255, 0, 0.2)');
+                grad.addColorStop(0.8, 'rgba(0, 50, 0, 0.8)');
+                grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+                
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, 800, 600);
+                
+                // Terminal text
+                ctx.fillStyle = '#00ff00';
+                ctx.font = '14px Courier New';
+                for(let i=0; i<20; i++) {
+                    const y = (Date.now()/50 + i*30) % 600;
+                    ctx.fillText(`[DELETING] /dev/bug_${i}... SUCCESS`, 20, y);
+                }
+
+                ctx.font = 'bold 40px Courier New';
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = '#00ff00';
+                ctx.fillText("sudo rm -rf /", 250, 300);
+                
+                ctx.restore();
+            }
+        }
+
+        let currentWave = null;
+        function animate() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            if (!currentWave && Math.random() < 0.01) {
+                currentWave = new RootWave();
+            }
+
+            if (currentWave) {
+                currentWave.draw();
+                if (!currentWave.update()) currentWave = null;
+            }
+
+            requestAnimationFrame(animate);
+        }
+        animate();
+    </script>
+</body>
+</html>

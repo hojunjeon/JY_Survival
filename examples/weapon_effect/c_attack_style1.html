@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C/C++ Attack Effect - Style 1: Pointer Piercer</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: radial-gradient(circle at center, #1a1c2c 0%, #05050a 100%);
+            color: #4dc2ff;
+            font-family: 'Outfit', 'Inter', sans-serif;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        .container {
+            position: relative;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(77, 194, 255, 0.1);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+        }
+        canvas {
+            border-radius: 12px;
+            background: #000;
+        }
+        .info {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        h1 { 
+            margin: 0; 
+            font-size: 2rem; 
+            font-weight: 800;
+            background: linear-gradient(90deg, #4dc2ff, #ffffff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase; 
+            letter-spacing: 4px; 
+        }
+        p { opacity: 0.6; font-size: 1rem; margin-top: 8px; }
+        .controls {
+            margin-top: 20px;
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="info">
+            <h1>Pointer Piercer</h1>
+            <p>메모리를 직접 관통하는 날카롭고 정밀한 포인터 레이저</p>
+        </div>
+        <canvas id="canvas"></canvas>
+        <div class="controls">직선적이고 빠른 속도로 모든 것을 관통하는 저수준 언어의 위력</div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = 800;
+        canvas.height = 600;
+
+        class Laser {
+            constructor(x, y, tx, ty) {
+                this.x = x;
+                this.y = y;
+                this.tx = tx;
+                this.ty = ty;
+                this.life = 1.0;
+                this.width = 4;
+            }
+
+            update() {
+                this.life -= 0.04;
+                return this.life > 0;
+            }
+
+            draw() {
+                ctx.save();
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = '#4dc2ff';
+                
+                // Trail
+                ctx.strokeStyle = `rgba(77, 194, 255, ${this.life * 0.5})`;
+                ctx.lineWidth = this.width * 3;
+                ctx.beginPath();
+                ctx.moveTo(this.x, this.y);
+                ctx.lineTo(this.tx, this.ty);
+                ctx.stroke();
+
+                // Core
+                ctx.strokeStyle = `rgba(255, 255, 255, ${this.life})`;
+                ctx.lineWidth = this.width;
+                ctx.beginPath();
+                ctx.moveTo(this.x, this.y);
+                ctx.lineTo(this.tx, this.ty);
+                ctx.stroke();
+
+                // Particles along the path
+                for(let i=0; i<10; i++) {
+                    const t = Math.random();
+                    const px = this.x + (this.tx - this.x) * t;
+                    const py = this.y + (this.ty - this.y) * t;
+                    ctx.fillStyle = `rgba(255, 255, 255, ${this.life})`;
+                    ctx.fillRect(px, py, 2, 2);
+                }
+
+                ctx.restore();
+            }
+        }
+
+        const lasers = [];
+        const enemies = [
+            {x: 100, y: 100}, {x: 700, y: 100},
+            {x: 100, y: 500}, {x: 700, y: 500},
+            {x: 400, y: 300}, {x: 200, y: 300}, {x: 600, y: 300}
+        ];
+
+        function animate() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            if (Math.random() < 0.1) {
+                const sx = 400, sy = 300;
+                const e = enemies[Math.floor(Math.random() * enemies.length)];
+                // Create a laser that pierces through
+                const angle = Math.atan2(e.y - sy, e.x - sx);
+                const tx = sx + Math.cos(angle) * 1000;
+                const ty = sy + Math.sin(angle) * 1000;
+                lasers.push(new Laser(sx, sy, tx, ty));
+            }
+
+            for (let i = lasers.length - 1; i >= 0; i--) {
+                lasers[i].draw();
+                if (!lasers[i].update()) lasers.splice(i, 1);
+            }
+
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+    </script>
+</body>
+</html>

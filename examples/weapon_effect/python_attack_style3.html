@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Python Attack Effect - Style 3: Code Injection</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: radial-gradient(circle at center, #001a00 0%, #000 100%);
+            color: #00ff41;
+            font-family: 'Outfit', 'Inter', 'Courier New', monospace;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        .container {
+            position: relative;
+            padding: 20px;
+            background: rgba(0, 255, 65, 0.03);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 255, 65, 0.1);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+        }
+        canvas {
+            border-radius: 12px;
+            background: #000;
+        }
+        .info {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        h1 { 
+            margin: 0; 
+            font-size: 2rem; 
+            font-weight: 800;
+            background: linear-gradient(90deg, #00ff41, #00ff88);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase; 
+            letter-spacing: 4px; 
+        }
+        p { opacity: 0.6; font-size: 1rem; margin-top: 8px; }
+        .controls {
+            margin-top: 20px;
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="info">
+            <h1>Code Injection</h1>
+            <p>디지털 데이터 폭발 - 파이썬 코드가 적에게 주입되는 타격감</p>
+        </div>
+        <canvas id="canvas"></canvas>
+        <div class="controls">타격 시 파이썬 예약어들이 파티클로 흩어짐</div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = 800;
+        canvas.height = 600;
+
+        const SNIPPETS = ["import", "def", "print", "while", "yield", "async", "await", "0101", "class"];
+
+        class CodeParticle {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.vx = (Math.random() - 0.5) * 10;
+                this.vy = (Math.random() - 0.5) * 10;
+                this.life = 1.0;
+                this.text = SNIPPETS[Math.floor(Math.random() * SNIPPETS.length)];
+                this.fontSize = 10 + Math.random() * 10;
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.life -= 0.02;
+                return this.life > 0;
+            }
+
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.life;
+                ctx.fillStyle = '#00ff41';
+                ctx.font = `${this.fontSize}px Courier New`;
+                ctx.fillText(this.text, this.x, this.y);
+                ctx.restore();
+            }
+        }
+
+        class Shot {
+            constructor(x, y, tx, ty) {
+                this.x = x;
+                this.y = y;
+                this.tx = tx;
+                this.ty = ty;
+                this.progress = 0;
+                this.speed = 0.05;
+                this.active = true;
+            }
+
+            update() {
+                this.progress += this.speed;
+                if (this.progress >= 1) {
+                    this.active = false;
+                    this.explode();
+                }
+            }
+
+            explode() {
+                for(let i=0; i<10; i++) {
+                    explosions.push(new CodeParticle(this.tx, this.ty));
+                }
+            }
+
+            draw() {
+                const cx = this.x + (this.tx - this.x) * this.progress;
+                const cy = this.y + (this.ty - this.y) * this.progress;
+                
+                ctx.fillStyle = '#fff';
+                ctx.beginPath();
+                ctx.arc(cx, cy, 3, 0, Math.PI*2);
+                ctx.fill();
+                
+                ctx.strokeStyle = '#00ff41';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(this.x, this.y);
+                ctx.lineTo(cx, cy);
+                ctx.stroke();
+            }
+        }
+
+        const shots = [];
+        const explosions = [];
+        const enemies = [{x: 400, y: 300}, {x: 200, y: 200}, {x: 600, y: 400}];
+
+        function animate() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            if (Math.random() < 0.05) {
+                const e = enemies[Math.floor(Math.random() * enemies.length)];
+                shots.push(new Shot(100, 500, e.x, e.y));
+            }
+
+            for (let i = shots.length - 1; i >= 0; i--) {
+                shots[i].update();
+                shots[i].draw();
+                if (!shots[i].active) shots.splice(i, 1);
+            }
+
+            for (let i = explosions.length - 1; i >= 0; i--) {
+                if (explosions[i].update()) {
+                    explosions[i].draw();
+                } else {
+                    explosions.splice(i, 1);
+                }
+            }
+
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+    </script>
+</body>
+</html>

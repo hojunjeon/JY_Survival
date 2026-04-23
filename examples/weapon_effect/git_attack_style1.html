@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Git Attack Effect - Style 1: Rollback</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: radial-gradient(circle at center, #2c1a3c 0%, #0a0510 100%);
+            color: #f05032;
+            font-family: 'Outfit', 'Inter', sans-serif;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        .container {
+            position: relative;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(240, 80, 50, 0.1);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+        }
+        canvas {
+            border-radius: 12px;
+            background: #000;
+        }
+        .info {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        h1 { 
+            margin: 0; 
+            font-size: 2rem; 
+            font-weight: 800;
+            background: linear-gradient(90deg, #f05032, #ffffff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase; 
+            letter-spacing: 4px; 
+        }
+        p { opacity: 0.6; font-size: 1rem; margin-top: 8px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="info">
+            <h1>Git: Rollback</h1>
+            <p>시간을 되돌려 버그의 움직임을 봉쇄하는 타임 루프 효과</p>
+        </div>
+        <canvas id="canvas"></canvas>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = 800;
+        canvas.height = 600;
+
+        class Rollback {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.radius = 0;
+                this.maxRadius = 100;
+                this.life = 1.0;
+            }
+            update() {
+                this.radius += 2;
+                this.life -= 0.01;
+                return this.life > 0;
+            }
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                
+                // Clockwise circle
+                ctx.strokeStyle = `rgba(240, 80, 50, ${this.life})`;
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(0, 0, this.radius, 0, Math.PI * 2);
+                ctx.stroke();
+
+                // Counter-clockwise arrows
+                const angle = -Date.now() * 0.005;
+                ctx.rotate(angle);
+                ctx.beginPath();
+                ctx.arc(0, 0, this.radius + 10, 0, Math.PI * 1.5);
+                ctx.stroke();
+
+                ctx.fillStyle = `rgba(255, 255, 255, ${this.life})`;
+                ctx.font = '12px Courier New';
+                ctx.fillText('git revert HEAD~1', 20, 0);
+                
+                ctx.restore();
+            }
+        }
+
+        const effects = [];
+        function animate() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            if (Math.random() < 0.02) {
+                effects.push(new Rollback(Math.random() * 800, Math.random() * 600));
+            }
+
+            for (let i = effects.length - 1; i >= 0; i--) {
+                if (effects[i].update()) {
+                    effects[i].draw();
+                } else {
+                    effects.splice(i, 1);
+                }
+            }
+
+            requestAnimationFrame(animate);
+        }
+        animate();
+    </script>
+</body>
+</html>

@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Django Attack Effect - Style 1: Template Rendering</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: radial-gradient(circle at center, #092e20 0%, #000 100%);
+            color: #ffffff;
+            font-family: 'Outfit', 'Inter', sans-serif;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        .container {
+            position: relative;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(9, 46, 32, 0.5);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+        }
+        canvas {
+            border-radius: 12px;
+            background: #000;
+        }
+        .info {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        h1 { 
+            margin: 0; 
+            font-size: 2rem; 
+            font-weight: 800;
+            background: linear-gradient(90deg, #092e20, #44b78b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase; 
+            letter-spacing: 4px; 
+        }
+        p { opacity: 0.6; font-size: 1rem; margin-top: 8px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="info">
+            <h1>Django: Template Rendering</h1>
+            <p>전방으로 정교하게 렌더링된 템플릿 블록들을 방출하는 광역 부채꼴 공격</p>
+        </div>
+        <canvas id="canvas"></canvas>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = 800;
+        canvas.height = 600;
+
+        class RenderBlock {
+            constructor(x, y, angle) {
+                this.x = x;
+                this.y = y;
+                this.angle = angle;
+                this.speed = 5 + Math.random() * 3;
+                this.life = 1.0;
+                this.size = 15 + Math.random() * 10;
+            }
+            update() {
+                this.x += Math.cos(this.angle) * this.speed;
+                this.y += Math.sin(this.angle) * this.speed;
+                this.life -= 0.02;
+                return this.life > 0;
+            }
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.angle);
+                ctx.globalAlpha = this.life;
+                
+                ctx.fillStyle = '#44b78b';
+                ctx.fillRect(-this.size/2, -this.size/2, this.size, this.size);
+                
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 1;
+                ctx.strokeRect(-this.size/2, -this.size/2, this.size, this.size);
+                
+                ctx.fillStyle = '#ffffff';
+                ctx.font = '8px Arial';
+                ctx.fillText('{{ block }}', -this.size/2 + 2, 4);
+                
+                ctx.restore();
+            }
+        }
+
+        const blocks = [];
+        function animate() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            if (Math.random() < 0.2) {
+                const baseAngle = -Math.PI / 2; // Upward
+                const spread = Math.PI / 3;
+                const angle = baseAngle + (Math.random() - 0.5) * spread;
+                blocks.push(new RenderBlock(400, 500, angle));
+            }
+
+            for (let i = blocks.length - 1; i >= 0; i--) {
+                if (blocks[i].update()) {
+                    blocks[i].draw();
+                } else {
+                    blocks.splice(i, 1);
+                }
+            }
+
+            // Player position
+            ctx.fillStyle = '#092e20';
+            ctx.beginPath();
+            ctx.arc(400, 500, 20, 0, Math.PI*2);
+            ctx.fill();
+
+            requestAnimationFrame(animate);
+        }
+        animate();
+    </script>
+</body>
+</html>

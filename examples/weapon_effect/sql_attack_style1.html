@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQL Attack Effect - Style 1: Query Delete</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: radial-gradient(circle at center, #0a1a2c 0%, #000 100%);
+            color: #00aaff;
+            font-family: 'Outfit', 'Inter', sans-serif;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        .container {
+            position: relative;
+            padding: 20px;
+            background: rgba(0, 170, 255, 0.03);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 170, 255, 0.1);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+        }
+        canvas {
+            border-radius: 12px;
+            background: #000;
+        }
+        .info {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        h1 { 
+            margin: 0; 
+            font-size: 2rem; 
+            font-weight: 800;
+            background: linear-gradient(90deg, #00aaff, #ffffff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase; 
+            letter-spacing: 4px; 
+        }
+        p { opacity: 0.6; font-size: 1rem; margin-top: 8px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="info">
+            <h1>SQL: DELETE FROM BUG</h1>
+            <p>데이터베이스 쿼리를 실행하여 범위 내의 버그들을 즉시 소거</p>
+        </div>
+        <canvas id="canvas"></canvas>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = 800;
+        canvas.height = 600;
+
+        class QueryEffect {
+            constructor() {
+                this.life = 1.0;
+                this.gridSize = 40;
+                this.scanY = 0;
+            }
+            update() {
+                this.scanY += 10;
+                if (this.scanY > 600) {
+                    this.life -= 0.05;
+                }
+                return this.life > 0;
+            }
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.life;
+                
+                // Draw Grid
+                ctx.strokeStyle = 'rgba(0, 170, 255, 0.2)';
+                ctx.lineWidth = 1;
+                for(let x=0; x<800; x+=this.gridSize) {
+                    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, 600); ctx.stroke();
+                }
+                for(let y=0; y<600; y+=this.gridSize) {
+                    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(800, y); ctx.stroke();
+                }
+
+                // Scan line
+                ctx.strokeStyle = '#00aaff';
+                ctx.lineWidth = 4;
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = '#00aaff';
+                ctx.beginPath();
+                ctx.moveTo(0, this.scanY);
+                ctx.lineTo(800, this.scanY);
+                ctx.stroke();
+
+                // SQL Text
+                ctx.fillStyle = '#fff';
+                ctx.font = 'bold 24px Courier New';
+                ctx.fillText("DELETE FROM bug_table WHERE status = 'ERROR';", 50, 550);
+                
+                ctx.restore();
+            }
+        }
+
+        let currentEffect = null;
+        function animate() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            if (!currentEffect && Math.random() < 0.01) {
+                currentEffect = new QueryEffect();
+            }
+
+            if (currentEffect) {
+                currentEffect.draw();
+                if (!currentEffect.update()) currentEffect = null;
+            }
+
+            requestAnimationFrame(animate);
+        }
+        animate();
+    </script>
+</body>
+</html>

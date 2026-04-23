@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hero Effect: Django - Template Render Burst</title>
+    <style>
+        body { margin: 0; padding: 0; background: #000; color: #44b78b; font-family: 'Outfit', sans-serif; overflow: hidden; display: flex; align-items: center; justify-content: center; height: 100vh; }
+        .container { position: relative; padding: 20px; background: rgba(68, 183, 139, 0.05); border-radius: 24px; backdrop-filter: blur(20px); border: 1px solid rgba(68, 183, 139, 0.2); box-shadow: 0 0 100px rgba(0, 0, 0, 0.9); }
+        canvas { border-radius: 16px; background: #050505; cursor: crosshair; }
+        .info { text-align: center; margin-bottom: 20px; }
+        h1 { margin: 0; font-size: 2.5rem; background: linear-gradient(90deg, #44b78b, #ffffff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-transform: uppercase; letter-spacing: 6px; font-weight: 900; }
+        p { opacity: 0.6; font-size: 1.1rem; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="info">
+            <h1>Django: Template Burst</h1>
+            <p>초고속으로 렌더링되는 템플릿 엔진의 위력을 응집시킨 에너지 조사</p>
+        </div>
+        <canvas id="canvas"></canvas>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = 800;
+        canvas.height = 600;
+
+        class RenderBeam {
+            constructor() {
+                this.life = 1.0;
+                this.blocks = [];
+            }
+            update() {
+                this.life -= 0.01;
+                if (Math.random() < 0.5) {
+                    this.blocks.push({
+                        x: 400 + (Math.random()-0.5)*100,
+                        y: 300 + (Math.random()-0.5)*100,
+                        size: 20 + Math.random()*30,
+                        alpha: 1.0
+                    });
+                }
+                this.blocks.forEach(b => b.alpha -= 0.05);
+                return this.life > 0;
+            }
+            draw() {
+                ctx.save();
+                ctx.shadowBlur = 40; ctx.shadowColor = '#44b78b';
+                
+                // Central Beam
+                const grad = ctx.createLinearGradient(400, 300, 800, 300);
+                grad.addColorStop(0, 'white');
+                grad.addColorStop(0.2, '#44b78b');
+                grad.addColorStop(1, 'transparent');
+                ctx.fillStyle = grad;
+                ctx.fillRect(400, 290, 400, 20);
+
+                // Blocks
+                this.blocks.forEach(b => {
+                    ctx.strokeStyle = `rgba(255, 255, 255, ${b.alpha})`;
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(b.x - b.size/2, b.y - b.size/2, b.size, b.size);
+                    ctx.fillStyle = `rgba(68, 183, 139, ${b.alpha * 0.3})`;
+                    ctx.fillRect(b.x - b.size/2, b.y - b.size/2, b.size, b.size);
+                });
+                ctx.restore();
+            }
+        }
+
+        let currentBeam = null;
+        function animate() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            if (!currentBeam && Math.random() < 0.05) currentBeam = new RenderBeam();
+            if (currentBeam) {
+                currentBeam.draw();
+                if (!currentBeam.update()) currentBeam = null;
+            }
+            requestAnimationFrame(animate);
+        }
+        animate();
+    </script>
+</body>
+</html>

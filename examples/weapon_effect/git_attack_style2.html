@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Git Attack Effect - Style 2: Merge Conflict</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #1a0505;
+            color: #f05032;
+            font-family: 'Outfit', 'Inter', 'Courier New', monospace;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        .container {
+            position: relative;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(240, 80, 50, 0.2);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+        }
+        canvas {
+            border-radius: 12px;
+            background: #000;
+        }
+        .info {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        h1 { 
+            margin: 0; 
+            font-size: 2rem; 
+            font-weight: 800;
+            background: linear-gradient(90deg, #f05032, #ffcc00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase; 
+            letter-spacing: 4px; 
+        }
+        p { opacity: 0.6; font-size: 1rem; margin-top: 8px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="info">
+            <h1>Git: Merge Conflict</h1>
+            <p>코드 충돌을 강제로 발생시켜 주변의 버그들을 마비시키는 폭발적 CC기</p>
+        </div>
+        <canvas id="canvas"></canvas>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = 800;
+        canvas.height = 600;
+
+        class Conflict {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.life = 1.0;
+                this.texts = ["<<<<<<< HEAD", "=======", ">>>>>>> branch-main"];
+            }
+            update() {
+                this.life -= 0.015;
+                return this.life > 0;
+            }
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.globalAlpha = this.life;
+                
+                ctx.fillStyle = '#ff4444';
+                ctx.font = 'bold 16px Courier New';
+                
+                this.texts.forEach((txt, i) => {
+                    ctx.fillText(txt, -100 + (Math.random()-0.5)*10, -30 + i*30 + (Math.random()-0.5)*10);
+                });
+
+                // Spark effects
+                for(let i=0; i<10; i++) {
+                    ctx.fillStyle = '#f05032';
+                    ctx.fillRect((Math.random()-0.5)*300, (Math.random()-0.5)*150, 4, 4);
+                }
+                
+                ctx.restore();
+            }
+        }
+
+        const effects = [];
+        function animate() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            if (Math.random() < 0.03) {
+                effects.push(new Conflict(Math.random() * 800, Math.random() * 600));
+            }
+
+            for (let i = effects.length - 1; i >= 0; i--) {
+                if (effects[i].update()) {
+                    effects[i].draw();
+                } else {
+                    effects.splice(i, 1);
+                }
+            }
+
+            requestAnimationFrame(animate);
+        }
+        animate();
+    </script>
+</body>
+</html>

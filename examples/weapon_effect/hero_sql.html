@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hero Effect: SQL - Database Drop</title>
+    <style>
+        body { margin: 0; padding: 0; background: #000a1a; color: #00aaff; font-family: 'Outfit', sans-serif; overflow: hidden; display: flex; align-items: center; justify-content: center; height: 100vh; }
+        .container { position: relative; padding: 20px; background: rgba(0, 170, 255, 0.05); border-radius: 24px; backdrop-filter: blur(20px); border: 1px solid rgba(0, 170, 255, 0.2); box-shadow: 0 0 100px rgba(0, 0, 0, 0.9); }
+        canvas { border-radius: 16px; background: #000; cursor: crosshair; }
+        .info { text-align: center; margin-bottom: 20px; }
+        h1 { margin: 0; font-size: 2.5rem; background: linear-gradient(90deg, #00aaff, #ffffff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-transform: uppercase; letter-spacing: 6px; font-weight: 900; }
+        p { opacity: 0.6; font-size: 1.1rem; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="info">
+            <h1>SQL: Database Drop</h1>
+            <p>거대한 테이블 데이터를 하늘에서 떨어뜨려 범위 내의 모든 버그를 압쇄</p>
+        </div>
+        <canvas id="canvas"></canvas>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = 800;
+        canvas.height = 600;
+
+        class TableDrop {
+            constructor() {
+                this.y = -300; this.targetY = 200;
+                this.width = 400; this.height = 200;
+                this.life = 1.0; this.landed = false;
+            }
+            update() {
+                if (!this.landed) {
+                    this.y += 20;
+                    if (this.y >= this.targetY) {
+                        this.y = this.targetY; this.landed = true;
+                        shake = 20;
+                    }
+                } else {
+                    this.life -= 0.02;
+                }
+                return this.life > 0;
+            }
+            draw() {
+                ctx.save();
+                ctx.translate(400 - this.width/2, this.y);
+                ctx.globalAlpha = this.life;
+                
+                // Shadow
+                if (!this.landed) {
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+                    ctx.fillRect(0, this.targetY - this.y + this.height, this.width, 10);
+                }
+
+                // Table
+                ctx.fillStyle = 'rgba(0, 170, 255, 0.2)';
+                ctx.fillRect(0, 0, this.width, this.height);
+                ctx.strokeStyle = '#00aaff'; ctx.lineWidth = 2;
+                ctx.strokeRect(0, 0, this.width, this.height);
+
+                // Grid Lines
+                ctx.strokeStyle = 'rgba(0, 170, 255, 0.5)';
+                for(let i=1; i<4; i++) {
+                    ctx.beginPath(); ctx.moveTo(0, i * 50); ctx.lineTo(this.width, i * 50); ctx.stroke();
+                }
+                for(let i=1; i<8; i++) {
+                    ctx.beginPath(); ctx.moveTo(i * 50, 0); ctx.lineTo(i * 50, this.height); ctx.stroke();
+                }
+
+                ctx.fillStyle = '#fff'; ctx.font = 'bold 20px Courier New';
+                ctx.fillText("DROP TABLE bugs;", 100, 110);
+                ctx.restore();
+            }
+        }
+
+        let currentDrop = null;
+        let shake = 0;
+
+        function animate() {
+            ctx.save();
+            if (shake > 0) {
+                ctx.translate((Math.random()-0.5)*shake, (Math.random()-0.5)*shake);
+                shake *= 0.9;
+            }
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+            ctx.fillRect(-50, -50, canvas.width+100, canvas.height+100);
+
+            if (!currentDrop && Math.random() < 0.02) currentDrop = new TableDrop();
+            if (currentDrop) {
+                currentDrop.draw();
+                if (!currentDrop.update()) currentDrop = null;
+            }
+            ctx.restore();
+            requestAnimationFrame(animate);
+        }
+        animate();
+    </script>
+</body>
+</html>

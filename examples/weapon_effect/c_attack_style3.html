@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C/C++ Attack Effect - Style 3: Segmentation Fault</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #111;
+            color: #ddd;
+            font-family: 'Outfit', 'Inter', 'Courier New', monospace;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        .container {
+            position: relative;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+        }
+        canvas {
+            border-radius: 12px;
+            background: #000;
+        }
+        .info {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        h1 { 
+            margin: 0; 
+            font-size: 2rem; 
+            font-weight: 800;
+            background: linear-gradient(90deg, #fff, #999);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase; 
+            letter-spacing: 4px; 
+        }
+        p { opacity: 0.6; font-size: 1rem; margin-top: 8px; }
+        .controls {
+            margin-top: 20px;
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="info">
+            <h1>Segmentation Fault</h1>
+            <p>잘못된 메모리 참조로 인한 치명적인 시스템 붕괴 연출</p>
+        </div>
+        <canvas id="canvas"></canvas>
+        <div class="controls">강력한 단일 타격과 함께 발생하는 화면 진동 및 오류 텍스트</div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = 800;
+        canvas.height = 600;
+
+        let shakeTime = 0;
+
+        class FaultEffect {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.life = 1.0;
+                this.text = "SEGMENTATION FAULT (core dumped)";
+            }
+            update() {
+                this.life -= 0.02;
+                return this.life > 0;
+            }
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.life;
+                ctx.fillStyle = '#ff0000';
+                ctx.font = 'bold 20px Courier New';
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = '#ff0000';
+                ctx.fillText(this.text, this.x - 150, this.y - 20);
+                
+                // Glitch squares
+                for(let i=0; i<5; i++) {
+                    ctx.fillRect(this.x + (Math.random()-0.5)*200, this.y + (Math.random()-0.5)*100, Math.random()*50, 2);
+                }
+                ctx.restore();
+            }
+        }
+
+        const effects = [];
+        const enemies = [{x: 400, y: 300}, {x: 200, y: 200}, {x: 600, y: 400}];
+
+        function animate() {
+            ctx.save();
+            if (shakeTime > 0) {
+                const dx = (Math.random() - 0.5) * 10;
+                const dy = (Math.random() - 0.5) * 10;
+                ctx.translate(dx, dy);
+                shakeTime--;
+            }
+
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+            ctx.fillRect(-20, -20, canvas.width + 40, canvas.height + 40);
+
+            if (Math.random() < 0.03) {
+                const e = enemies[Math.floor(Math.random() * enemies.length)];
+                effects.push(new FaultEffect(e.x, e.y));
+                shakeTime = 10;
+            }
+
+            for (let i = effects.length - 1; i >= 0; i--) {
+                if (effects[i].update()) {
+                    effects[i].draw();
+                } else {
+                    effects.splice(i, 1);
+                }
+            }
+
+            ctx.restore();
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+    </script>
+</body>
+</html>

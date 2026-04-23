@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C/C++ Attack Effect - Style 2: Memory Overflow</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: radial-gradient(circle at center, #2c1a1a 0%, #0a0505 100%);
+            color: #ff4d4d;
+            font-family: 'Outfit', 'Inter', sans-serif;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        .container {
+            position: relative;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 77, 77, 0.1);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+        }
+        canvas {
+            border-radius: 12px;
+            background: #000;
+        }
+        .info {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        h1 { 
+            margin: 0; 
+            font-size: 2rem; 
+            font-weight: 800;
+            background: linear-gradient(90deg, #ff4d4d, #ffa500);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase; 
+            letter-spacing: 4px; 
+        }
+        p { opacity: 0.6; font-size: 1rem; margin-top: 8px; }
+        .controls {
+            margin-top: 20px;
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="info">
+            <h1>Memory Overflow</h1>
+            <p>메모리 한계를 초과하여 사방으로 비산하는 데이터 파편</p>
+        </div>
+        <canvas id="canvas"></canvas>
+        <div class="controls">강렬한 타격 시 발생하는 고속 파편 효과</div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = 800;
+        canvas.height = 600;
+
+        class Fragment {
+            constructor(x, y, vx, vy) {
+                this.x = x;
+                this.y = y;
+                this.vx = vx;
+                this.vy = vy;
+                this.life = 1.0;
+                this.size = 2 + Math.random() * 4;
+            }
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.life -= 0.02;
+                return this.life > 0;
+            }
+            draw() {
+                ctx.fillStyle = `rgba(255, 77, 77, ${this.life})`;
+                ctx.fillRect(this.x, this.y, this.size, this.size);
+            }
+        }
+
+        class Bullet {
+            constructor(x, y, tx, ty) {
+                this.x = x;
+                this.y = y;
+                this.tx = tx;
+                this.ty = ty;
+                this.progress = 0;
+                this.speed = 0.08;
+                this.active = true;
+            }
+            update() {
+                this.progress += this.speed;
+                if (this.progress >= 1) {
+                    this.active = false;
+                    this.explode();
+                }
+            }
+            explode() {
+                for(let i=0; i<12; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const speed = 2 + Math.random() * 6;
+                    fragments.push(new Fragment(this.tx, this.ty, Math.cos(angle)*speed, Math.sin(angle)*speed));
+                }
+            }
+            draw() {
+                const cx = this.x + (this.tx - this.x) * this.progress;
+                const cy = this.y + (this.ty - this.y) * this.progress;
+                ctx.fillStyle = '#fff';
+                ctx.beginPath();
+                ctx.arc(cx, cy, 3, 0, Math.PI*2);
+                ctx.fill();
+                ctx.strokeStyle = '#ff4d4d';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
+        }
+
+        const bullets = [];
+        const fragments = [];
+        const enemies = [{x: 400, y: 150}, {x: 200, y: 300}, {x: 600, y: 300}, {x: 400, y: 450}];
+
+        function animate() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            if (Math.random() < 0.05) {
+                const e = enemies[Math.floor(Math.random() * enemies.length)];
+                bullets.push(new Bullet(400, 300, e.x, e.y));
+            }
+
+            for (let i = bullets.length - 1; i >= 0; i--) {
+                bullets[i].update();
+                bullets[i].draw();
+                if (!bullets[i].active) bullets.splice(i, 1);
+            }
+
+            for (let i = fragments.length - 1; i >= 0; i--) {
+                if (fragments[i].update()) {
+                    fragments[i].draw();
+                } else {
+                    fragments.splice(i, 1);
+                }
+            }
+
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+    </script>
+</body>
+</html>

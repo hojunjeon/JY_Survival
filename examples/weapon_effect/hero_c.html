@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hero Effect: C/C++ - Precision Execution</title>
+    <style>
+        body { margin: 0; padding: 0; background: #0a0a0a; color: #e0e0e0; font-family: 'Outfit', sans-serif; overflow: hidden; display: flex; align-items: center; justify-content: center; height: 100vh; }
+        .container { position: relative; padding: 20px; background: rgba(255, 255, 255, 0.03); border-radius: 24px; backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 0 80px rgba(0, 0, 0, 0.9); }
+        canvas { border-radius: 16px; background: #000; cursor: crosshair; }
+        .info { text-align: center; margin-bottom: 20px; }
+        h1 { margin: 0; font-size: 2.5rem; background: linear-gradient(90deg, #ffffff, #666666); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-transform: uppercase; letter-spacing: 8px; font-weight: 900; }
+        p { opacity: 0.6; font-size: 1.1rem; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="info">
+            <h1>C/C++: Precision Execution</h1>
+            <p>메모리 공간을 날카롭게 가르는 초고속 정밀 포인터 스파이크</p>
+        </div>
+        <canvas id="canvas"></canvas>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = 800;
+        canvas.height = 600;
+
+        class Spike {
+            constructor(x, y, tx, ty) {
+                this.x = x; this.y = y; this.tx = tx; this.ty = ty;
+                this.life = 1.0;
+                this.active = true;
+                this.progress = 0;
+            }
+            update() {
+                this.progress += 0.15;
+                if (this.progress >= 1) {
+                    this.active = false;
+                    this.explode();
+                }
+            }
+            explode() {
+                for(let i=0; i<8; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    shrapnel.push(new Fragment(this.tx, this.ty, angle));
+                }
+            }
+            draw() {
+                const cx = this.x + (this.tx - this.x) * this.progress;
+                const cy = this.y + (this.ty - this.y) * this.progress;
+                ctx.save();
+                ctx.shadowBlur = 15; ctx.shadowColor = '#fff';
+                ctx.strokeStyle = '#fff'; ctx.lineWidth = 2;
+                ctx.beginPath(); ctx.moveTo(this.x, this.y); ctx.lineTo(cx, cy); ctx.stroke();
+                
+                // Head
+                ctx.fillStyle = '#fff';
+                ctx.beginPath(); ctx.arc(cx, cy, 3, 0, Math.PI*2); ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        class Fragment {
+            constructor(x, y, angle) {
+                this.x = x; this.y = y; this.angle = angle;
+                this.speed = 5 + Math.random() * 5;
+                this.life = 1.0;
+            }
+            update() {
+                this.x += Math.cos(this.angle) * this.speed;
+                this.y += Math.sin(this.angle) * this.speed;
+                this.life -= 0.04;
+                return this.life > 0;
+            }
+            draw() {
+                ctx.fillStyle = `rgba(255, 255, 255, ${this.life})`;
+                ctx.fillRect(this.x, this.y, 2, 8);
+            }
+        }
+
+        const spikes = [];
+        const shrapnel = [];
+        const enemies = [{x: 400, y: 150}, {x: 100, y: 300}, {x: 700, y: 300}, {x: 400, y: 450}];
+
+        function animate() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            if (Math.random() < 0.05) {
+                const e = enemies[Math.floor(Math.random()*enemies.length)];
+                spikes.push(new Spike(400, 300, e.x, e.y));
+            }
+            for (let i = spikes.length - 1; i >= 0; i--) {
+                spikes[i].update(); spikes[i].draw();
+                if (!spikes[i].active) spikes.splice(i, 1);
+            }
+            for (let i = shrapnel.length - 1; i >= 0; i--) {
+                if (shrapnel[i].update()) shrapnel[i].draw();
+                else shrapnel.splice(i, 1);
+            }
+            requestAnimationFrame(animate);
+        }
+        animate();
+    </script>
+</body>
+</html>

@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JavaScript Attack Effect - Style 2: Promise Resolved</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #111;
+            color: #f7df1e;
+            font-family: 'Outfit', 'Inter', sans-serif;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        .container {
+            position: relative;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(247, 223, 30, 0.2);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+        }
+        canvas {
+            border-radius: 12px;
+            background: #000;
+        }
+        .info {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        h1 { 
+            margin: 0; 
+            font-size: 2rem; 
+            font-weight: 800;
+            background: linear-gradient(90deg, #f7df1e, #ffaa00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase; 
+            letter-spacing: 4px; 
+        }
+        p { opacity: 0.6; font-size: 1rem; margin-top: 8px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="info">
+            <h1>JavaScript: Promise Resolved</h1>
+            <p>비동기 처리가 완료되는 순간 쏟아지는 폭발적인 연산력</p>
+        </div>
+        <canvas id="canvas"></canvas>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = 800;
+        canvas.height = 600;
+
+        class PromiseBurst {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.life = 1.0;
+                this.particles = [];
+                for(let i=0; i<15; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const speed = 2 + Math.random() * 5;
+                    this.particles.push({
+                        x: 0, y: 0, 
+                        vx: Math.cos(angle)*speed, 
+                        vy: Math.sin(angle)*speed,
+                        text: Math.random() > 0.5 ? "RESOLVED" : "AWAIT"
+                    });
+                }
+            }
+            update() {
+                this.life -= 0.02;
+                this.particles.forEach(p => {
+                    p.x += p.vx;
+                    p.y += p.vy;
+                });
+                return this.life > 0;
+            }
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.globalAlpha = this.life;
+                
+                this.particles.forEach(p => {
+                    ctx.fillStyle = '#f7df1e';
+                    ctx.font = 'bold 10px Arial';
+                    ctx.fillText(p.text, p.x, p.y);
+                    
+                    ctx.strokeStyle = 'rgba(247, 223, 30, 0.3)';
+                    ctx.beginPath();
+                    ctx.moveTo(0, 0);
+                    ctx.lineTo(p.x, p.y);
+                    ctx.stroke();
+                });
+                
+                ctx.restore();
+            }
+        }
+
+        const effects = [];
+        function animate() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            if (Math.random() < 0.05) {
+                effects.push(new PromiseBurst(Math.random() * 800, Math.random() * 600));
+            }
+
+            for (let i = effects.length - 1; i >= 0; i--) {
+                if (effects[i].update()) {
+                    effects[i].draw();
+                } else {
+                    effects.splice(i, 1);
+                }
+            }
+
+            requestAnimationFrame(animate);
+        }
+        animate();
+    </script>
+</body>
+</html>

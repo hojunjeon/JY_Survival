@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Java Attack Effect - Style 1: Object Instance</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: radial-gradient(circle at center, #1a2a3c 0%, #050a0f 100%);
+            color: #4da6ff;
+            font-family: 'Outfit', 'Inter', sans-serif;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        .container {
+            position: relative;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(77, 166, 255, 0.1);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+        }
+        canvas {
+            border-radius: 12px;
+            background: #000;
+        }
+        .info {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        h1 { 
+            margin: 0; 
+            font-size: 2rem; 
+            font-weight: 800;
+            background: linear-gradient(90deg, #4da6ff, #00ffff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase; 
+            letter-spacing: 4px; 
+        }
+        p { opacity: 0.6; font-size: 1rem; margin-top: 8px; }
+        .controls {
+            margin-top: 20px;
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="info">
+            <h1>Object Instance</h1>
+            <p>견고하게 설계된 클래스 객체들이 궤도를 돌며 적을 타격</p>
+        </div>
+        <canvas id="canvas"></canvas>
+        <div class="controls">플레이어 주변을 회전하며 안정적인 방어와 공격을 동시에 수행</div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = 800;
+        canvas.height = 600;
+
+        class JavaObject {
+            constructor(angle, radius) {
+                this.angle = angle;
+                this.radius = radius;
+                this.size = 12;
+                this.rotation = 0;
+            }
+            update() {
+                this.angle += 0.03;
+                this.rotation += 0.05;
+            }
+            draw() {
+                const x = 400 + Math.cos(this.angle) * this.radius;
+                const y = 300 + Math.sin(this.angle) * this.radius;
+                
+                ctx.save();
+                ctx.translate(x, y);
+                ctx.rotate(this.rotation);
+                
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = '#4da6ff';
+                ctx.strokeStyle = '#4da6ff';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(-this.size/2, -this.size/2, this.size, this.size);
+                
+                ctx.fillStyle = 'rgba(77, 166, 255, 0.2)';
+                ctx.fillRect(-this.size/2, -this.size/2, this.size, this.size);
+                
+                // Internal "data" lines
+                ctx.beginPath();
+                ctx.moveTo(-this.size/2 + 3, 0);
+                ctx.lineTo(this.size/2 - 3, 0);
+                ctx.stroke();
+
+                ctx.restore();
+            }
+        }
+
+        const objects = [
+            new JavaObject(0, 80),
+            new JavaObject(Math.PI * 0.66, 80),
+            new JavaObject(Math.PI * 1.33, 80),
+            new JavaObject(0.5, 150),
+            new JavaObject(2.5, 150),
+            new JavaObject(4.5, 150)
+        ];
+
+        function animate() {
+            ctx.fillStyle = 'rgba(0, 5, 10, 0.3)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Draw player center
+            ctx.fillStyle = '#fff';
+            ctx.beginPath();
+            ctx.arc(400, 300, 8, 0, Math.PI*2);
+            ctx.fill();
+
+            objects.forEach(obj => {
+                obj.update();
+                obj.draw();
+            });
+
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+    </script>
+</body>
+</html>

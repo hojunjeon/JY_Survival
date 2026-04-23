@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Java Attack Effect - Style 3: JVM Execution</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: radial-gradient(circle at center, #1a0a2c 0%, #05000a 100%);
+            color: #a64dff;
+            font-family: 'Outfit', 'Inter', sans-serif;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        .container {
+            position: relative;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(166, 77, 255, 0.1);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+        }
+        canvas {
+            border-radius: 12px;
+            background: #000;
+        }
+        .info {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        h1 { 
+            margin: 0; 
+            font-size: 2rem; 
+            font-weight: 800;
+            background: linear-gradient(90deg, #a64dff, #ff00ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase; 
+            letter-spacing: 4px; 
+        }
+        p { opacity: 0.6; font-size: 1rem; margin-top: 8px; }
+        .controls {
+            margin-top: 20px;
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="info">
+            <h1>JVM Execution</h1>
+            <p>가상 머신에서 실행되는 견고한 바이트코드 스트림 빔</p>
+        </div>
+        <canvas id="canvas"></canvas>
+        <div class="controls">Write Once, Run Everywhere - 강력하고 일관된 출력의 에너지 빔</div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = 800;
+        canvas.height = 600;
+
+        class ByteBeam {
+            constructor(x, y, angle) {
+                this.x = x;
+                this.y = y;
+                this.angle = angle;
+                this.length = 0;
+                this.maxLength = 600;
+                this.speed = 15;
+                this.active = true;
+                this.life = 1.0;
+            }
+            update() {
+                if (this.length < this.maxLength) {
+                    this.length += this.speed;
+                } else {
+                    this.life -= 0.05;
+                    if (this.life <= 0) this.active = false;
+                }
+            }
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.angle);
+                
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = '#a64dff';
+                
+                // Outer Beam
+                ctx.strokeStyle = `rgba(166, 77, 255, ${this.life * 0.3})`;
+                ctx.lineWidth = 15;
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.lineTo(this.length, 0);
+                ctx.stroke();
+
+                // Inner Beam
+                ctx.strokeStyle = `rgba(255, 255, 255, ${this.life})`;
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.lineTo(this.length, 0);
+                ctx.stroke();
+
+                // Bytecode blocks along the beam
+                for(let i=0; i<this.length; i+=40) {
+                    const offset = (Date.now() * 0.2) % 40;
+                    ctx.fillStyle = `rgba(255, 255, 255, ${this.life * 0.5})`;
+                    ctx.fillRect(i + offset, -6, 10, 12);
+                }
+
+                ctx.restore();
+            }
+        }
+
+        const beams = [];
+
+        function animate() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            if (Math.random() < 0.03) {
+                beams.push(new ByteBeam(400, 300, Math.random() * Math.PI * 2));
+            }
+
+            for (let i = beams.length - 1; i >= 0; i--) {
+                beams[i].update();
+                beams[i].draw();
+                if (!beams[i].active) beams.splice(i, 1);
+            }
+
+            // Player center
+            ctx.fillStyle = '#fff';
+            ctx.beginPath();
+            ctx.arc(400, 300, 10, 0, Math.PI*2);
+            ctx.fill();
+
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+    </script>
+</body>
+</html>

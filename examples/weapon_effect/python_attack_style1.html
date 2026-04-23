@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Python Attack Effect - Style 1: Cyber Lightning</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: radial-gradient(circle at center, #1a1a1a 0%, #050505 100%);
+            color: #44ff44;
+            font-family: 'Outfit', 'Inter', sans-serif;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        .container {
+            position: relative;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(68, 255, 68, 0.1);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+        }
+        canvas {
+            border-radius: 12px;
+            background: #000;
+            cursor: crosshair;
+        }
+        .info {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        h1 { 
+            margin: 0; 
+            font-size: 2rem; 
+            font-weight: 800;
+            background: linear-gradient(90deg, #44ff44, #00ff88);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase; 
+            letter-spacing: 4px; 
+        }
+        p { opacity: 0.6; font-size: 1rem; margin-top: 8px; }
+        .controls {
+            margin-top: 20px;
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="info">
+            <h1>Cyber Lightning</h1>
+            <p>파이썬의 논리적 연결을 형상화한 고에너지 체인 번개 효과</p>
+        </div>
+        <canvas id="canvas"></canvas>
+        <div class="controls">자동 재생 중... 적을 클릭하여 수동 공격 가능 (미구현)</div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = 800;
+        canvas.height = 600;
+
+        class Particle {
+            constructor(x, y, targetX, targetY) {
+                this.x = x;
+                this.y = y;
+                this.targetX = targetX;
+                this.targetY = targetY;
+                this.life = 1.0;
+                this.points = this.generateLightningPoints(x, y, targetX, targetY);
+            }
+
+            generateLightningPoints(x1, y1, x2, y2) {
+                const points = [{x: x1, y: y1}];
+                const dist = Math.hypot(x2 - x1, y2 - y1);
+                const segments = 8;
+                for (let i = 1; i < segments; i++) {
+                    const t = i / segments;
+                    const px = x1 + (x2 - x1) * t + (Math.random() - 0.5) * 30;
+                    const py = y1 + (y2 - y1) * t + (Math.random() - 0.5) * 30;
+                    points.push({x: px, y: py});
+                }
+                points.push({x: x2, y: y2});
+                return points;
+            }
+
+            draw() {
+                ctx.save();
+                ctx.strokeStyle = `rgba(68, 255, 68, ${this.life})`;
+                ctx.lineWidth = 2 + Math.random() * 2;
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = '#44ff44';
+                
+                ctx.beginPath();
+                ctx.moveTo(this.points[0].x, this.points[0].y);
+                for (let i = 1; i < this.points.length; i++) {
+                    ctx.lineTo(this.points[i].x, this.points[i].y);
+                }
+                ctx.stroke();
+
+                // Core white line
+                ctx.strokeStyle = `rgba(255, 255, 255, ${this.life})`;
+                ctx.lineWidth = 1;
+                ctx.stroke();
+                
+                ctx.restore();
+            }
+
+            update() {
+                this.life -= 0.05;
+                return this.life > 0;
+            }
+        }
+
+        const lightnings = [];
+        const enemies = [
+            {x: 400, y: 300, r: 15},
+            {x: 200, y: 150, r: 15},
+            {x: 600, y: 200, r: 15},
+            {x: 550, y: 450, r: 15},
+            {x: 150, y: 400, r: 15}
+        ];
+
+        function animate() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Draw enemies
+            ctx.fillStyle = '#333';
+            enemies.forEach(e => {
+                ctx.beginPath();
+                ctx.arc(e.x, e.y, e.r, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            if (Math.random() < 0.05) {
+                const start = enemies[Math.floor(Math.random() * enemies.length)];
+                let end = enemies[Math.floor(Math.random() * enemies.length)];
+                while(start === end) end = enemies[Math.floor(Math.random() * enemies.length)];
+                lightnings.push(new Particle(start.x, start.y, end.x, end.y));
+            }
+
+            for (let i = lightnings.length - 1; i >= 0; i--) {
+                lightnings[i].draw();
+                if (!lightnings[i].update()) {
+                    lightnings.splice(i, 1);
+                }
+            }
+
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+    </script>
+</body>
+</html>

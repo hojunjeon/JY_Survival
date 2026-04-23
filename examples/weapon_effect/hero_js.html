@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hero Effect: JavaScript - Event Loop Chaos</title>
+    <style>
+        body { margin: 0; padding: 0; background: #000; color: #f7df1e; font-family: 'Outfit', sans-serif; overflow: hidden; display: flex; align-items: center; justify-content: center; height: 100vh; }
+        .container { position: relative; padding: 20px; background: rgba(247, 223, 30, 0.05); border-radius: 24px; backdrop-filter: blur(20px); border: 1px solid rgba(247, 223, 30, 0.2); box-shadow: 0 0 100px rgba(0, 0, 0, 0.9); }
+        canvas { border-radius: 16px; background: #050505; cursor: crosshair; }
+        .info { text-align: center; margin-bottom: 20px; }
+        h1 { margin: 0; font-size: 2.5rem; background: linear-gradient(90deg, #f7df1e, #ffaa00); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-transform: uppercase; letter-spacing: 6px; font-weight: 900; }
+        p { opacity: 0.6; font-size: 1.1rem; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="info">
+            <h1>JS: Event Loop Chaos</h1>
+            <p>비동기 콜백들이 연쇄적으로 폭발하며 예측 불가능한 혼돈을 야기하는 루프</p>
+        </div>
+        <canvas id="canvas"></canvas>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = 800;
+        canvas.height = 600;
+
+        class Callback {
+            constructor(x, y, angle) {
+                this.x = x; this.y = y; this.angle = angle;
+                this.speed = 4 + Math.random() * 6;
+                this.life = 1.0;
+                this.size = 5 + Math.random() * 10;
+            }
+            update() {
+                this.x += Math.cos(this.angle) * this.speed;
+                this.y += Math.sin(this.angle) * this.speed;
+                this.life -= 0.01;
+                return this.life > 0;
+            }
+            draw() {
+                ctx.fillStyle = `rgba(247, 223, 30, ${this.life})`;
+                ctx.fillRect(this.x, this.y, this.size, this.size);
+            }
+        }
+
+        class Loop {
+            constructor() {
+                this.angle = 0; this.radius = 150;
+            }
+            update() {
+                this.angle += 0.1;
+                if (Math.random() < 0.3) {
+                    const lx = 400 + Math.cos(this.angle) * this.radius;
+                    const ly = 300 + Math.sin(this.angle) * this.radius;
+                    callbacks.push(new Callback(lx, ly, this.angle));
+                }
+            }
+            draw() {
+                ctx.strokeStyle = 'rgba(247, 223, 30, 0.2)';
+                ctx.lineWidth = 2;
+                ctx.beginPath(); ctx.arc(400, 300, this.radius, 0, Math.PI*2); ctx.stroke();
+            }
+        }
+
+        const loop = new Loop();
+        const callbacks = [];
+
+        function animate() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            loop.update(); loop.draw();
+            for (let i = callbacks.length - 1; i >= 0; i--) {
+                if (callbacks[i].update()) callbacks[i].draw();
+                else callbacks.splice(i, 1);
+            }
+            requestAnimationFrame(animate);
+        }
+        animate();
+    </script>
+</body>
+</html>

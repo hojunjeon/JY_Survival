@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hero Effect: Linux - Kernel Panic</title>
+    <style>
+        body { margin: 0; padding: 0; background: #000; color: #00ff00; font-family: 'Outfit', 'Courier New', monospace; overflow: hidden; display: flex; align-items: center; justify-content: center; height: 100vh; }
+        .container { position: relative; padding: 20px; background: rgba(0, 255, 0, 0.05); border-radius: 24px; backdrop-filter: blur(20px); border: 1px solid rgba(0, 255, 0, 0.2); box-shadow: 0 0 100px rgba(0, 0, 0, 1.0); }
+        canvas { border-radius: 16px; background: #000; cursor: crosshair; }
+        .info { text-align: center; margin-bottom: 20px; }
+        h1 { margin: 0; font-size: 2.5rem; background: linear-gradient(90deg, #00ff00, #ffffff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-transform: uppercase; letter-spacing: 6px; font-weight: 900; }
+        p { opacity: 0.6; font-size: 1.1rem; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="info">
+            <h1>Linux: Kernel Panic</h1>
+            <p>공간을 뒤틀고 데이터를 흡수하여 소멸시키는 치명적인 시스템 붕괴 커널 패닉</p>
+        </div>
+        <canvas id="canvas"></canvas>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = 800;
+        canvas.height = 600;
+
+        class BlackHole {
+            constructor() {
+                this.radius = 0; this.maxRadius = 80;
+                this.life = 1.0; this.time = 0;
+            }
+            update() {
+                this.time += 0.05;
+                if (this.radius < this.maxRadius) this.radius += 2;
+                else this.life -= 0.005;
+                return this.life > 0;
+            }
+            draw() {
+                ctx.save();
+                ctx.translate(400, 300);
+                
+                // Outer Glow
+                const grad = ctx.createRadialGradient(0, 0, this.radius, 0, 0, this.radius + 100);
+                grad.addColorStop(0, 'rgba(0, 255, 0, 0.4)');
+                grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+                ctx.fillStyle = grad;
+                ctx.fillRect(-400, -300, 800, 600);
+
+                // Black Hole Core
+                ctx.fillStyle = '#000';
+                ctx.shadowBlur = 40; ctx.shadowColor = '#00ff00';
+                ctx.beginPath(); ctx.arc(0, 0, this.radius, 0, Math.PI*2); ctx.fill();
+                
+                // Distorted lines
+                ctx.strokeStyle = `rgba(0, 255, 0, ${this.life})`;
+                ctx.lineWidth = 1;
+                for(let i=0; i<8; i++) {
+                    ctx.rotate(this.time * 0.1);
+                    ctx.beginPath();
+                    ctx.ellipse(0, 0, this.radius + 20, (this.radius + 20) * 0.3, 0, 0, Math.PI*2);
+                    ctx.stroke();
+                }
+
+                // Text particles
+                ctx.fillStyle = '#00ff00';
+                ctx.font = '10px Courier New';
+                for(let i=0; i<10; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const r = this.radius + 50 + Math.random() * 100;
+                    ctx.fillText("0x" + Math.random().toString(16).slice(2,6), Math.cos(angle)*r, Math.sin(angle)*r);
+                }
+                ctx.restore();
+            }
+        }
+
+        let currentPanic = null;
+        function animate() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            if (!currentPanic && Math.random() < 0.01) currentPanic = new BlackHole();
+            if (currentPanic) {
+                currentPanic.draw();
+                if (!currentPanic.update()) currentPanic = null;
+            }
+            requestAnimationFrame(animate);
+        }
+        animate();
+    </script>
+</body>
+</html>

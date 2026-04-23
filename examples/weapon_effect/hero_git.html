@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hero Effect: Git - Branch Fork/Merge</title>
+    <style>
+        body { margin: 0; padding: 0; background: #0a0510; color: #f05032; font-family: 'Outfit', sans-serif; overflow: hidden; display: flex; align-items: center; justify-content: center; height: 100vh; }
+        .container { position: relative; padding: 20px; background: rgba(240, 80, 50, 0.05); border-radius: 24px; backdrop-filter: blur(20px); border: 1px solid rgba(240, 80, 50, 0.2); box-shadow: 0 0 80px rgba(0, 0, 0, 0.9); }
+        canvas { border-radius: 16px; background: #000; cursor: crosshair; }
+        .info { text-align: center; margin-bottom: 20px; }
+        h1 { margin: 0; font-size: 2.5rem; background: linear-gradient(90deg, #f05032, #ff8800); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-transform: uppercase; letter-spacing: 6px; font-weight: 900; }
+        p { opacity: 0.6; font-size: 1.1rem; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="info">
+            <h1>Git: Branch Fork/Merge</h1>
+            <p>공격이 분기(Fork)되어 퍼졌다가 다시 합쳐지며 적을 끌어당기는 연쇄 효과</p>
+        </div>
+        <canvas id="canvas"></canvas>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = 800;
+        canvas.height = 600;
+
+        class ForkMerge {
+            constructor(x, y, tx, ty) {
+                this.x = x; this.y = y; this.tx = tx; this.ty = ty;
+                this.progress = 0;
+                this.active = true;
+            }
+            update() {
+                this.progress += 0.02;
+                if (this.progress >= 1) this.active = false;
+            }
+            draw() {
+                const t = this.progress;
+                const midX = (this.x + this.tx) / 2;
+                const midY = (this.y + this.ty) / 2;
+                const dist = Math.hypot(this.tx - this.x, this.ty - this.y);
+                
+                ctx.save();
+                ctx.shadowBlur = 15; ctx.shadowColor = '#f05032';
+                ctx.lineWidth = 3;
+                
+                // Draw 3 branches
+                for(let i=-1; i<=1; i++) {
+                    const offset = i * dist * 0.3 * Math.sin(t * Math.PI);
+                    const cp1x = this.x + (midX - this.x) * 0.5;
+                    const cp1y = this.y + (midY - this.y) * 0.5 + offset;
+                    const cp2x = midX + (this.tx - midX) * 0.5;
+                    const cp2y = midY + (this.ty - midY) * 0.5 + offset;
+
+                    ctx.strokeStyle = i === 0 ? '#f05032' : '#ff8800';
+                    ctx.beginPath();
+                    ctx.moveTo(this.x, this.y);
+                    ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, this.tx, this.ty);
+                    
+                    // Animated segment
+                    ctx.setLineDash([20, 100]);
+                    ctx.lineDashOffset = -t * 200;
+                    ctx.stroke();
+                }
+
+                // Head
+                const cx = this.x + (this.tx - this.x) * t;
+                const cy = this.y + (this.ty - this.y) * t;
+                ctx.fillStyle = '#fff';
+                ctx.beginPath(); ctx.arc(cx, cy, 5, 0, Math.PI*2); ctx.fill();
+                
+                ctx.restore();
+            }
+        }
+
+        const effects = [];
+        const enemies = [{x: 100, y: 150}, {x: 700, y: 150}, {x: 400, y: 450}];
+
+        function animate() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            if (Math.random() < 0.03) {
+                const e = enemies[Math.floor(Math.random()*enemies.length)];
+                effects.push(new ForkMerge(400, 300, e.x, e.y));
+            }
+            for (let i = effects.length - 1; i >= 0; i--) {
+                effects[i].update(); effects[i].draw();
+                if (!effects[i].active) effects.splice(i, 1);
+            }
+            requestAnimationFrame(animate);
+        }
+        animate();
+    </script>
+</body>
+</html>

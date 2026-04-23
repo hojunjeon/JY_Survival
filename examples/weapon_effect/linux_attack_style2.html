@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Linux Attack Effect - Style 2: Pipe Chain</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #000;
+            color: #00ff00;
+            font-family: 'Outfit', 'Inter', 'Courier New', monospace;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        .container {
+            position: relative;
+            padding: 20px;
+            background: rgba(0, 255, 0, 0.05);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 255, 0, 0.2);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+        }
+        canvas {
+            border-radius: 12px;
+            background: #050505;
+        }
+        .info {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        h1 { 
+            margin: 0; 
+            font-size: 2rem; 
+            font-weight: 800;
+            background: linear-gradient(90deg, #00ff00, #ffffff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase; 
+            letter-spacing: 4px; 
+        }
+        p { opacity: 0.6; font-size: 1rem; margin-top: 8px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="info">
+            <h1>Linux: Pipeline Chain</h1>
+            <p>명령어들을 파이프로 연결하여 데이터(버그)를 가공하고 소멸시키는 연속 스트림 공격</p>
+        </div>
+        <canvas id="canvas"></canvas>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = 800;
+        canvas.height = 600;
+
+        class PipeStream {
+            constructor(y) {
+                this.y = y;
+                this.x = -100;
+                this.speed = 8;
+                this.active = true;
+                this.commands = ["cat bugs", "grep -v 'fixed'", "awk '{print $1}'", "xargs kill -9"];
+                this.pipePositions = [200, 400, 600];
+            }
+            update() {
+                this.x += this.speed;
+                if (this.x > 900) this.active = false;
+            }
+            draw() {
+                ctx.save();
+                
+                // Draw Pipe connectors
+                ctx.strokeStyle = '#00ff00';
+                ctx.lineWidth = 2;
+                this.pipePositions.forEach(px => {
+                    ctx.beginPath();
+                    ctx.moveTo(px, this.y - 40);
+                    ctx.lineTo(px, this.y + 40);
+                    ctx.stroke();
+                    ctx.fillStyle = '#00ff00';
+                    ctx.font = 'bold 20px Courier New';
+                    ctx.fillText('|', px - 5, this.y + 7);
+                });
+
+                // Draw streaming data
+                ctx.fillStyle = `rgba(0, 255, 0, 0.5)`;
+                ctx.font = '12px Courier New';
+                for(let i=0; i<5; i++) {
+                    const ox = (this.x - i * 40) % 800;
+                    if (ox > 0) ctx.fillText("01011001", ox, this.y + (i%2 ? 15 : -15));
+                }
+
+                // Draw command labels
+                ctx.fillStyle = '#fff';
+                ctx.font = '14px Courier New';
+                this.commands.forEach((cmd, i) => {
+                    const startX = i === 0 ? 0 : this.pipePositions[i-1];
+                    ctx.fillText(cmd, startX + 20, this.y - 50);
+                });
+
+                ctx.restore();
+            }
+        }
+
+        const streams = [];
+        function animate() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            if (Math.random() < 0.02) {
+                streams.push(new PipeStream(150 + Math.random() * 300));
+            }
+
+            for (let i = streams.length - 1; i >= 0; i--) {
+                streams[i].update();
+                streams[i].draw();
+                if (!streams[i].active) streams.splice(i, 1);
+            }
+
+            requestAnimationFrame(animate);
+        }
+        animate();
+    </script>
+</body>
+</html>

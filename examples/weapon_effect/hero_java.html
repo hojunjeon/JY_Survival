@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hero Effect: Java - Virtual Machine Shield</title>
+    <style>
+        body { margin: 0; padding: 0; background: #050a14; color: #4da6ff; font-family: 'Outfit', sans-serif; overflow: hidden; display: flex; align-items: center; justify-content: center; height: 100vh; }
+        .container { position: relative; padding: 20px; background: rgba(77, 166, 255, 0.05); border-radius: 24px; backdrop-filter: blur(20px); border: 1px solid rgba(77, 166, 255, 0.2); box-shadow: 0 0 80px rgba(0, 0, 0, 0.9); }
+        canvas { border-radius: 16px; background: #000; cursor: crosshair; }
+        .info { text-align: center; margin-bottom: 20px; }
+        h1 { margin: 0; font-size: 2.5rem; background: linear-gradient(90deg, #4da6ff, #00ffff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-transform: uppercase; letter-spacing: 6px; font-weight: 900; }
+        p { opacity: 0.6; font-size: 1.1rem; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="info">
+            <h1>Java: VM Encapsulation</h1>
+            <p>견고한 객체 캡슐화 보호막으로 적을 압도하는 안정적 방어 시스템</p>
+        </div>
+        <canvas id="canvas"></canvas>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = 800;
+        canvas.height = 600;
+
+        class Shield {
+            constructor() {
+                this.radius = 100;
+                this.life = 0;
+            }
+            draw() {
+                this.life += 0.05;
+                const pulse = Math.sin(this.life) * 10;
+                const r = this.radius + pulse;
+                
+                ctx.save();
+                ctx.translate(400, 300);
+                ctx.shadowBlur = 30; ctx.shadowColor = '#4da6ff';
+                
+                // Hexagon frame
+                ctx.strokeStyle = '#4da6ff';
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                for(let i=0; i<6; i++) {
+                    const angle = i * Math.PI / 3 + this.life * 0.2;
+                    const x = Math.cos(angle) * r;
+                    const y = Math.sin(angle) * r;
+                    if(i===0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+                }
+                ctx.closePath();
+                ctx.stroke();
+
+                // Inner glow
+                ctx.fillStyle = 'rgba(77, 166, 255, 0.1)';
+                ctx.fill();
+
+                // Rotating data bits
+                for(let i=0; i<12; i++) {
+                    const angle = i * Math.PI / 6 - this.life * 0.5;
+                    const x = Math.cos(angle) * (r + 30);
+                    const y = Math.sin(angle) * (r + 30);
+                    ctx.fillStyle = '#4da6ff';
+                    ctx.fillRect(x-5, y-5, 10, 10);
+                }
+                ctx.restore();
+            }
+        }
+
+        const shield = new Shield();
+
+        function animate() {
+            ctx.fillStyle = 'rgba(0, 5, 10, 0.3)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            shield.draw();
+            requestAnimationFrame(animate);
+        }
+        animate();
+    </script>
+</body>
+</html>
