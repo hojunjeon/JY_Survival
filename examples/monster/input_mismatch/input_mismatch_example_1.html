@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>InputMismatch - Design 1 | JY Survival</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Orbitron:wght@700;900&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:#0a0014;color:#fff;font-family:'Space Mono',monospace;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;overflow:hidden}
+  h1{font-family:'Orbitron',sans-serif;font-size:1.9rem;color:#aa44ff;text-shadow:0 0 20px #aa44ff88;margin-bottom:4px;letter-spacing:3px}
+  .subtitle{color:#663388;font-size:.73rem;letter-spacing:3px;margin-bottom:20px}
+  .stage{width:420px;height:300px;background:#0a0014;border:2px solid #aa44ff44;border-radius:12px;overflow:hidden;box-shadow:0 0 40px #aa44ff22}
+  canvas{display:block}
+  .stats{display:flex;gap:14px;margin-top:14px;font-size:.7rem;color:#bb99dd}
+  .stat{background:#110020;border:1px solid #aa44ff33;border-radius:6px;padding:7px 12px;text-align:center}
+  .stat span{display:block;color:#aa44ff;font-size:1rem;font-weight:700;font-family:'Orbitron',sans-serif}
+  .special-box{margin-top:12px;width:420px;background:#110020;border:1px solid #aa44ff44;border-radius:8px;padding:12px 16px;font-size:.7rem;line-height:1.7;color:#ccbbdd}
+  .special-box h3{color:#aa44ff;font-family:'Orbitron',sans-serif;font-size:.78rem;margin-bottom:6px;letter-spacing:2px}
+  .btn{margin-top:10px;padding:9px 26px;background:#330055;color:#fff;font-family:'Space Mono',monospace;font-size:.78rem;border:none;border-radius:6px;cursor:pointer;letter-spacing:2px;box-shadow:0 0 16px #aa44ff33;transition:all .2s}
+  .btn:hover{background:#550077;transform:scale(1.05)}
+  .tag{display:inline-block;background:#aa44ff22;color:#aa44ff;font-size:.65rem;padding:2px 8px;border-radius:20px;border:1px solid #aa44ff55;margin-bottom:8px;letter-spacing:2px}
+</style>
+</head>
+<body>
+<p class="tag">DESIGN 1 / GLITCH BRAIN</p>
+<h1>INPUT MISMATCH</h1>
+<p class="subtitle">// 글리치 뇌 · 충전 후 조종반전 투사체</p>
+<div class="stage"><canvas id="c" width="420" height="300"></canvas></div>
+<div class="stats">
+  <div class="stat">HP<span>28</span></div>
+  <div class="stat">SPD<span>60</span></div>
+  <div class="stat">DMG<span>10</span></div>
+  <div class="stat">TYPE<span style="font-size:.6rem">CTRL-REV</span></div>
+</div>
+<div class="special-box">
+  <h3>🧠 SPECIAL: CONTROL REVERSAL</h3>
+  4초마다 0.7초 충전 후 조종반전 투사체 발사. 맞으면 플레이어 조작키가 반전됨. 충전 중 뇌 주변에 역방향 화살표 소용돌이.
+</div>
+<button class="btn" id="btn">🧠 충전 발사</button>
+<script>
+const cv=document.getElementById('c'),ctx=cv.getContext('2d');
+const W=420,H=300;
+let t=0,mx=180,my=150,charging=false,chargeT=0,attackCD=4;
+const px=350,py=150;
+let bullets=[],arrows=[];
+
+function spawnChargeArrows(){
+  arrows=[];
+  for(let i=0;i<8;i++){
+    arrows.push({angle:i/8*Math.PI*2,r:50,speed:i%2===0?1.5:-1.5});
+  }
+}
+
+function fire(){
+  const dx=px-mx,dy=py-my,d=Math.sqrt(dx*dx+dy*dy)||1;
+  bullets.push({x:mx,y:my,vx:dx/d*150,vy:dy/d*150,life:2.5,isCtrlRev:true});
+  arrows=[];charging=false;chargeT=0;
+}
+
+function drawBrain(x,y){
+  ctx.save();ctx.translate(x,y);
+  const bob=Math.sin(t*2.5)*4;ctx.translate(0,bob);
+  const pulse=Math.sin(t*4)*0.08;
+
+  // brain lobes
+  // left lobe
+  const lg=ctx.createRadialGradient(-14,-5,4,-14,-5,26);
+  lg.addColorStop(0,charging?'#ff88ff':'#cc55ff');lg.addColorStop(1,charging?'#660088':'#330044');
+  ctx.beginPath();ctx.ellipse(-14,-5,22+pulse*20,26+pulse*20,0.2,0,Math.PI*2);ctx.fillStyle=lg;ctx.fill();
+  ctx.strokeStyle=charging?'#ff88ff':'#aa44ff';ctx.lineWidth=2;ctx.stroke();
+
+  // right lobe
+  const rg=ctx.createRadialGradient(14,-5,4,14,-5,26);
+  rg.addColorStop(0,charging?'#ff88ff':'#bb44ff');rg.addColorStop(1,charging?'#550088':'#280033');
+  ctx.beginPath();ctx.ellipse(14,-5,22+pulse*20,26+pulse*20,-0.2,0,Math.PI*2);ctx.fillStyle=rg;ctx.fill();
+  ctx.strokeStyle=charging?'#ff88ff':'#aa44ff';ctx.lineWidth=2;ctx.stroke();
+
+  // brain folds
+  ctx.strokeStyle=charging?'rgba(255,180,255,0.4)':'rgba(180,100,255,0.3)';ctx.lineWidth=1.5;
+  [-8,-3,3,8].forEach(fx=>{
+    ctx.beginPath();ctx.moveTo(fx,-25);ctx.bezierCurveTo(fx+5,-15,fx-5,0,fx,15);ctx.stroke();
+  });
+  ctx.beginPath();ctx.moveTo(-32,0);ctx.bezierCurveTo(-20,8,20,8,32,0);ctx.stroke();
+
+  // center divider
+  ctx.strokeStyle=charging?'#ff44ff':'#8833cc';ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(0,-28);ctx.lineTo(0,20);ctx.stroke();
+
+  // eyes
+  const eyeGlow=charging?'#ff44ff':'#cc88ff';
+  ctx.fillStyle=eyeGlow;ctx.shadowColor=eyeGlow;ctx.shadowBlur=8;
+  ctx.beginPath();ctx.ellipse(-12,5,7,5,0,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.ellipse(12,5,7,5,0,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;
+  ctx.fillStyle='#110022';ctx.beginPath();ctx.ellipse(-12,5,4,3,0,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.ellipse(12,5,4,3,0,0,Math.PI*2);ctx.fill();
+
+  // != symbol
+  ctx.fillStyle='#ffeeaa';ctx.font='bold 11px monospace';ctx.textAlign='center';
+  ctx.fillText('!=',0,22);
+
+  // charge bar
+  if(charging){
+    const p=chargeT/0.7;
+    ctx.fillStyle='#220033';ctx.fillRect(-30,-40,60,8);
+    ctx.fillStyle=`hsl(${280+p*60},100%,60%)`;ctx.fillRect(-30,-40,60*p,8);
+    ctx.strokeStyle='#aa44ff';ctx.lineWidth=1;ctx.strokeRect(-30,-40,60,8);
+  }
+  ctx.restore();
+}
+
+function draw(){
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='#0a0014';ctx.fillRect(0,0,W,H);
+  const glow=ctx.createRadialGradient(mx,my,10,mx,my,140);
+  glow.addColorStop(0,'rgba(170,68,255,0.07)');glow.addColorStop(1,'transparent');
+  ctx.fillStyle=glow;ctx.fillRect(0,0,W,H);
+
+  // charge arrow spiral
+  if(charging){
+    arrows.forEach(a=>{
+      a.angle+=a.speed*0.05;a.r=45+Math.sin(chargeT*8)*8;
+      const ax=mx+Math.cos(a.angle)*a.r,ay=my+Math.sin(a.angle)*a.r;
+      ctx.save();ctx.translate(ax,ay);ctx.rotate(a.angle+Math.PI);
+      ctx.globalAlpha=chargeT/0.7;ctx.fillStyle='#ff44ff';ctx.font='14px sans-serif';ctx.textAlign='center';
+      ctx.fillText('←',0,5);ctx.restore();
+    });
+  }
+
+  // bullets
+  bullets=bullets.filter(b=>b.life>0);
+  bullets.forEach(b=>{
+    b.x+=b.vx*0.016;b.y+=b.vy*0.016;b.life-=0.02;
+    ctx.save();ctx.globalAlpha=b.life*0.9;
+    const bg=ctx.createRadialGradient(b.x,b.y,2,b.x,b.y,14);
+    bg.addColorStop(0,'#ff88ff');bg.addColorStop(1,'rgba(170,0,255,0)');
+    ctx.fillStyle=bg;ctx.beginPath();ctx.arc(b.x,b.y,14,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#ffeeaa';ctx.font='9px monospace';ctx.textAlign='center';
+    ctx.fillText('⇆',b.x,b.y+3);ctx.restore();
+  });
+
+  drawBrain(mx,my);
+
+  ctx.save();ctx.globalAlpha=0.6;ctx.fillStyle='#4a90d9';
+  ctx.beginPath();ctx.arc(px,py,12,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#fff';ctx.font='10px monospace';ctx.textAlign='center';ctx.textBaseline='middle';ctx.globalAlpha=1;
+  ctx.fillText('JY',px,py);ctx.restore();
+  ctx.fillStyle='#aa44ff';ctx.font='10px monospace';ctx.textAlign='center';ctx.fillText('InputMismatch',mx,my-85);
+}
+
+function update(dt){
+  t+=dt;
+  if(charging){chargeT+=dt;if(chargeT>=0.7)fire();return;}
+  attackCD-=dt;
+  if(attackCD<=0){charging=true;chargeT=0;attackCD=4;spawnChargeArrows();}
+  const dx=px-mx,dy=py-my,d=Math.sqrt(dx*dx+dy*dy);
+  if(d>65){mx+=dx/d*60*dt;my+=dy/d*60*dt;}
+}
+
+document.getElementById('btn').addEventListener('click',()=>{if(!charging){charging=true;chargeT=0;attackCD=4;spawnChargeArrows();}});
+let last=0;
+function loop(ts){const dt=Math.min((ts-last)/1000,0.05);last=ts;update(dt);draw();requestAnimationFrame(loop);}
+requestAnimationFrame(loop);
+</script>
+</body></html>

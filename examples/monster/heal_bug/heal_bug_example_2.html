@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>HealBug - Design 2 | JY Survival</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Orbitron:wght@700;900&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:#030f06;color:#fff;font-family:'Space Mono',monospace;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;overflow:hidden}
+  h1{font-family:'Orbitron',sans-serif;font-size:2rem;color:#44ff88;text-shadow:0 0 20px #44ff8888;margin-bottom:4px;letter-spacing:4px}
+  .subtitle{color:#44aa66;font-size:.75rem;letter-spacing:3px;margin-bottom:20px}
+  .stage{width:420px;height:300px;background:#030f06;border:2px solid #44ff8844;border-radius:12px;overflow:hidden;box-shadow:0 0 40px #44ff8822}
+  canvas{display:block}
+  .stats{display:flex;gap:16px;margin-top:14px;font-size:.7rem}
+  .stat{background:#041208;border:1px solid #44ff8833;border-radius:6px;padding:7px 12px;text-align:center;color:#88ccaa}
+  .stat span{display:block;color:#44ff88;font-size:1rem;font-weight:700;font-family:'Orbitron',sans-serif}
+  .special-box{margin-top:12px;width:420px;background:#041208;border:1px solid #44ff8844;border-radius:8px;padding:12px 16px;font-size:.7rem;line-height:1.7;color:#aaddbb}
+  .special-box h3{color:#44ff88;font-family:'Orbitron',sans-serif;font-size:.78rem;margin-bottom:6px;letter-spacing:2px}
+  .btn{margin-top:10px;padding:9px 26px;background:#115533;color:#fff;font-family:'Space Mono',monospace;font-size:.78rem;border:none;border-radius:6px;cursor:pointer;letter-spacing:2px;box-shadow:0 0 16px #44ff8833;transition:all .2s}
+  .btn:hover{background:#226644;transform:scale(1.05)}
+  .tag{display:inline-block;background:#44ff8822;color:#44ff88;font-size:.65rem;padding:2px 8px;border-radius:20px;border:1px solid #44ff8855;margin-bottom:8px;letter-spacing:2px}
+</style>
+</head>
+<body>
+<p class="tag">DESIGN 2 / BOUNCY SLIME</p>
+<h1>HEAL BUG</h1>
+<p class="subtitle">// 탄력 슬라임 · 회복 크로스 · 도주</p>
+<div class="stage"><canvas id="c" width="420" height="300"></canvas></div>
+<div class="stats">
+  <div class="stat">HP<span>15</span></div>
+  <div class="stat">SPD<span>150</span></div>
+  <div class="stat">DMG<span>0</span></div>
+  <div class="stat">TYPE<span style="font-size:.6rem">FLEE+DROP</span></div>
+</div>
+<div class="special-box">
+  <h3>💊 SPECIAL: HP SCATTER</h3>
+  공포에 떨며 도망가다 녹색 슬라임 탄환처럼 통통 튀어다님. 쓰러지면 주변에 HP 회복 아이템 방출.
+</div>
+<button class="btn" id="btn">💊 HP 산란</button>
+<script>
+const cv=document.getElementById('c'),ctx=cv.getContext('2d');
+const W=420,H=300;
+let t=0,mx=200,my=150,vy2=0,onGround=false,drops=[],squish=1,stretch=1;
+const px=350,py=150;
+let dropping=false;
+
+function spawnDrops(){
+  for(let i=0;i<8;i++){
+    const a=i/8*Math.PI*2;
+    drops.push({x:mx,y:my,vx:Math.cos(a)*80,vy:Math.sin(a)*80,life:1.2,r:8});
+  }
+}
+
+function drawSlime(x,y,sq,st){
+  ctx.save();ctx.translate(x,y);
+  ctx.scale(st,sq);
+  // shadow
+  ctx.save();ctx.translate(0,40/sq);ctx.scale(1,0.3/sq);
+  ctx.globalAlpha=0.2;ctx.fillStyle='#000';ctx.beginPath();ctx.arc(0,0,32,0,Math.PI*2);ctx.fill();ctx.restore();
+
+  // body blob
+  ctx.beginPath();
+  const pts=12;
+  for(let i=0;i<=pts;i++){
+    const a=i/pts*Math.PI*2;
+    const wobble=1+Math.sin(t*8+a*3)*0.06;
+    const r=32*wobble;
+    i===0?ctx.moveTo(Math.cos(a)*r,Math.sin(a)*r):ctx.lineTo(Math.cos(a)*r,Math.sin(a)*r);
+  }
+  ctx.closePath();
+  const slimeG=ctx.createRadialGradient(-8,-10,3,0,0,36);
+  slimeG.addColorStop(0,'#88ffaa');slimeG.addColorStop(0.5,'#22cc44');slimeG.addColorStop(1,'#115522');
+  ctx.fillStyle=slimeG;ctx.fill();
+  ctx.strokeStyle='#66ff88';ctx.lineWidth=2;ctx.stroke();
+
+  // highlight
+  ctx.beginPath();ctx.ellipse(-10,-12,10,7,Math.PI/4,0,Math.PI*2);
+  ctx.fillStyle='rgba(200,255,220,0.4)';ctx.fill();
+
+  // plus/cross symbol
+  ctx.fillStyle='rgba(255,255,255,0.8)';ctx.lineWidth=5;ctx.strokeStyle='rgba(255,255,255,0.8)';
+  ctx.lineCap='round';
+  ctx.beginPath();ctx.moveTo(-10,0);ctx.lineTo(10,0);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(0,-10);ctx.lineTo(0,10);ctx.stroke();
+
+  // eyes
+  ctx.fillStyle='#003311';
+  ctx.beginPath();ctx.ellipse(-11,-8,5,6,0,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.ellipse(11,-8,5,6,0,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='rgba(150,255,150,0.5)';
+  ctx.beginPath();ctx.ellipse(-9,-10,2,3,0,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.ellipse(13,-10,2,3,0,0,Math.PI*2);ctx.fill();
+
+  // drip
+  ctx.fillStyle='#22cc44';
+  ctx.beginPath();ctx.moveTo(-5,32);ctx.quadraticCurveTo(-5,40+Math.sin(t*3)*5,-3,44+Math.sin(t*3)*5);ctx.quadraticCurveTo(-1,48,-5,52);ctx.lineTo(5,52);ctx.quadraticCurveTo(1,48,3,44+Math.sin(t*3)*5);ctx.quadraticCurveTo(5,40+Math.sin(t*3)*5,5,32);ctx.fill();
+  ctx.restore();
+}
+
+function draw(){
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='#030f06';ctx.fillRect(0,0,W,H);
+  const glow=ctx.createRadialGradient(mx,my,10,mx,my,120);
+  glow.addColorStop(0,'rgba(68,255,136,0.06)');glow.addColorStop(1,'transparent');
+  ctx.fillStyle=glow;ctx.fillRect(0,0,W,H);
+
+  // bounce trail
+  for(let i=3;i>=1;i--){
+    ctx.globalAlpha=0.05/i;ctx.fillStyle='#44ff88';
+    ctx.beginPath();ctx.arc(mx,my+i*8,30,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
+  }
+
+  drawSlime(mx,my,squish,stretch);
+
+  // drops
+  drops=drops.filter(d=>d.life>0);
+  drops.forEach(d=>{
+    d.x+=d.vx*0.016;d.y+=d.vy*0.016;d.vy+=200*0.016;d.life-=0.02;
+    ctx.globalAlpha=d.life;ctx.fillStyle='#ff6688';ctx.font='16px sans-serif';ctx.textAlign='center';
+    ctx.fillText('♥',d.x,d.y);ctx.globalAlpha=1;
+  });
+
+  ctx.save();ctx.globalAlpha=0.6;ctx.fillStyle='#4a90d9';
+  ctx.beginPath();ctx.arc(px,py,12,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#fff';ctx.font='10px monospace';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText('JY',px,py);ctx.restore();
+  ctx.fillStyle='#44ff88';ctx.font='11px monospace';ctx.textAlign='center';ctx.fillText('HealBug',mx,my-85);
+}
+
+function update(dt){
+  t+=dt;
+  const dx=px-mx,dy=py-my,d=Math.sqrt(dx*dx+dy*dy);
+  if(d<220){mx-=dx/d*150*dt;my-=dy/d*100*dt;}
+  mx=Math.max(40,Math.min(W-40,mx));
+  my=Math.max(40,Math.min(H-60,my));
+  // bouncy squish
+  squish=1+Math.abs(Math.sin(t*6))*0.3;stretch=1-Math.abs(Math.sin(t*6))*0.15;
+}
+
+document.getElementById('btn').addEventListener('click',spawnDrops);
+let last=0;
+function loop(ts){const dt=Math.min((ts-last)/1000,0.05);last=ts;update(dt);draw();requestAnimationFrame(loop);}
+requestAnimationFrame(loop);
+</script>
+</body></html>

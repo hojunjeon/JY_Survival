@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>InfiniteLoop - Design 2 | JY Survival</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Orbitron:wght@700;900&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:#000d00;color:#fff;font-family:'Space Mono',monospace;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;overflow:hidden}
+  h1{font-family:'Orbitron',sans-serif;font-size:2rem;color:#22ff66;text-shadow:0 0 20px #22ff6688;margin-bottom:4px;letter-spacing:4px}
+  .subtitle{color:#226633;font-size:.75rem;letter-spacing:3px;margin-bottom:20px}
+  .stage{width:420px;height:300px;background:#000d00;border:2px solid #22ff6644;border-radius:12px;overflow:hidden;box-shadow:0 0 40px #22ff6622}
+  canvas{display:block}
+  .stats{display:flex;gap:14px;margin-top:14px;font-size:.7rem;color:#88ccaa}
+  .stat{background:#001800;border:1px solid #22ff6633;border-radius:6px;padding:7px 12px;text-align:center}
+  .stat span{display:block;color:#22ff66;font-size:1rem;font-weight:700;font-family:'Orbitron',sans-serif}
+  .special-box{margin-top:12px;width:420px;background:#001800;border:1px solid #22ff6644;border-radius:8px;padding:12px 16px;font-size:.7rem;line-height:1.7;color:#aaddbb}
+  .special-box h3{color:#22ff66;font-family:'Orbitron',sans-serif;font-size:.78rem;margin-bottom:6px;letter-spacing:2px}
+  .btn{margin-top:10px;padding:9px 26px;background:#004422;color:#fff;font-family:'Space Mono',monospace;font-size:.78rem;border:none;border-radius:6px;cursor:pointer;letter-spacing:2px;box-shadow:0 0 16px #22ff6633;transition:all .2s}
+  .btn:hover{background:#006633;transform:scale(1.05)}
+  .tag{display:inline-block;background:#22ff6622;color:#22ff66;font-size:.65rem;padding:2px 8px;border-radius:20px;border:1px solid #22ff6655;margin-bottom:8px;letter-spacing:2px}
+</style>
+</head>
+<body>
+<p class="tag">DESIGN 2 / RECURSIVE SPINNER</p>
+<h1>INFINITE LOOP</h1>
+<p class="subtitle">// 재귀 스피너 · 자기 복제 궤도</p>
+<div class="stage"><canvas id="c" width="420" height="300"></canvas></div>
+<div class="stats">
+  <div class="stat">HP<span>35</span></div>
+  <div class="stat">SPD<span>orbit</span></div>
+  <div class="stat">DMG<span>8</span></div>
+  <div class="stat">TYPE<span style="font-size:.6rem">ORBITER</span></div>
+</div>
+<div class="special-box">
+  <h3>🔄 SPECIAL: RECURSIVE CLONE</h3>
+  메인 개체가 공전하면서 작은 클론을 생성, 클론도 메인 주위를 공전함. 중첩 루프처럼 재귀 구조 형성. 코드월 발사.
+</div>
+<button class="btn" id="btn">🔄 클론 생성</button>
+<script>
+const cv=document.getElementById('c'),ctx=cv.getContext('2d');
+const W=420,H=300;
+let t=0,angle=0;
+const px=240,py=150;
+let codeWalls=[],clones=[],cloneCD=3;
+let shotCD=2;
+
+function spawnClone(){
+  if(clones.length>=3)clones.shift();
+  const mx=px+Math.cos(angle)*180,my=py+Math.sin(angle)*180;
+  clones.push({x:mx,y:my,angle:angle,subAngle:Math.random()*Math.PI*2,life:4});
+}
+
+function fireWall(){
+  const mx=px+Math.cos(angle)*180,my=py+Math.sin(angle)*180;
+  const dx=px-mx,dy=py-my,d=Math.sqrt(dx*dx+dy*dy)||1;
+  codeWalls.push({x:mx,y:my,vx:dx/d*110,vy:dy/d*110,life:2.5});
+}
+
+function drawCore(x,y,size,alpha){
+  ctx.save();ctx.globalAlpha=alpha;ctx.translate(x,y);
+  // spinning rings
+  for(let layer=0;layer<3;layer++){
+    const lr=size*(1-layer*0.2);
+    const la=t*(1+layer*0.5)*(layer%2===0?1:-1);
+    ctx.save();ctx.rotate(la);
+    ctx.strokeStyle=`hsl(${135+layer*15},100%,${55+layer*10}%)`;
+    ctx.lineWidth=2-layer*0.4;
+    ctx.beginPath();
+    // broken circle (loop opening)
+    ctx.arc(0,0,lr,0.3,Math.PI*2-0.3);ctx.stroke();
+    // gap markers
+    ctx.fillStyle=`hsl(${135+layer*15},100%,60%)`;
+    ctx.beginPath();ctx.arc(Math.cos(0.3)*lr,Math.sin(0.3)*lr,2,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.arc(Math.cos(Math.PI*2-0.3)*lr,Math.sin(Math.PI*2-0.3)*lr,2,0,Math.PI*2);ctx.fill();
+    ctx.restore();
+  }
+  // center
+  ctx.fillStyle='#001a00';ctx.strokeStyle='#22ff66';ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.arc(0,0,size*0.35,0,Math.PI*2);ctx.fill();ctx.stroke();
+  ctx.fillStyle='#22ff66';ctx.font=`bold ${size*0.4}px monospace`;ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.shadowColor='#22ff66';ctx.shadowBlur=6;
+  ctx.fillText('∞',0,0);ctx.shadowBlur=0;
+  ctx.restore();
+}
+
+function draw(){
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='#000d00';ctx.fillRect(0,0,W,H);
+
+  // bg grid
+  ctx.save();ctx.globalAlpha=0.04;ctx.strokeStyle='#22ff66';ctx.lineWidth=1;
+  for(let x=0;x<W;x+=30)for(let y=0;y<H;y+=30){ctx.beginPath();ctx.rect(x,y,1,1);ctx.fillStyle='#22ff66';ctx.fill();}
+  ctx.restore();
+
+  // orbit paths
+  ctx.save();ctx.globalAlpha=0.08;ctx.strokeStyle='#22ff66';ctx.lineWidth=1;ctx.setLineDash([5,8]);
+  ctx.beginPath();ctx.arc(px,py,180,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);ctx.restore();
+
+  // code walls
+  codeWalls=codeWalls.filter(c=>c.life>0);
+  codeWalls.forEach(c=>{
+    c.x+=c.vx*0.016;c.y+=c.vy*0.016;c.life-=0.018;
+    ctx.save();ctx.globalAlpha=c.life*0.8;
+    const ang=Math.atan2(c.vy,c.vx);ctx.translate(c.x,c.y);ctx.rotate(ang);
+    ctx.fillStyle='#002200';ctx.strokeStyle='#22ff66';ctx.lineWidth=1.5;
+    ctx.fillRect(-30,-10,60,20);ctx.strokeRect(-30,-10,60,20);
+    ctx.fillStyle='#44ff88';ctx.font='6px monospace';ctx.textAlign='center';
+    ctx.fillText('for(;;){}',0,4);ctx.restore();
+  });
+
+  // clones
+  clones=clones.filter(c=>c.life>0);
+  clones.forEach(c=>{
+    c.subAngle+=1.2*0.016;c.life-=0.016;
+    const cx=c.x+Math.cos(c.subAngle)*45;
+    const cy=c.y+Math.sin(c.subAngle)*45;
+    // sub-orbit path
+    ctx.save();ctx.globalAlpha=0.07;ctx.strokeStyle='#22ff66';ctx.lineWidth=1;ctx.setLineDash([3,5]);
+    ctx.beginPath();ctx.arc(c.x,c.y,45,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);ctx.restore();
+    drawCore(cx,cy,10,c.life*0.6);
+  });
+
+  // main monster
+  const mx=px+Math.cos(angle)*180,my=py+Math.sin(angle)*180;
+  drawCore(mx,my,22,1);
+
+  // connection line to player
+  ctx.save();ctx.globalAlpha=0.12;ctx.strokeStyle='#22ff66';ctx.lineWidth=1;ctx.setLineDash([3,6]);
+  ctx.beginPath();ctx.moveTo(mx,my);ctx.lineTo(px,py);ctx.stroke();ctx.setLineDash([]);ctx.restore();
+
+  // player
+  ctx.save();ctx.fillStyle='#4a90d9';ctx.globalAlpha=0.7;
+  ctx.beginPath();ctx.arc(px,py,12,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#fff';ctx.globalAlpha=1;ctx.font='10px monospace';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText('JY',px,py);ctx.restore();
+
+  ctx.fillStyle='#22ff66';ctx.font='10px monospace';ctx.textAlign='center';
+  ctx.fillText('InfiniteLoop',mx,my-38);
+  ctx.fillStyle='#22ff6655';ctx.font='8px monospace';
+  ctx.fillText(`clones: ${clones.length}`,px,py-28);
+}
+
+function update(dt){
+  t+=dt;angle+=0.8*dt;
+  shotCD-=dt;if(shotCD<=0){fireWall();shotCD=2;}
+  cloneCD-=dt;if(cloneCD<=0){spawnClone();cloneCD=3;}
+}
+
+document.getElementById('btn').addEventListener('click',()=>{spawnClone();cloneCD=3;});
+let last=0;
+function loop(ts){const dt=Math.min((ts-last)/1000,0.05);last=ts;update(dt);draw();requestAnimationFrame(loop);}
+requestAnimationFrame(loop);
+</script>
+</body></html>

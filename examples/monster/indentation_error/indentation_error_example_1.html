@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>IndentationError - Design 1 | JY Survival</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Orbitron:wght@700;900&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:#0d0700;color:#fff;font-family:'Space Mono',monospace;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;overflow:hidden}
+  h1{font-family:'Orbitron',sans-serif;font-size:1.8rem;color:#ff8800;text-shadow:0 0 20px #ff880088;margin-bottom:4px;letter-spacing:3px}
+  .subtitle{color:#aa6622;font-size:.73rem;letter-spacing:3px;margin-bottom:20px}
+  .stage{width:420px;height:300px;background:#0d0700;border:2px solid #ff880044;border-radius:12px;overflow:hidden;box-shadow:0 0 40px #ff880033}
+  canvas{display:block}
+  .stats{display:flex;gap:14px;margin-top:14px;font-size:.7rem;color:#ccaa66}
+  .stat{background:#1a0e00;border:1px solid #ff880033;border-radius:6px;padding:7px 12px;text-align:center}
+  .stat span{display:block;color:#ff8800;font-size:1rem;font-weight:700;font-family:'Orbitron',sans-serif}
+  .special-box{margin-top:12px;width:420px;background:#1a0e00;border:1px solid #ff880044;border-radius:8px;padding:12px 16px;font-size:.7rem;line-height:1.7;color:#ddbb88}
+  .special-box h3{color:#ff8800;font-family:'Orbitron',sans-serif;font-size:.78rem;margin-bottom:6px;letter-spacing:2px}
+  .btn{margin-top:10px;padding:9px 26px;background:#773300;color:#fff;font-family:'Space Mono',monospace;font-size:.78rem;border:none;border-radius:6px;cursor:pointer;letter-spacing:2px;box-shadow:0 0 16px #ff880044;transition:all .2s}
+  .btn:hover{background:#994400;transform:scale(1.05)}
+  .tag{display:inline-block;background:#ff880022;color:#ff8800;font-size:.65rem;padding:2px 8px;border-radius:20px;border:1px solid #ff880055;margin-bottom:8px;letter-spacing:2px}
+</style>
+</head>
+<body>
+<p class="tag">DESIGN 1 / TAB CRAB</p>
+<h1>INDENTATION ERROR</h1>
+<p class="subtitle">// 탭 게 · 들여쓰기 화살 발사</p>
+<div class="stage"><canvas id="c" width="420" height="300"></canvas></div>
+<div class="stats">
+  <div class="stat">HP<span>36</span></div>
+  <div class="stat">SPD<span>70</span></div>
+  <div class="stat">DMG<span>15</span></div>
+  <div class="stat">TYPE<span style="font-size:.6rem">SHOOTER</span></div>
+</div>
+<div class="special-box">
+  <h3>➡ SPECIAL: TAB ARROW SHOT</h3>
+  2.5초마다 플레이어 방향으로 들여쓰기 화살(→) 투사체 발사. 화살이 날아가며 코드 들여쓰기 패턴 잔상 생성.
+</div>
+<button class="btn" id="btn">➡ 화살 발사</button>
+<script>
+const cv=document.getElementById('c'),ctx=cv.getContext('2d');
+const W=420,H=300;
+let t=0,mx=180,my=150,bullets=[],shootCD=0;
+const px=350,py=150;
+let shooting=false,shootFlash=0;
+
+function shoot(){
+  const dx=px-mx,dy=py-my,d=Math.sqrt(dx*dx+dy*dy)||1;
+  bullets.push({x:mx,y:my,vx:dx/d*120,vy:dy/d*120,life:2,trail:[]});
+  shootFlash=0.3;
+}
+
+function drawCrab(x,y){
+  ctx.save();ctx.translate(x,y);
+  const bob=Math.sin(t*3)*4;
+  ctx.translate(0,bob);
+
+  // legs (4 pairs)
+  ctx.strokeStyle='#cc5500';ctx.lineWidth=3;ctx.lineCap='round';
+  for(let side=-1;side<=1;side+=2){
+    for(let i=0;i<3;i++){
+      const lx=side*18,ly=-10+i*14;
+      const ex=side*(30+i*8),ey=-5+i*12+Math.sin(t*4+i)*5;
+      ctx.beginPath();ctx.moveTo(lx,ly);ctx.quadraticCurveTo(side*24,ly+6,ex,ey);ctx.stroke();
+      ctx.fillStyle='#ff7733';ctx.beginPath();ctx.arc(ex,ey,4,0,Math.PI*2);ctx.fill();
+    }
+  }
+
+  // claw arms (with → shapes)
+  for(let side=-1;side<=1;side+=2){
+    ctx.save();ctx.translate(side*22,-5);ctx.rotate(side*0.4+Math.sin(t*2)*0.2);
+    ctx.strokeStyle='#ff8800';ctx.lineWidth=4;ctx.lineCap='round';
+    ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(side*28,-10);ctx.stroke();
+    // arrow head
+    ctx.fillStyle='#ffaa44';ctx.beginPath();
+    ctx.moveTo(side*28,-10);
+    ctx.lineTo(side*28-side*10,-4);ctx.lineTo(side*28-side*10,-16);
+    ctx.closePath();ctx.fill();
+    ctx.restore();
+  }
+
+  // body
+  ctx.beginPath();ctx.ellipse(0,0,28,20,0,0,Math.PI*2);
+  const bg=ctx.createRadialGradient(-5,-5,2,0,0,28);
+  bg.addColorStop(0,'#ff9933');bg.addColorStop(0.6,'#cc5500');bg.addColorStop(1,'#662200');
+  ctx.fillStyle=bg;ctx.fill();
+  ctx.strokeStyle='#ff7722';ctx.lineWidth=2;ctx.stroke();
+
+  // shell segments
+  ctx.strokeStyle='#cc6600';ctx.lineWidth=1;ctx.globalAlpha=0.5;
+  for(let i=-1;i<=1;i++){ctx.beginPath();ctx.moveTo(i*10,-18);ctx.lineTo(i*10,18);ctx.stroke();}
+  ctx.globalAlpha=1;
+
+  // eyes
+  ctx.fillStyle='#fff';
+  ctx.beginPath();ctx.arc(-10,-10,7,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.arc(10,-10,7,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#000';
+  ctx.beginPath();ctx.arc(-10,-10,4,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.arc(10,-10,4,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#fff';
+  ctx.beginPath();ctx.arc(-8,-12,2,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.arc(12,-12,2,0,Math.PI*2);ctx.fill();
+
+  // TAB text
+  ctx.fillStyle='#ffee88';ctx.font='bold 8px monospace';ctx.textAlign='center';
+  ctx.fillText('»TAB«',0,8);
+
+  if(shootFlash>0){
+    ctx.globalAlpha=shootFlash*0.6;ctx.fillStyle='#ffaa44';
+    ctx.beginPath();ctx.arc(0,0,35,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
+    shootFlash-=0.05;
+  }
+  ctx.restore();
+}
+
+function draw(){
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='#0d0700';ctx.fillRect(0,0,W,H);
+  const glow=ctx.createRadialGradient(mx,my,10,mx,my,130);
+  glow.addColorStop(0,'rgba(255,136,0,0.06)');glow.addColorStop(1,'transparent');
+  ctx.fillStyle=glow;ctx.fillRect(0,0,W,H);
+
+  // bullets
+  bullets=bullets.filter(b=>b.life>0);
+  bullets.forEach(b=>{
+    b.trail.push({x:b.x,y:b.y});
+    if(b.trail.length>12)b.trail.shift();
+    b.x+=b.vx*0.016;b.y+=b.vy*0.016;b.life-=0.025;
+    // trail
+    b.trail.forEach((tr,i)=>{
+      ctx.globalAlpha=(i/b.trail.length)*0.4;
+      ctx.fillStyle='#ff8800';ctx.font='10px monospace';ctx.textAlign='center';
+      ctx.fillText('→',tr.x,tr.y+4);ctx.globalAlpha=1;
+    });
+    // arrow head
+    ctx.fillStyle='#ffcc44';ctx.font='bold 14px monospace';ctx.textAlign='center';
+    ctx.fillText('→',b.x,b.y+5);
+    // glow
+    ctx.save();ctx.globalAlpha=0.5;ctx.shadowColor='#ff8800';ctx.shadowBlur=10;
+    ctx.fillStyle='#ffaa44';ctx.beginPath();ctx.arc(b.x,b.y,5,0,Math.PI*2);ctx.fill();
+    ctx.restore();
+  });
+
+  drawCrab(mx,my);
+
+  ctx.save();ctx.globalAlpha=0.6;ctx.fillStyle='#4a90d9';
+  ctx.beginPath();ctx.arc(px,py,12,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#fff';ctx.font='10px monospace';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText('JY',px,py);ctx.restore();
+  ctx.fillStyle='#ff8800';ctx.font='10px monospace';ctx.textAlign='center';ctx.fillText('IndentError',mx,my-80);
+}
+
+function update(dt){
+  t+=dt;
+  const dx=px-mx,dy=py-my,d=Math.sqrt(dx*dx+dy*dy);
+  if(d>65){mx+=dx/d*70*dt;my+=dy/d*70*dt;}
+  shootCD-=dt;if(shootCD<=0){shoot();shootCD=2.5;}
+}
+
+document.getElementById('btn').addEventListener('click',()=>{shoot();shootCD=2.5;});
+let last=0;
+function loop(ts){const dt=Math.min((ts-last)/1000,0.05);last=ts;update(dt);draw();requestAnimationFrame(loop);}
+requestAnimationFrame(loop);
+</script>
+</body></html>

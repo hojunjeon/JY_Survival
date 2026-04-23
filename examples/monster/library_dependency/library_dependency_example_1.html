@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>LibraryDependency - Design 1 | JY Survival</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Orbitron:wght@700;900&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:#0a0600;color:#fff;font-family:'Space Mono',monospace;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;overflow:hidden}
+  h1{font-family:'Orbitron',sans-serif;font-size:1.7rem;color:#ffaa22;text-shadow:0 0 20px #ffaa2288;margin-bottom:4px;letter-spacing:3px}
+  .subtitle{color:#886622;font-size:.73rem;letter-spacing:3px;margin-bottom:20px}
+  .stage{width:420px;height:300px;background:#0a0600;border:2px solid #ffaa2244;border-radius:12px;overflow:hidden;box-shadow:0 0 40px #ffaa2222}
+  canvas{display:block}
+  .stats{display:flex;gap:14px;margin-top:14px;font-size:.7rem;color:#ccaa77}
+  .stat{background:#150c00;border:1px solid #ffaa2233;border-radius:6px;padding:7px 12px;text-align:center}
+  .stat span{display:block;color:#ffaa22;font-size:1rem;font-weight:700;font-family:'Orbitron',sans-serif}
+  .special-box{margin-top:12px;width:420px;background:#150c00;border:1px solid #ffaa2244;border-radius:8px;padding:12px 16px;font-size:.7rem;line-height:1.7;color:#ddbb88}
+  .special-box h3{color:#ffaa22;font-family:'Orbitron',sans-serif;font-size:.78rem;margin-bottom:6px;letter-spacing:2px}
+  .btn{margin-top:10px;padding:9px 26px;background:#553300;color:#fff;font-family:'Space Mono',monospace;font-size:.78rem;border:none;border-radius:6px;cursor:pointer;letter-spacing:2px;box-shadow:0 0 16px #ffaa2233;transition:all .2s}
+  .btn:hover{background:#775500;transform:scale(1.05)}
+  .tag{display:inline-block;background:#ffaa2222;color:#ffaa22;font-size:.65rem;padding:2px 8px;border-radius:20px;border:1px solid #ffaa2255;margin-bottom:8px;letter-spacing:2px}
+</style>
+</head>
+<body>
+<p class="tag">DESIGN 1 / PACKAGE GOLEM</p>
+<h1>LIBRARY DEPENDENCY</h1>
+<p class="subtitle">// 패키지 골렘 · 의존성 체인 · 버프 오라</p>
+<div class="stage"><canvas id="c" width="420" height="300"></canvas></div>
+<div class="stats">
+  <div class="stat">HP<span>40</span></div>
+  <div class="stat">SPD<span>35</span></div>
+  <div class="stat">DMG<span>8</span></div>
+  <div class="stat">TYPE<span style="font-size:.6rem">AURA BUFF</span></div>
+</div>
+<div class="special-box">
+  <h3>📦 SPECIAL: DEPENDENCY AURA</h3>
+  반경 150px 오라로 주변 적 버프. 처치해도 체인 연결된 유령 패키지들이 계속 보충됨 (npm install처럼). 느리지만 팀 강화 위협.
+</div>
+<button class="btn" id="btn">📦 npm install</button>
+<script>
+const cv=document.getElementById('c'),ctx=cv.getContext('2d');
+const W=420,H=300;
+let t=0,mx=200,my=155;
+const px=350,py=155;
+let ghostPkgs=[],chains=[],installing=false,installT=0;
+
+const PKG_NAMES=['lodash','react','axios','moment','express','webpack','babel','jest','eslint','vite'];
+
+function spawnGhostPkg(){
+  const a=Math.random()*Math.PI*2,r=80+Math.random()*80;
+  ghostPkgs.push({
+    x:mx+Math.cos(a)*r,y:my+Math.sin(a)*r,
+    angle:a,orbitR:r,speed:(Math.random()>0.5?1:-1)*(0.3+Math.random()*0.4),
+    name:PKG_NAMES[Math.floor(Math.random()*PKG_NAMES.length)],
+    version:`^${Math.floor(Math.random()*9)}.${Math.floor(Math.random()*9)}.${Math.floor(Math.random()*9)}`,
+    alpha:0,targetAlpha:0.8,size:Math.random()<0.3?'large':'small'
+  });
+}
+for(let i=0;i<6;i++)spawnGhostPkg();
+
+function drawPackageBox(x,y,w,h,label,version,alpha){
+  ctx.save();ctx.globalAlpha=alpha;
+  // box body
+  ctx.fillStyle='#8B6914';ctx.strokeStyle='#5a4008';ctx.lineWidth=2;
+  ctx.fillRect(x-w/2,y-h/2,w,h);ctx.strokeRect(x-w/2,y-h/2,w,h);
+  // lid line
+  ctx.strokeStyle='#aa8822';ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(x-w/2,y-h/2+8);ctx.lineTo(x+w/2,y-h/2+8);ctx.stroke();
+  // cross tape
+  ctx.strokeStyle='#cc9933';ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(x-3,y-h/2);ctx.lineTo(x-3,y-h/2+8);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(x+3,y-h/2);ctx.lineTo(x+3,y-h/2+8);ctx.stroke();
+  // text
+  ctx.fillStyle='#fff';ctx.font=`bold ${w>40?8:6}px monospace`;ctx.textAlign='center';
+  ctx.fillText(label.slice(0,8),x,y+3);
+  ctx.fillStyle='#ffcc66';ctx.font=`${w>40?7:5}px monospace`;
+  ctx.fillText(version,x,y+3+(w>40?11:9));
+  ctx.restore();
+}
+
+function draw(){
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='#0a0600';ctx.fillRect(0,0,W,H);
+
+  // aura ring
+  const auraG=ctx.createRadialGradient(mx,my,80,mx,my,160);
+  auraG.addColorStop(0,'rgba(255,170,34,0.07)');auraG.addColorStop(0.5,'rgba(255,170,34,0.04)');auraG.addColorStop(1,'transparent');
+  ctx.fillStyle=auraG;ctx.fillRect(0,0,W,H);
+  ctx.save();ctx.globalAlpha=0.1;ctx.strokeStyle='#ffaa22';ctx.lineWidth=1;ctx.setLineDash([5,8]);
+  ctx.beginPath();ctx.arc(mx,my,150,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);ctx.restore();
+
+  // ghost packages orbiting
+  ghostPkgs.forEach(p=>{
+    p.angle+=p.speed*0.016;
+    p.x=mx+Math.cos(p.angle)*p.orbitR;
+    p.y=my+Math.sin(p.angle)*p.orbitR;
+    p.alpha=Math.min(p.targetAlpha,p.alpha+0.01);
+    // chain line to main
+    ctx.save();ctx.globalAlpha=p.alpha*0.35;ctx.strokeStyle='#885500';ctx.lineWidth=1;ctx.setLineDash([3,5]);
+    ctx.beginPath();ctx.moveTo(mx,my);ctx.lineTo(p.x,p.y);ctx.stroke();ctx.setLineDash([]);ctx.restore();
+    const isLarge=p.size==='large';
+    drawPackageBox(p.x,p.y,isLarge?44:28,isLarge?30:20,p.name,p.version,p.alpha);
+  });
+
+  // install animation
+  if(installing){
+    const newPkg=ghostPkgs[ghostPkgs.length-1];
+    if(newPkg){
+      ctx.fillStyle='#44ff22';ctx.font='8px monospace';ctx.textAlign='left';
+      ctx.fillText(`+ ${newPkg.name}@${newPkg.version.slice(1)}`,mx-60,my+95);
+      ctx.fillStyle='#888';ctx.fillText(`resolved in ${(installT*1000).toFixed(0)}ms`,mx-60,my+107);
+    }
+  }
+
+  // main body
+  ctx.save();ctx.translate(mx,my);
+  const bob=Math.sin(t*1.5)*3;ctx.translate(0,bob);
+  // shadow
+  ctx.save();ctx.globalAlpha=0.2;ctx.fillStyle='#000';
+  ctx.beginPath();ctx.ellipse(4,55,36,8,0,0,Math.PI*2);ctx.fill();ctx.restore();
+  // big box body
+  const pw=56,ph=50;
+  ctx.fillStyle='#8B6914';ctx.strokeStyle='#5a4008';ctx.lineWidth=3;
+  ctx.fillRect(-pw/2,-ph/2,pw,ph);ctx.strokeRect(-pw/2,-ph/2,pw,ph);
+  // lid
+  ctx.fillStyle='#aa8822';ctx.fillRect(-pw/2,-ph/2,pw,12);
+  ctx.strokeStyle='#775500';ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(-pw/2,-ph/2+12);ctx.lineTo(pw/2,-ph/2+12);ctx.stroke();
+  // center tape
+  ctx.strokeStyle='#cc9933';ctx.lineWidth=4;
+  ctx.beginPath();ctx.moveTo(-5,-ph/2);ctx.lineTo(-5,ph/2);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(5,-ph/2);ctx.lineTo(5,ph/2);ctx.stroke();
+  // [pkg] label
+  ctx.fillStyle='#fff';ctx.font='bold 9px monospace';ctx.textAlign='center';ctx.fillText('[pkg]',0,5);
+  ctx.fillStyle='#ffcc66';ctx.font='7px monospace';ctx.fillText('v∞.∞.∞',0,17);
+  // eyes
+  ctx.fillStyle='#ffaa22';ctx.shadowColor='#ffaa22';ctx.shadowBlur=8;
+  ctx.beginPath();ctx.arc(-12,-20,6,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.arc(12,-20,6,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;
+  ctx.fillStyle='#221100';ctx.beginPath();ctx.arc(-12,-20,3,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.arc(12,-20,3,0,Math.PI*2);ctx.fill();
+  // legs
+  ctx.strokeStyle='#775500';ctx.lineWidth=5;ctx.lineCap='round';
+  ctx.beginPath();ctx.moveTo(-16,25);ctx.lineTo(-16,48);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(16,25);ctx.lineTo(16,48);ctx.stroke();
+  ctx.fillStyle='#552200';ctx.beginPath();ctx.ellipse(-16,48,8,4,0,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.ellipse(16,48,8,4,0,0,Math.PI*2);ctx.fill();
+  ctx.restore();
+
+  ctx.save();ctx.globalAlpha=0.6;ctx.fillStyle='#4a90d9';
+  ctx.beginPath();ctx.arc(px,py,12,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#fff';ctx.font='10px monospace';ctx.textAlign='center';ctx.textBaseline='middle';ctx.globalAlpha=1;
+  ctx.fillText('JY',px,py);ctx.restore();
+  ctx.fillStyle='#ffaa22';ctx.font='9px monospace';ctx.textAlign='center';ctx.fillText('LibraryDependency',mx,my-85);
+  ctx.fillStyle='#ffaa2266';ctx.font='8px monospace';ctx.fillText(`deps: ${ghostPkgs.length}`,mx,my+100);
+}
+
+function update(dt){
+  t+=dt;
+  if(installing){installT+=dt;if(installT>1.5){installing=false;installT=0;}}
+  const dx=px-mx,dy=py-my,d=Math.sqrt(dx*dx+dy*dy);
+  if(d>65){mx+=dx/d*35*dt;my+=dy/d*35*dt;}
+  if(ghostPkgs.length<8&&Math.random()<0.008){spawnGhostPkg();}
+  if(ghostPkgs.length>12)ghostPkgs.shift();
+}
+
+document.getElementById('btn').addEventListener('click',()=>{
+  spawnGhostPkg();installing=true;installT=0;
+});
+let last=0;
+function loop(ts){const dt=Math.min((ts-last)/1000,0.05);last=ts;update(dt);draw();requestAnimationFrame(loop);}
+requestAnimationFrame(loop);
+</script>
+</body></html>

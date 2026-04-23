@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>IndentationError - Design 2 | JY Survival</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Orbitron:wght@700;900&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:#0d0700;color:#fff;font-family:'Space Mono',monospace;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;overflow:hidden}
+  h1{font-family:'Orbitron',sans-serif;font-size:1.8rem;color:#ffaa33;text-shadow:0 0 20px #ffaa3388;margin-bottom:4px;letter-spacing:3px}
+  .subtitle{color:#aa7733;font-size:.73rem;letter-spacing:3px;margin-bottom:20px}
+  .stage{width:420px;height:300px;background:#0d0700;border:2px solid #ffaa3344;border-radius:12px;overflow:hidden;box-shadow:0 0 40px #ffaa3322}
+  canvas{display:block}
+  .stats{display:flex;gap:14px;margin-top:14px;font-size:.7rem;color:#ccaa66}
+  .stat{background:#1a0e00;border:1px solid #ffaa3333;border-radius:6px;padding:7px 12px;text-align:center}
+  .stat span{display:block;color:#ffaa33;font-size:1rem;font-weight:700;font-family:'Orbitron',sans-serif}
+  .special-box{margin-top:12px;width:420px;background:#1a0e00;border:1px solid #ffaa3344;border-radius:8px;padding:12px 16px;font-size:.7rem;line-height:1.7;color:#ddbb88}
+  .special-box h3{color:#ffaa33;font-family:'Orbitron',sans-serif;font-size:.78rem;margin-bottom:6px;letter-spacing:2px}
+  .btn{margin-top:10px;padding:9px 26px;background:#664400;color:#fff;font-family:'Space Mono',monospace;font-size:.78rem;border:none;border-radius:6px;cursor:pointer;letter-spacing:2px;box-shadow:0 0 16px #ffaa3333;transition:all .2s}
+  .btn:hover{background:#886600;transform:scale(1.05)}
+  .tag{display:inline-block;background:#ffaa3322;color:#ffaa33;font-size:.65rem;padding:2px 8px;border-radius:20px;border:1px solid #ffaa3355;margin-bottom:8px;letter-spacing:2px}
+</style>
+</head>
+<body>
+<p class="tag">DESIGN 2 / MISALIGNED BLOCKS</p>
+<h1>INDENTATION ERROR</h1>
+<p class="subtitle">// 어긋난 코드 블록 몬스터 · 탭 투사체</p>
+<div class="stage"><canvas id="c" width="420" height="300"></canvas></div>
+<div class="stats">
+  <div class="stat">HP<span>36</span></div>
+  <div class="stat">SPD<span>70</span></div>
+  <div class="stat">DMG<span>15</span></div>
+  <div class="stat">TYPE<span style="font-size:.6rem">SHOOTER</span></div>
+</div>
+<div class="special-box">
+  <h3>⬛ SPECIAL: CODE BLOCK SHOT</h3>
+  어긋난 코드 블록 형태의 몸체. 2.5초마다 들여쓰기 파편(코드 라인 블록)을 투사체로 발사함.
+</div>
+<button class="btn" id="btn">⬛ 블록 발사</button>
+<script>
+const cv=document.getElementById('c'),ctx=cv.getContext('2d');
+const W=420,H=300;
+let t=0,mx=190,my=150,bullets=[],shootCD=2.5;
+const px=350,py=150;
+
+const LINES=['  if x:', '    do()', '  else:', '    pass','def fn():','    return'];
+const COLS=['#ff8800','#cc5500','#ffaa44','#884400','#ff6600'];
+
+// Body = stacked misaligned blocks
+const blocks=[
+  {ox:-20,oy:-60,w:100,h:18,indent:0,col:'#cc5500',line:LINES[0]},
+  {ox:-5,oy:-40,w:100,h:18,indent:24,col:'#ff7700',line:LINES[1]},
+  {ox:-20,oy:-20,w:100,h:18,indent:0,col:'#cc5500',line:LINES[2]},
+  {ox:5,oy:0,w:100,h:18,indent:24,col:'#aa4400',line:LINES[3]},
+  {ox:-25,oy:20,w:100,h:18,indent:8,col:'#ff8833',line:LINES[4]},
+  {ox:-10,oy:40,w:100,h:18,indent:32,col:'#cc6600',line:LINES[5]},
+];
+
+let shootFlash=0;
+function shoot(){
+  const dx=px-mx,dy=py-my,d=Math.sqrt(dx*dx+dy*dy)||1;
+  bullets.push({x:mx,y:my,vx:dx/d*110,vy:dy/d*110,life:2,w:60,h:14,col:COLS[Math.floor(Math.random()*COLS.length)],line:LINES[Math.floor(Math.random()*LINES.length)]});
+  shootFlash=0.25;
+}
+
+function draw(){
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='#0d0700';ctx.fillRect(0,0,W,H);
+  const glow=ctx.createRadialGradient(mx,my,10,mx,my,130);
+  glow.addColorStop(0,'rgba(255,170,0,0.07)');glow.addColorStop(1,'transparent');
+  ctx.fillStyle=glow;ctx.fillRect(0,0,W,H);
+
+  // body blocks
+  const bob=Math.sin(t*2)*4;
+  blocks.forEach((b,i)=>{
+    const glitch=Math.sin(t*7+i*1.3)*2;
+    const bx=mx+b.ox+glitch;
+    const by=my+b.oy+bob;
+    // shadow
+    ctx.save();ctx.globalAlpha=0.2;ctx.fillStyle='#000';
+    ctx.fillRect(bx+3,by+3,b.w,b.h);ctx.restore();
+    // block body
+    ctx.fillStyle=b.col;ctx.fillRect(bx,by,b.w,b.h);
+    ctx.strokeStyle='#ffcc66';ctx.lineWidth=1;ctx.strokeRect(bx,by,b.w,b.h);
+    // code text
+    ctx.fillStyle='#ffeecc';ctx.font='8px monospace';
+    ctx.fillText(b.line,bx+4,by+12);
+    // indent marker
+    if(i>0){
+      ctx.fillStyle='#ff880055';
+      ctx.fillRect(bx,by,b.indent,b.h);
+    }
+  });
+
+  // eyes (floating above top block)
+  const eyeY=my-75+bob;
+  ctx.fillStyle='#ffcc44';
+  ctx.beginPath();ctx.ellipse(mx-10,eyeY,6,8,0,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.ellipse(mx+10,eyeY,6,8,0,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#221100';
+  ctx.beginPath();ctx.ellipse(mx-10,eyeY,3,5,0,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.ellipse(mx+10,eyeY,3,5,0,0,Math.PI*2);ctx.fill();
+
+  // shoot flash
+  if(shootFlash>0){
+    ctx.globalAlpha=shootFlash;ctx.fillStyle='#ffaa44';
+    ctx.beginPath();ctx.arc(mx,my,50,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
+    shootFlash=Math.max(0,shootFlash-0.04);
+  }
+
+  // bullets
+  bullets=bullets.filter(b=>b.life>0);
+  bullets.forEach(b=>{
+    b.x+=b.vx*0.016;b.y+=b.vy*0.016;b.life-=0.022;
+    ctx.save();ctx.globalAlpha=b.life;
+    const ang=Math.atan2(b.vy,b.vx);
+    ctx.translate(b.x,b.y);ctx.rotate(ang);
+    ctx.fillStyle=b.col;ctx.fillRect(-b.w/2,-b.h/2,b.w,b.h);
+    ctx.strokeStyle='#ffcc44';ctx.lineWidth=1;ctx.strokeRect(-b.w/2,-b.h/2,b.w,b.h);
+    ctx.fillStyle='#ffeecc';ctx.font='7px monospace';ctx.textAlign='center';
+    ctx.fillText(b.line,-5,4);
+    ctx.restore();
+  });
+
+  ctx.save();ctx.globalAlpha=0.6;ctx.fillStyle='#4a90d9';
+  ctx.beginPath();ctx.arc(px,py,12,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#fff';ctx.font='10px monospace';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText('JY',px,py);ctx.restore();
+  ctx.fillStyle='#ffaa33';ctx.font='10px monospace';ctx.textAlign='center';ctx.fillText('IndentError',mx,my-95);
+}
+
+function update(dt){
+  t+=dt;
+  const dx=px-mx,dy=py-my,d=Math.sqrt(dx*dx+dy*dy);
+  if(d>65){mx+=dx/d*70*dt;my+=dy/d*70*dt;}
+  shootCD-=dt;if(shootCD<=0){shoot();shootCD=2.5;}
+}
+
+document.getElementById('btn').addEventListener('click',()=>{shoot();shootCD=2.5;});
+let last=0;
+function loop(ts){const dt=Math.min((ts-last)/1000,0.05);last=ts;update(dt);draw();requestAnimationFrame(loop);}
+requestAnimationFrame(loop);
+</script>
+</body></html>

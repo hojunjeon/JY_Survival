@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>NullPointer - Design 1 | JY Survival</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Orbitron:wght@700;900&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:#06060f;color:#fff;font-family:'Space Mono',monospace;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;overflow:hidden}
+  h1{font-family:'Orbitron',sans-serif;font-size:2rem;color:#aabbff;text-shadow:0 0 20px #8899ff88;margin-bottom:4px;letter-spacing:4px}
+  .subtitle{color:#9999cc;font-size:.75rem;letter-spacing:3px;margin-bottom:24px}
+  .stage{position:relative;width:420px;height:320px;background:#08080f;border:2px solid #8899ff33;border-radius:12px;overflow:hidden;box-shadow:0 0 40px #8899ff22}
+  canvas{display:block}
+  .stats{display:flex;gap:20px;margin-top:16px;font-size:.72rem;color:#aaaadd}
+  .stat{background:#0e0e1a;border:1px solid #8899ff33;border-radius:6px;padding:8px 14px;text-align:center}
+  .stat span{display:block;color:#aabbff;font-size:1.1rem;font-weight:700;font-family:'Orbitron',sans-serif}
+  .special-box{margin-top:14px;width:420px;background:#0e0e1a;border:1px solid #8899ff33;border-radius:8px;padding:14px 18px;font-size:.72rem;line-height:1.7;color:#ccccee}
+  .special-box h3{color:#aabbff;font-family:'Orbitron',sans-serif;font-size:.8rem;margin-bottom:6px;letter-spacing:2px}
+  .btn{margin-top:12px;padding:10px 28px;background:#334488;color:#fff;font-family:'Space Mono',monospace;font-size:.8rem;border:none;border-radius:6px;cursor:pointer;letter-spacing:2px;box-shadow:0 0 16px #8899ff44;transition:all .2s}
+  .btn:hover{background:#5566aa;box-shadow:0 0 28px #8899ffaa;transform:scale(1.05)}
+  .tag{display:inline-block;background:#8899ff22;color:#aabbff;font-size:.65rem;padding:2px 8px;border-radius:20px;border:1px solid #8899ff44;margin-bottom:8px;letter-spacing:2px}
+</style>
+</head>
+<body>
+<p class="tag">DESIGN 1 / PHANTOM GHOST</p>
+<h1>NULL POINTER</h1>
+<p class="subtitle">// 반투명 유령 · 빠른 이동 · NULL 텍스트 관통</p>
+<div class="stage">
+  <canvas id="c" width="420" height="320"></canvas>
+</div>
+<div class="stats">
+  <div class="stat">HP<span>20</span></div>
+  <div class="stat">SPD<span>110</span></div>
+  <div class="stat">DMG<span>5</span></div>
+  <div class="stat">TYPE<span style="font-size:.65rem">CONTACT</span></div>
+</div>
+<div class="special-box">
+  <h3>👻 SPECIAL: PHASE THROUGH</h3>
+  반투명 상태로 플레이어를 향해 고속 이동. 주기적으로 완전 투명화(페이드아웃) 후 다른 위치에 재출현.<br>
+  <strong>특징:</strong> NULL 포인터라 실체가 없음. 공격해도 가끔 허공을 지남 (히트박스 불안정).
+</div>
+<button class="btn" id="btn">👻 위상 이동</button>
+
+<script>
+const cv=document.getElementById('c'),ctx=cv.getContext('2d');
+const W=420,H=320;
+let t=0,mx=160,my=160,alpha=0.75,fading=false,fadeT=0,reappearing=false;
+const px=340,py=160;
+let nullTexts=[];
+
+function spawnNull(){
+  for(let i=0;i<6;i++){
+    const a=Math.random()*Math.PI*2, r=20+Math.random()*40;
+    nullTexts.push({x:mx+Math.cos(a)*r,y:my+Math.sin(a)*r,vx:Math.cos(a)*20,vy:Math.sin(a)*20-30,life:1,text:'NULL'});
+  }
+}
+
+function drawGhost(x,y,a,phase){
+  ctx.save();ctx.globalAlpha=a;
+  
+  // tail tendrils
+  for(let i=0;i<4;i++){
+    const tx=x-12+i*8,baseY=y+35;
+    const wave=Math.sin(t*3+i*1.5)*8;
+    ctx.beginPath();
+    ctx.moveTo(tx,baseY);
+    ctx.bezierCurveTo(tx+wave,baseY+12,tx-wave,baseY+20,tx+Math.sin(t*2+i)*5,baseY+28);
+    ctx.strokeStyle='#aabbff';ctx.lineWidth=5-i;ctx.globalAlpha=a*(0.8-i*0.15);ctx.stroke();
+  }
+  ctx.globalAlpha=a;
+  
+  // main body
+  ctx.beginPath();
+  ctx.moveTo(x-32,y+35);
+  for(let i=0;i<=8;i++){
+    const bx=x-32+i*8;
+    const by=y+35+Math.sin(t*4+i*0.8)*5;
+    i===0?ctx.lineTo(bx,by):ctx.lineTo(bx,by);
+  }
+  ctx.lineTo(x+32,y-15);
+  ctx.arc(x,y-15,32,0,Math.PI,true);
+  ctx.closePath();
+  
+  const g=ctx.createRadialGradient(x,y-5,5,x,y,45);
+  g.addColorStop(0,'rgba(200,210,255,0.9)');g.addColorStop(0.5,'rgba(140,160,255,0.7)');g.addColorStop(1,'rgba(80,100,200,0.3)');
+  ctx.fillStyle=g;ctx.fill();
+  ctx.strokeStyle='rgba(180,200,255,0.6)';ctx.lineWidth=2;ctx.stroke();
+  
+  // inner glow
+  ctx.beginPath();ctx.arc(x,y-15,20,0,Math.PI,true);
+  ctx.fillStyle='rgba(220,230,255,0.3)';ctx.fill();
+  
+  // NULL text inside body
+  ctx.globalAlpha=a*0.7;
+  ctx.fillStyle='#000022';ctx.font='bold 10px monospace';ctx.textAlign='center';
+  ctx.fillText('NULL',x,y);
+  
+  // eyes
+  ctx.globalAlpha=a;
+  ctx.fillStyle='#000022';
+  ctx.beginPath();ctx.ellipse(x-12,y-18,8,10,0,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.ellipse(x+12,y-18,8,10,0,0,Math.PI*2);ctx.fill();
+  // eye shine
+  ctx.fillStyle='rgba(180,200,255,0.5)';
+  ctx.beginPath();ctx.ellipse(x-10,y-22,3,4,0,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.ellipse(x+14,y-22,3,4,0,0,Math.PI*2);ctx.fill();
+  
+  // 0x0000 address above
+  ctx.globalAlpha=a*0.5;ctx.fillStyle='#aabbff';ctx.font='9px monospace';
+  ctx.fillText('0x0000',x,y-62);
+  ctx.restore();
+}
+
+function draw(){
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='#08080f';ctx.fillRect(0,0,W,H);
+  
+  // ambient glow
+  const ag=ctx.createRadialGradient(mx,my,10,mx,my,150);
+  ag.addColorStop(0,'#8899ff11');ag.addColorStop(1,'transparent');
+  ctx.fillStyle=ag;ctx.fillRect(0,0,W,H);
+  
+  // NULL float texts
+  nullTexts=nullTexts.filter(n=>n.life>0);
+  nullTexts.forEach(n=>{
+    n.x+=n.vx*0.016;n.y+=n.vy*0.016;n.life-=0.018;n.vy+=20*0.016;
+    ctx.globalAlpha=n.life*0.8;
+    ctx.fillStyle='#8899ff';ctx.font='9px monospace';ctx.textAlign='center';
+    ctx.fillText(n.text,n.x,n.y);
+    ctx.globalAlpha=1;
+  });
+  
+  // ghost trail
+  for(let i=3;i>=1;i--){
+    const trailAlpha=alpha*(i/6)*0.3;
+    const trailMx=mx-(px-mx)*0.002*i;
+    const trailMy=my-(py-my)*0.002*i;
+    drawGhost(trailMx,trailMy,trailAlpha,t);
+  }
+  
+  drawGhost(mx,my,alpha,t);
+  
+  // player
+  ctx.save();ctx.globalAlpha=0.6;ctx.fillStyle='#4a90d9';
+  ctx.beginPath();ctx.arc(px,py,12,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#fff';ctx.font='10px monospace';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText('JY',px,py);ctx.restore();
+}
+
+function update(dt){
+  t+=dt;
+  if(reappearing){
+    alpha=Math.min(0.75,alpha+dt*3);
+    if(alpha>=0.75)reappearing=false;
+    return;
+  }
+  if(fading){
+    fadeT+=dt;alpha=Math.max(0,0.75-fadeT*3);
+    if(alpha<=0){
+      // teleport
+      const a=Math.random()*Math.PI*2, r=80+Math.random()*60;
+      mx=px+Math.cos(a)*r;my=py+Math.sin(a)*r;
+      mx=Math.max(40,Math.min(W-40,mx));my=Math.max(40,Math.min(H-40,my));
+      fading=false;fadeT=0;reappearing=true;
+    }
+    return;
+  }
+  const dx=px-mx,dy=py-my,dist=Math.sqrt(dx*dx+dy*dy);
+  if(dist>55){mx+=dx/dist*110*dt;my+=dy/dist*110*dt;}
+  // idle flicker
+  alpha=0.75+Math.sin(t*2)*0.1;
+  if(Math.random()<0.01)spawnNull();
+}
+
+document.getElementById('btn').addEventListener('click',()=>{
+  if(fading||reappearing)return;
+  fading=true;fadeT=0;spawnNull();
+});
+
+let last=0;
+function loop(ts){const dt=Math.min((ts-last)/1000,0.05);last=ts;update(dt);draw();requestAnimationFrame(loop);}
+requestAnimationFrame(loop);
+</script>
+</body></html>

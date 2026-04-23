@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>EnvError - Design 1 | JY Survival</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Orbitron:wght@700;900&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:#00060f;color:#fff;font-family:'Space Mono',monospace;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;overflow:hidden}
+  h1{font-family:'Orbitron',sans-serif;font-size:2rem;color:#4488ff;text-shadow:0 0 20px #4488ff88;margin-bottom:4px;letter-spacing:4px}
+  .subtitle{color:#336699;font-size:.75rem;letter-spacing:3px;margin-bottom:20px}
+  .stage{width:420px;height:300px;background:#00060f;border:2px solid #4488ff44;border-radius:12px;overflow:hidden;box-shadow:0 0 40px #4488ff22}
+  canvas{display:block}
+  .stats{display:flex;gap:14px;margin-top:14px;font-size:.7rem;color:#88aabb}
+  .stat{background:#000e1a;border:1px solid #4488ff33;border-radius:6px;padding:7px 12px;text-align:center}
+  .stat span{display:block;color:#4488ff;font-size:1rem;font-weight:700;font-family:'Orbitron',sans-serif}
+  .special-box{margin-top:12px;width:420px;background:#000e1a;border:1px solid #4488ff44;border-radius:8px;padding:12px 16px;font-size:.7rem;line-height:1.7;color:#aabbdd}
+  .special-box h3{color:#4488ff;font-family:'Orbitron',sans-serif;font-size:.78rem;margin-bottom:6px;letter-spacing:2px}
+  .btn{margin-top:10px;padding:9px 26px;background:#223366;color:#fff;font-family:'Space Mono',monospace;font-size:.78rem;border:none;border-radius:6px;cursor:pointer;letter-spacing:2px;box-shadow:0 0 16px #4488ff44;transition:all .2s}
+  .btn:hover{background:#334477;transform:scale(1.05)}
+  .tag{display:inline-block;background:#4488ff22;color:#4488ff;font-size:.65rem;padding:2px 8px;border-radius:20px;border:1px solid #4488ff55;margin-bottom:8px;letter-spacing:2px}
+</style>
+</head>
+<body>
+<p class="tag">DESIGN 1 / CONFIG BULL</p>
+<h1>ENV ERROR</h1>
+<p class="subtitle">// 환경 변수 황소 · 충전 돌격</p>
+<div class="stage"><canvas id="c" width="420" height="300"></canvas></div>
+<div class="stats">
+  <div class="stat">HP<span>48</span></div>
+  <div class="stat">SPD<span>35→400</span></div>
+  <div class="stat">DMG<span>15</span></div>
+  <div class="stat">TYPE<span style="font-size:.6rem">DASHER</span></div>
+</div>
+<div class="special-box">
+  <h3>⚡ SPECIAL: CONFIG DASH</h3>
+  3초마다 0.4초간 속도 400으로 돌진. 돌격 전 눈이 빨갛게 빛나며 경고. .env 파일 파편이 돌격 경로에 산란됨.
+</div>
+<button class="btn" id="btn">⚡ 돌격!</button>
+<script>
+const cv=document.getElementById('c'),ctx=cv.getContext('2d');
+const W=420,H=300;
+let t=0,mx=180,my=150,dashing=false,dashT=0,dashVx=0,dashVy=0,dashCD=3;
+const px=350,py=150;
+let dashTrail=[],envFrags=[];
+let charging=false,chargeT=0;
+
+function startDash(){
+  const dx=px-mx,dy=py-my,d=Math.sqrt(dx*dx+dy*dy)||1;
+  dashVx=dx/d*400;dashVy=dy/d*400;
+  dashing=true;dashT=0;charging=false;
+  for(let i=0;i<10;i++){
+    const a=Math.random()*Math.PI*2;
+    envFrags.push({x:mx,y:my,vx:Math.cos(a)*60,vy:Math.sin(a)*60,life:1.5,text:'.env'});
+  }
+}
+
+function drawBull(x,y){
+  ctx.save();ctx.translate(x,y);
+  const bob=dashing?0:Math.sin(t*2)*3;
+  ctx.translate(0,bob);
+
+  // shadow
+  ctx.save();ctx.globalAlpha=0.2;ctx.fillStyle='#000';
+  ctx.beginPath();ctx.ellipse(0,50,40,8,0,0,Math.PI*2);ctx.fill();ctx.restore();
+
+  // body
+  const bg=ctx.createRadialGradient(-8,-5,5,0,5,50);
+  bg.addColorStop(0,'#3366cc');bg.addColorStop(0.6,'#1144aa');bg.addColorStop(1,'#002255');
+  ctx.beginPath();ctx.ellipse(0,5,38,32,0,0,Math.PI*2);ctx.fillStyle=bg;ctx.fill();
+  ctx.strokeStyle='#4488ff';ctx.lineWidth=2;ctx.stroke();
+
+  // head
+  const hg=ctx.createRadialGradient(-5,-38,3,0,-35,22);
+  hg.addColorStop(0,'#4477cc');hg.addColorStop(1,'#112255');
+  ctx.beginPath();ctx.ellipse(0,-35,20,18,0,0,Math.PI*2);ctx.fillStyle=hg;ctx.fill();
+  ctx.strokeStyle='#4488ff';ctx.lineWidth=2;ctx.stroke();
+
+  // horns
+  ctx.strokeStyle='#aaccff';ctx.lineWidth=5;ctx.lineCap='round';
+  ctx.beginPath();ctx.moveTo(-15,-48);ctx.bezierCurveTo(-25,-65,-35,-60,-38,-50);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(15,-48);ctx.bezierCurveTo(25,-65,35,-60,38,-50);ctx.stroke();
+  // gear on horns
+  const gearCol=dashing?'#ffaa00':'#aaccff';
+  ctx.fillStyle=gearCol;
+  for(let side=-1;side<=1;side+=2){
+    const gx=side*38,gy=-50;
+    for(let g=0;g<8;g++){const a=g/8*Math.PI*2;ctx.beginPath();ctx.arc(gx+Math.cos(a)*8,gy+Math.sin(a)*8,3,0,Math.PI*2);ctx.fill();}
+    ctx.beginPath();ctx.arc(gx,gy,6,0,Math.PI*2);ctx.fillStyle='#223366';ctx.fill();
+    ctx.fillStyle=gearCol;
+  }
+
+  // eyes
+  const eyeColor=(dashing||charging)?'#ff2200':`hsl(${210+Math.sin(t*2)*10},100%,70%)`;
+  ctx.fillStyle=eyeColor;ctx.shadowColor=eyeColor;ctx.shadowBlur=dashing?15:5;
+  ctx.beginPath();ctx.ellipse(-8,-37,6,7,0,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.ellipse(8,-37,6,7,0,0,Math.PI*2);ctx.fill();
+  ctx.shadowBlur=0;
+
+  // nostrils / steam
+  ctx.fillStyle='#002255';ctx.beginPath();ctx.ellipse(-5,-25,3,2,0,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.ellipse(5,-25,3,2,0,0,Math.PI*2);ctx.fill();
+  if(charging||dashing){
+    ctx.strokeStyle='rgba(180,220,255,0.7)';ctx.lineWidth=2;ctx.lineCap='round';
+    for(let s=-1;s<=1;s+=2){
+      ctx.beginPath();ctx.moveTo(s*5,-23);ctx.quadraticCurveTo(s*8,-18,s*5,-13);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(s*5,-23);ctx.quadraticCurveTo(s*12,-15,s*8,-10);ctx.stroke();
+    }
+  }
+
+  // .env label
+  ctx.fillStyle='#88aaff';ctx.font='8px monospace';ctx.textAlign='center';
+  ctx.fillText('.env',0,8);
+  ctx.restore();
+}
+
+function draw(){
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='#00060f';ctx.fillRect(0,0,W,H);
+  const glow=ctx.createRadialGradient(mx,my,10,mx,my,140);
+  glow.addColorStop(0,'rgba(68,136,255,0.07)');glow.addColorStop(1,'transparent');
+  ctx.fillStyle=glow;ctx.fillRect(0,0,W,H);
+
+  // dash trail
+  dashTrail.forEach((tr,i)=>{
+    const a=i/dashTrail.length;
+    ctx.globalAlpha=a*0.15;ctx.fillStyle='#4488ff';
+    ctx.beginPath();ctx.ellipse(tr.x,tr.y,30,20,0,0,Math.PI*2);ctx.fill();
+    ctx.globalAlpha=1;
+  });
+
+  // env frags
+  envFrags=envFrags.filter(f=>f.life>0);
+  envFrags.forEach(f=>{
+    f.x+=f.vx*0.016;f.y+=f.vy*0.016;f.vx*=0.95;f.vy*=0.95;f.life-=0.02;
+    ctx.globalAlpha=f.life*0.8;ctx.fillStyle='#88aaff';ctx.font='9px monospace';ctx.textAlign='center';
+    ctx.fillText(f.text,f.x,f.y);ctx.globalAlpha=1;
+  });
+
+  drawBull(mx,my);
+
+  // charge warning bar
+  if(charging){
+    const p=chargeT/0.8;
+    ctx.fillStyle='#112244';ctx.fillRect(mx-40,my-90,80,8);
+    ctx.fillStyle='#ff4400';ctx.fillRect(mx-40,my-90,80*p,8);
+    ctx.strokeStyle='#4488ff';ctx.lineWidth=1;ctx.strokeRect(mx-40,my-90,80,8);
+    ctx.fillStyle='#fff';ctx.font='8px monospace';ctx.textAlign='center';ctx.fillText('CHARGING',mx,my-98);
+  }
+
+  ctx.save();ctx.globalAlpha=0.6;ctx.fillStyle='#4a90d9';
+  ctx.beginPath();ctx.arc(px,py,12,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#fff';ctx.font='10px monospace';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText('JY',px,py);ctx.restore();
+  ctx.fillStyle='#4488ff';ctx.font='11px monospace';ctx.textAlign='center';ctx.fillText('EnvError',mx,my-100);
+}
+
+function update(dt){
+  t+=dt;
+  if(dashing){
+    dashT+=dt;dashTrail.push({x:mx,y:my});
+    if(dashTrail.length>20)dashTrail.shift();
+    mx+=dashVx*dt;my+=dashVy*dt;
+    mx=Math.max(30,Math.min(W-30,mx));my=Math.max(30,Math.min(H-30,my));
+    if(dashT>0.4){dashing=false;dashT=0;dashTrail=[];dashCD=3;}
+    return;
+  }
+  if(charging){
+    chargeT+=dt;if(chargeT>0.8)startDash();
+    return;
+  }
+  dashCD-=dt;
+  if(dashCD<=0){charging=true;chargeT=0;}
+  const dx=px-mx,dy=py-my,d=Math.sqrt(dx*dx+dy*dy);
+  if(d>65){mx+=dx/d*35*dt;my+=dy/d*35*dt;}
+}
+
+document.getElementById('btn').addEventListener('click',()=>{if(!dashing&&!charging){charging=true;chargeT=0;}});
+let last=0;
+function loop(ts){const dt=Math.min((ts-last)/1000,0.05);last=ts;update(dt);draw();requestAnimationFrame(loop);}
+requestAnimationFrame(loop);
+</script>
+</body></html>

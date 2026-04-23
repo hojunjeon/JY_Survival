@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>RaceCondition - Design 1 | JY Survival</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Orbitron:wght@700;900&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:#0f0010;color:#fff;font-family:'Space Mono',monospace;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;overflow:hidden}
+  h1{font-family:'Orbitron',sans-serif;font-size:1.9rem;color:#ff88cc;text-shadow:0 0 20px #ff88cc88;margin-bottom:4px;letter-spacing:3px}
+  .subtitle{color:#aa5577;font-size:.73rem;letter-spacing:3px;margin-bottom:20px}
+  .stage{width:420px;height:300px;background:#0f0010;border:2px solid #ff88cc44;border-radius:12px;overflow:hidden;box-shadow:0 0 40px #ff88cc22}
+  canvas{display:block}
+  .stats{display:flex;gap:14px;margin-top:14px;font-size:.7rem;color:#ccaacc}
+  .stat{background:#1a0018;border:1px solid #ff88cc33;border-radius:6px;padding:7px 12px;text-align:center}
+  .stat span{display:block;color:#ff88cc;font-size:1rem;font-weight:700;font-family:'Orbitron',sans-serif}
+  .special-box{margin-top:12px;width:420px;background:#1a0018;border:1px solid #ff88cc44;border-radius:8px;padding:12px 16px;font-size:.7rem;line-height:1.7;color:#ddbbcc}
+  .special-box h3{color:#ff88cc;font-family:'Orbitron',sans-serif;font-size:.78rem;margin-bottom:6px;letter-spacing:2px}
+  .btn{margin-top:10px;padding:9px 26px;background:#661133;color:#fff;font-family:'Space Mono',monospace;font-size:.78rem;border:none;border-radius:6px;cursor:pointer;letter-spacing:2px;box-shadow:0 0 16px #ff88cc33;transition:all .2s}
+  .btn:hover{background:#882244;transform:scale(1.05)}
+  .tag{display:inline-block;background:#ff88cc22;color:#ff88cc;font-size:.65rem;padding:2px 8px;border-radius:20px;border:1px solid #ff88cc55;margin-bottom:8px;letter-spacing:2px}
+</style>
+</head>
+<body>
+<p class="tag">DESIGN 1 / LINKED TWINS</p>
+<h1>RACE CONDITION</h1>
+<p class="subtitle">// 연결된 쌍둥이 · 하나가 죽으면 부활</p>
+<div class="stage"><canvas id="c" width="420" height="300"></canvas></div>
+<div class="stats">
+  <div class="stat">HP<span>30</span></div>
+  <div class="stat">SPD<span>70</span></div>
+  <div class="stat">DMG<span>10</span></div>
+  <div class="stat">TYPE<span style="font-size:.6rem">LINKED</span></div>
+</div>
+<div class="special-box">
+  <h3>🔗 SPECIAL: RESURRECTION LINK</h3>
+  두 개체가 붉은 데이터 선으로 연결됨. 한쪽이 죽으면 다른 쪽이 살아있는 경우 HP 회복하여 부활. 동시 처치 필요.
+</div>
+<button class="btn" id="btn">🔗 글리치 동기화</button>
+<script>
+const cv=document.getElementById('c'),ctx=cv.getContext('2d');
+const W=420,H=300;
+let t=0;
+const px=350,py=150;
+let glitching=false,glitchT=0;
+
+const mobs=[
+  {x:150,y:110,dead:false,hp:30,dyingT:0,id:'A',phase:0},
+  {x:180,y:200,dead:false,hp:30,dyingT:0,id:'B',phase:Math.PI},
+];
+
+function drawMob(m){
+  ctx.save();ctx.translate(m.x,m.y);
+  const alpha=m.dead?0.2:1;
+  const bob=Math.sin(t*3+m.phase)*4;
+  ctx.translate(0,bob);
+  ctx.globalAlpha=alpha;
+
+  // glow
+  if(!m.dead){
+    const glow=ctx.createRadialGradient(0,0,5,0,0,35);
+    glow.addColorStop(0,'rgba(255,100,180,0.2)');glow.addColorStop(1,'transparent');
+    ctx.fillStyle=glow;ctx.beginPath();ctx.arc(0,0,35,0,Math.PI*2);ctx.fill();
+  }
+
+  // body
+  const bg=ctx.createRadialGradient(-5,-5,3,0,0,24);
+  bg.addColorStop(0,'#ff99dd');bg.addColorStop(0.5,'#dd4488');bg.addColorStop(1,'#661133');
+  ctx.beginPath();
+  for(let i=0;i<=8;i++){
+    const a=i/8*Math.PI*2;
+    const wobble=1+Math.sin(t*4+a*2+m.phase)*0.08;
+    const r=22*wobble;
+    i===0?ctx.moveTo(Math.cos(a)*r,Math.sin(a)*r):ctx.lineTo(Math.cos(a)*r,Math.sin(a)*r);
+  }
+  ctx.closePath();ctx.fillStyle=bg;ctx.fill();
+  ctx.strokeStyle='#ff88cc';ctx.lineWidth=2;ctx.stroke();
+
+  // face
+  ctx.fillStyle='#fff';ctx.beginPath();ctx.ellipse(-7,-5,5,6,0,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.ellipse(7,-5,5,6,0,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#220011';ctx.beginPath();ctx.ellipse(-7,-5,3,4,0,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.ellipse(7,-5,3,4,0,0,Math.PI*2);ctx.fill();
+
+  // ID label
+  ctx.fillStyle='#ffbbee';ctx.font='bold 10px monospace';ctx.textAlign='center';
+  ctx.fillText(m.id,0,8);
+
+  // dying timer bar
+  if(m.dyingT>0){
+    const p=m.dyingT/1;
+    ctx.fillStyle='#330011';ctx.fillRect(-20,30,40,6);
+    ctx.fillStyle='#ff2244';ctx.fillRect(-20,30,40*p,6);
+  }
+  ctx.restore();
+}
+
+function draw(){
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='#0f0010';ctx.fillRect(0,0,W,H);
+
+  // connection line
+  const a=mobs[0],b=mobs[1];
+  if(!a.dead&&!b.dead){
+    ctx.save();
+    for(let s=0;s<3;s++){
+      ctx.globalAlpha=0.3-s*0.08;ctx.strokeStyle='#ff2244';
+      ctx.lineWidth=4-s*1.2;ctx.setLineDash([8,4]);
+      ctx.lineDashOffset=-t*40;ctx.beginPath();
+      ctx.moveTo(a.x,a.y);
+      ctx.bezierCurveTo(a.x,a.y-40,b.x,b.y+40,b.x,b.y);
+      ctx.stroke();
+    }
+    ctx.setLineDash([]);ctx.restore();
+    // sync pulse
+    const midX=(a.x+b.x)/2,midY=(a.y+b.y)/2;
+    ctx.fillStyle='#ff4466';ctx.font='8px monospace';ctx.textAlign='center';
+    ctx.fillText('SYNC',midX,midY-8);
+    ctx.fillText(t.toFixed(1)+'s',midX,midY+4);
+  }
+
+  mobs.forEach(drawMob);
+
+  // glitch effect
+  if(glitching){
+    ctx.save();ctx.globalAlpha=0.3;
+    for(let i=0;i<5;i++){
+      const gy=Math.random()*H;ctx.fillStyle='#ff88cc';
+      ctx.fillRect(Math.random()*W,gy,Math.random()*100,2);
+    }
+    ctx.restore();
+  }
+
+  ctx.save();ctx.globalAlpha=0.6;ctx.fillStyle='#4a90d9';
+  ctx.beginPath();ctx.arc(px,py,12,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#fff';ctx.font='10px monospace';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText('JY',px,py);ctx.restore();
+  ctx.fillStyle='#ff88cc';ctx.font='11px monospace';ctx.textAlign='center';ctx.fillText('RaceCondition × 2',260,30);
+}
+
+function update(dt){
+  t+=dt;
+  mobs.forEach(m=>{
+    if(m.dead)return;
+    const dx=px-m.x,dy=py-m.y,d=Math.sqrt(dx*dx+dy*dy);
+    if(d>60){m.x+=dx/d*70*dt;m.y+=dy/d*70*dt;}
+    m.x=Math.max(25,Math.min(W-25,m.x));m.y=Math.max(25,Math.min(H-25,m.y));
+  });
+  if(glitching){glitchT+=dt;if(glitchT>0.5){glitching=false;glitchT=0;}}
+}
+
+document.getElementById('btn').addEventListener('click',()=>{
+  glitching=true;glitchT=0;
+  // kill one, it comes back
+  const alive=mobs.filter(m=>!m.dead);
+  if(alive.length>0){
+    alive[0].dyingT=0.5;
+    setTimeout(()=>{alive[0].dyingT=0;alive[0].hp=30;},800);
+  }
+});
+
+let last=0;
+function loop(ts){const dt=Math.min((ts-last)/1000,0.05);last=ts;update(dt);draw();requestAnimationFrame(loop);}
+requestAnimationFrame(loop);
+</script>
+</body></html>

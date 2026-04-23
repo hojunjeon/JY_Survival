@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>SegFault - Design 2 | JY Survival</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Orbitron:wght@700;900&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:#080500;color:#fff;font-family:'Space Mono',monospace;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;overflow:hidden}
+  h1{font-family:'Orbitron',sans-serif;font-size:2rem;color:#ff8833;text-shadow:0 0 20px #ff883388;margin-bottom:4px;letter-spacing:4px}
+  .subtitle{color:#aa7733;font-size:.75rem;letter-spacing:3px;margin-bottom:20px}
+  .stage{width:420px;height:300px;background:#080500;border:2px solid #cc660044;border-radius:12px;overflow:hidden;box-shadow:0 0 40px #cc660033}
+  canvas{display:block}
+  .stats{display:flex;gap:16px;margin-top:14px;font-size:.7rem;color:#ccaa66}
+  .stat{background:#150c00;border:1px solid #cc660033;border-radius:6px;padding:7px 12px;text-align:center}
+  .stat span{display:block;color:#ff8833;font-size:1rem;font-weight:700;font-family:'Orbitron',sans-serif}
+  .special-box{margin-top:12px;width:420px;background:#150c00;border:1px solid #cc660044;border-radius:8px;padding:12px 16px;font-size:.7rem;line-height:1.7;color:#ddbb88}
+  .special-box h3{color:#ff8833;font-family:'Orbitron',sans-serif;font-size:.78rem;margin-bottom:6px;letter-spacing:2px}
+  .btn{margin-top:10px;padding:9px 26px;background:#663300;color:#fff;font-family:'Space Mono',monospace;font-size:.78rem;border:none;border-radius:6px;cursor:pointer;letter-spacing:2px;box-shadow:0 0 16px #cc660044;transition:all .2s}
+  .btn:hover{background:#885500;transform:scale(1.05)}
+  .tag{display:inline-block;background:#cc660022;color:#ff8833;font-size:.65rem;padding:2px 8px;border-radius:20px;border:1px solid #cc660055;margin-bottom:8px;letter-spacing:2px}
+</style>
+</head>
+<body>
+<p class="tag">DESIGN 2 / HEX MEMORY BLOCKS</p>
+<h1>SEG FAULT</h1>
+<p class="subtitle">// 16진수 메모리 블록 · 파편 분출</p>
+<div class="stage"><canvas id="c" width="420" height="300"></canvas></div>
+<div class="stats">
+  <div class="stat">HP<span>48</span></div>
+  <div class="stat">SPD<span>40</span></div>
+  <div class="stat">DMG<span>25</span></div>
+  <div class="stat">TYPE<span style="font-size:.6rem">HIGH DMG</span></div>
+</div>
+<div class="special-box">
+  <h3>💾 MEMORY FRAGMENT BURST</h3>
+  16진수 블록들이 방사형으로 분출. 느리지만 접촉 시 매우 높은 데미지. 블록 표면에 손상된 메모리 주소 표시.
+</div>
+<button class="btn" id="btn">💾 파편 분출</button>
+<script>
+const cv=document.getElementById('c'),ctx=cv.getContext('2d');
+const W=420,H=300;
+let t=0,mx=190,my=150;
+const px=350,py=150;
+let frags=[],orbs=[];
+
+const hexCols=['#884400','#aa5500','#cc6600','#ff7722','#553300'];
+
+function hex6(cx,cy,r,a=0){
+  ctx.beginPath();
+  for(let i=0;i<6;i++){const ang=Math.PI/3*i+a;ctx.lineTo(cx+r*Math.cos(ang),cy+r*Math.sin(ang));}
+  ctx.closePath();
+}
+
+// body hex layout
+const layout=[];
+const ring=[{q:0,r:0}];
+[[-1,0],[1,0],[0,-1],[0,1],[-1,1],[1,-1],[2,0],[-2,0],[0,2],[0,-2],[1,1],[-1,-1]].forEach(([q,r])=>ring.push({q,r}));
+ring.forEach(h=>{
+  const x=h.q*22+h.r*11, y=h.r*19;
+  layout.push({x,y,col:hexCols[Math.floor(Math.random()*hexCols.length)],
+    hex:'0x'+Math.floor(Math.random()*0xFF).toString(16).toUpperCase().padStart(2,'0'),
+    phase:Math.random()*Math.PI*2});
+});
+
+function burst(){
+  layout.forEach((h,i)=>{
+    const a=Math.atan2(h.y,h.x);
+    const spd=60+Math.random()*120;
+    frags.push({x:mx+h.x,y:my+h.y,vx:Math.cos(a)*spd,vy:Math.sin(a)*spd,life:1,col:h.col,size:10+Math.random()*6});
+  });
+}
+
+function draw(){
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='#080500';ctx.fillRect(0,0,W,H);
+  const glow=ctx.createRadialGradient(mx,my,10,mx,my,140);
+  glow.addColorStop(0,'rgba(180,80,0,0.07)');glow.addColorStop(1,'transparent');
+  ctx.fillStyle=glow;ctx.fillRect(0,0,W,H);
+
+  // body
+  const bob=Math.sin(t*1.8)*3;
+  layout.forEach(h=>{
+    const pulse=Math.sin(t*2.5+h.phase)*0.1;
+    const hx=mx+h.x, hy=my+h.y+bob;
+    hex6(hx,hy,11*(1+pulse),t*0.3);
+    ctx.fillStyle=h.col;ctx.fill();
+    ctx.strokeStyle='#ff880022';ctx.lineWidth=1;ctx.stroke();
+    ctx.globalAlpha=0.5;ctx.fillStyle='#ffcc88';ctx.font='5px monospace';ctx.textAlign='center';
+    ctx.fillText(h.hex,hx,hy+2);ctx.globalAlpha=1;
+  });
+
+  // core
+  hex6(mx,my+bob,16,t*0.5);
+  const cg=ctx.createRadialGradient(mx,my+bob,0,mx,my+bob,16);
+  cg.addColorStop(0,'#ffaa55');cg.addColorStop(1,'#cc4400');
+  ctx.fillStyle=cg;ctx.fill();
+  ctx.strokeStyle='#ff6600';ctx.lineWidth=2;ctx.stroke();
+  ctx.fillStyle='#fff';ctx.font='bold 9px monospace';ctx.textAlign='center';
+  ctx.fillText('SEG',mx,my+bob+3);
+
+  // frags
+  frags=frags.filter(f=>f.life>0);
+  frags.forEach(f=>{
+    f.x+=f.vx*0.016;f.y+=f.vy*0.016;f.vx*=0.97;f.vy*=0.97;f.life-=0.02;
+    ctx.globalAlpha=f.life;
+    hex6(f.x,f.y,f.size,t);ctx.fillStyle=f.col;ctx.fill();
+    ctx.globalAlpha=1;
+  });
+
+  // player
+  ctx.save();ctx.globalAlpha=0.6;ctx.fillStyle='#4a90d9';
+  ctx.beginPath();ctx.arc(px,py,12,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#fff';ctx.font='10px monospace';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText('JY',px,py);ctx.restore();
+  ctx.fillStyle='#ff8833';ctx.font='11px monospace';ctx.textAlign='center';ctx.fillText('SegFault',mx,my-120);
+}
+
+function update(dt){
+  t+=dt;
+  const dx=px-mx,dy=py-my,d=Math.sqrt(dx*dx+dy*dy);
+  if(d>65){mx+=dx/d*40*dt;my+=dy/d*40*dt;}
+}
+
+document.getElementById('btn').addEventListener('click',burst);
+let last=0;
+function loop(ts){const dt=Math.min((ts-last)/1000,0.05);last=ts;update(dt);draw();requestAnimationFrame(loop);}
+requestAnimationFrame(loop);
+</script>
+</body></html>

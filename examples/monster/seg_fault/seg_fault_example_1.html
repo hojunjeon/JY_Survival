@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>SegFault - Design 1 | JY Survival</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Orbitron:wght@700;900&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:#0a0600;color:#fff;font-family:'Space Mono',monospace;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;overflow:hidden}
+  h1{font-family:'Orbitron',sans-serif;font-size:2rem;color:#cc6600;text-shadow:0 0 20px #cc660088;margin-bottom:4px;letter-spacing:4px}
+  .subtitle{color:#aa7733;font-size:.75rem;letter-spacing:3px;margin-bottom:24px}
+  .stage{position:relative;width:420px;height:320px;background:#0a0600;border:2px solid #cc660044;border-radius:12px;overflow:hidden;box-shadow:0 0 40px #cc660033}
+  canvas{display:block}
+  .stats{display:flex;gap:20px;margin-top:16px;font-size:.72rem;color:#ccaa66}
+  .stat{background:#150c00;border:1px solid #cc660033;border-radius:6px;padding:8px 14px;text-align:center}
+  .stat span{display:block;color:#cc8833;font-size:1.1rem;font-weight:700;font-family:'Orbitron',sans-serif}
+  .special-box{margin-top:14px;width:420px;background:#150c00;border:1px solid #cc660044;border-radius:8px;padding:14px 18px;font-size:.72rem;line-height:1.7;color:#ddbb88}
+  .special-box h3{color:#cc8833;font-family:'Orbitron',sans-serif;font-size:.8rem;margin-bottom:6px;letter-spacing:2px}
+  .btn{margin-top:12px;padding:10px 28px;background:#663300;color:#fff;font-family:'Space Mono',monospace;font-size:.8rem;border:none;border-radius:6px;cursor:pointer;letter-spacing:2px;box-shadow:0 0 16px #cc660044;transition:all .2s}
+  .btn:hover{background:#885500;box-shadow:0 0 28px #cc6600aa;transform:scale(1.05)}
+  .tag{display:inline-block;background:#cc660022;color:#cc8833;font-size:.65rem;padding:2px 8px;border-radius:20px;border:1px solid #cc660055;margin-bottom:8px;letter-spacing:2px}
+</style>
+</head>
+<body>
+<p class="tag">DESIGN 1 / ROCK GOLEM</p>
+<h1>SEG FAULT</h1>
+<p class="subtitle">// 균열 암석 골렘 · 고데미지 · 지진 충격파</p>
+<div class="stage">
+  <canvas id="c" width="420" height="320"></canvas>
+</div>
+<div class="stats">
+  <div class="stat">HP<span>48</span></div>
+  <div class="stat">SPD<span>40</span></div>
+  <div class="stat">DMG<span>25</span></div>
+  <div class="stat">TYPE<span style="font-size:.65rem">CONTACT</span></div>
+</div>
+<div class="special-box">
+  <h3>🪨 SPECIAL: SEISMIC SLAM</h3>
+  지면을 강타하여 충격파를 방사. 느리지만 매우 높은 접촉 데미지. 균열에서 붉은 에너지 방출.<br>
+  <strong>특징:</strong> 갑옷처럼 겹친 암석 세그먼트 구조. 피격 시 균열이 생기고 붉은 빛이 새어나옴.
+</div>
+<button class="btn" id="btn">🪨 지진 충격파</button>
+
+<script>
+const cv=document.getElementById('c'),ctx=cv.getContext('2d');
+const W=420,H=320;
+let t=0,mx=180,my=170,slamming=false,slamT=0,shockwaves=[];
+const px=340,py=160;
+let cracks=[],crackPulse=0;
+
+// segments of the golem
+const segments=[
+  {ox:0,oy:-55,rx:30,ry:28,angle:0,isTorso:false,isHead:true},   // head
+  {ox:0,oy:-15,rx:38,ry:35,angle:0,isTorso:true,isHead:false},    // torso
+  {ox:-38,oy:-10,rx:14,ry:20,angle:-0.3,isTorso:false,isHead:false}, // left arm
+  {ox:38,oy:-10,rx:14,ry:20,angle:0.3,isTorso:false,isHead:false},  // right arm
+  {ox:-18,oy:30,rx:16,ry:25,angle:-0.1,isTorso:false,isHead:false}, // left leg
+  {ox:18,oy:30,rx:16,ry:25,angle:0.1,isTorso:false,isHead:false},   // right leg
+];
+
+for(let i=0;i<8;i++){
+  cracks.push({
+    x:-30+Math.random()*60,y:-40+Math.random()*80,
+    len:10+Math.random()*20,angle:Math.random()*Math.PI,
+    width:1+Math.random()*2
+  });
+}
+
+function drawGolem(x,y,scale){
+  ctx.save();
+  ctx.translate(x,y);
+  ctx.scale(scale,scale);
+  
+  // shadow
+  ctx.save();ctx.globalAlpha=0.3;
+  ctx.fillStyle='#000';
+  ctx.beginPath();ctx.ellipse(0,65,40,10,0,0,Math.PI*2);ctx.fill();
+  ctx.restore();
+
+  segments.forEach(seg=>{
+    ctx.save();
+    ctx.translate(seg.ox,seg.oy);
+    ctx.rotate(seg.angle);
+    
+    // dark outline
+    ctx.beginPath();ctx.ellipse(2,2,seg.rx+2,seg.ry+2,0,0,Math.PI*2);
+    ctx.fillStyle='#221100';ctx.fill();
+    
+    // rock body
+    const g=ctx.createRadialGradient(-seg.rx*0.3,-seg.ry*0.3,2,0,0,seg.rx);
+    g.addColorStop(0,'#cc8844');g.addColorStop(0.5,'#884400');g.addColorStop(1,'#442200');
+    ctx.beginPath();ctx.ellipse(0,0,seg.rx,seg.ry,0,0,Math.PI*2);
+    ctx.fillStyle=g;ctx.fill();
+    
+    // rock texture lines
+    ctx.strokeStyle='#663300';ctx.lineWidth=1.5;ctx.globalAlpha=0.6;
+    for(let i=0;i<3;i++){
+      ctx.beginPath();
+      ctx.moveTo(-seg.rx*0.8+i*seg.rx*0.5,-seg.ry*0.3);
+      ctx.lineTo(-seg.rx*0.6+i*seg.rx*0.5,seg.ry*0.4);
+      ctx.stroke();
+    }
+    ctx.globalAlpha=1;
+    
+    // crack glow
+    cracks.forEach(cr=>{
+      if(Math.abs(cr.x-seg.ox)<seg.rx&&Math.abs(cr.y-seg.oy)<seg.ry){
+        ctx.save();
+        ctx.globalAlpha=0.5+Math.sin(t*4+cr.x)*0.3;
+        ctx.strokeStyle='#ff3300';ctx.lineWidth=cr.width;ctx.lineCap='round';
+        ctx.beginPath();
+        ctx.moveTo(cr.x-seg.ox,cr.y-seg.oy);
+        ctx.lineTo(cr.x-seg.ox+Math.cos(cr.angle)*cr.len,cr.y-seg.oy+Math.sin(cr.angle)*cr.len);
+        ctx.stroke();
+        ctx.restore();
+      }
+    });
+    ctx.restore();
+  });
+
+  // eyes
+  ctx.save();ctx.translate(0,-55);
+  ctx.fillStyle='#ff3300';ctx.shadowColor='#ff3300';ctx.shadowBlur=8;
+  ctx.beginPath();ctx.ellipse(-10,-5,8,6,0,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.ellipse(10,-5,8,6,0,0,Math.PI*2);ctx.fill();
+  ctx.restore();
+
+  // SEGFAULT label on torso
+  ctx.save();ctx.translate(0,-15);
+  ctx.fillStyle='#ff550022';ctx.font='bold 8px monospace';ctx.textAlign='center';
+  ctx.fillText('SEGFAULT',0,5);ctx.restore();
+  
+  ctx.restore();
+}
+
+function draw(){
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='#0a0600';ctx.fillRect(0,0,W,H);
+
+  // ground dust
+  const dust=ctx.createRadialGradient(mx,H-10,0,mx,H-10,80);
+  dust.addColorStop(0,'#884400');dust.addColorStop(1,'transparent');
+  ctx.globalAlpha=0.08+Math.sin(t)*0.02;
+  ctx.fillStyle=dust;ctx.fillRect(0,0,W,H);ctx.globalAlpha=1;
+
+  // shockwaves
+  shockwaves=shockwaves.filter(s=>s.life>0);
+  shockwaves.forEach(s=>{
+    s.r+=s.speed;s.life-=0.025;
+    ctx.save();ctx.globalAlpha=s.life*0.6;
+    ctx.strokeStyle='#ff6600';ctx.lineWidth=3*s.life;
+    ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.stroke();
+    ctx.globalAlpha=s.life*0.2;
+    ctx.strokeStyle='#ff9900';ctx.lineWidth=1;
+    ctx.beginPath();ctx.ellipse(s.x,s.y,s.r,s.r*0.3,0,0,Math.PI*2);ctx.stroke();
+    ctx.restore();
+  });
+
+  const bob=slamming?0:Math.sin(t*1.5)*3;
+  const squish=slamming?1.15:1;
+  ctx.save();ctx.translate(mx,my+bob);ctx.scale(1,squish);
+  drawGolem(0,0,1);ctx.restore();
+
+  // player
+  ctx.save();ctx.globalAlpha=0.6;ctx.fillStyle='#4a90d9';
+  ctx.beginPath();ctx.arc(px,py,12,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#fff';ctx.font='10px monospace';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText('JY',px,py);ctx.restore();
+
+  ctx.fillStyle='#cc8833';ctx.font='11px monospace';ctx.textAlign='center';
+  ctx.fillText('SegFault',mx,my-110);
+}
+
+function update(dt){
+  t+=dt;
+  if(slamming){
+    slamT+=dt;
+    if(slamT>0.4){
+      slamming=false;slamT=0;
+      for(let i=0;i<4;i++){
+        shockwaves.push({x:mx,y:my+60,r:5,speed:120+i*30,life:1});
+      }
+    }
+    return;
+  }
+  const dx=px-mx,dy=py-my,dist=Math.sqrt(dx*dx+dy*dy);
+  if(dist>65){mx+=dx/dist*40*dt;my+=dy/dist*40*dt;}
+}
+
+document.getElementById('btn').addEventListener('click',()=>{
+  if(slamming)return;
+  slamming=true;slamT=0;
+});
+
+let last=0;
+function loop(ts){const dt=Math.min((ts-last)/1000,0.05);last=ts;update(dt);draw();requestAnimationFrame(loop);}
+requestAnimationFrame(loop);
+</script>
+</body></html>

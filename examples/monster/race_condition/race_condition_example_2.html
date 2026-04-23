@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>RaceCondition - Design 2 | JY Survival</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Orbitron:wght@700;900&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:#0f0010;color:#fff;font-family:'Space Mono',monospace;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;overflow:hidden}
+  h1{font-family:'Orbitron',sans-serif;font-size:1.9rem;color:#ee66bb;text-shadow:0 0 20px #ee66bb88;margin-bottom:4px;letter-spacing:3px}
+  .subtitle{color:#882255;font-size:.73rem;letter-spacing:3px;margin-bottom:20px}
+  .stage{width:420px;height:300px;background:#0f0010;border:2px solid #ee66bb44;border-radius:12px;overflow:hidden;box-shadow:0 0 40px #ee66bb22}
+  canvas{display:block}
+  .stats{display:flex;gap:14px;margin-top:14px;font-size:.7rem;color:#ccaacc}
+  .stat{background:#1a0018;border:1px solid #ee66bb33;border-radius:6px;padding:7px 12px;text-align:center}
+  .stat span{display:block;color:#ee66bb;font-size:1rem;font-weight:700;font-family:'Orbitron',sans-serif}
+  .special-box{margin-top:12px;width:420px;background:#1a0018;border:1px solid #ee66bb44;border-radius:8px;padding:12px 16px;font-size:.7rem;line-height:1.7;color:#ddbbcc}
+  .special-box h3{color:#ee66bb;font-family:'Orbitron',sans-serif;font-size:.78rem;margin-bottom:6px;letter-spacing:2px}
+  .btn{margin-top:10px;padding:9px 26px;background:#551133;color:#fff;font-family:'Space Mono',monospace;font-size:.78rem;border:none;border-radius:6px;cursor:pointer;letter-spacing:2px;box-shadow:0 0 16px #ee66bb33;transition:all .2s}
+  .btn:hover{background:#772244;transform:scale(1.05)}
+  .tag{display:inline-block;background:#ee66bb22;color:#ee66bb;font-size:.65rem;padding:2px 8px;border-radius:20px;border:1px solid #ee66bb55;margin-bottom:8px;letter-spacing:2px}
+</style>
+</head>
+<body>
+<p class="tag">DESIGN 2 / SHADOW MIRROR</p>
+<h1>RACE CONDITION</h1>
+<p class="subtitle">// 그림자 거울쌍 · 동기화 붕괴</p>
+<div class="stage"><canvas id="c" width="420" height="300"></canvas></div>
+<div class="stats">
+  <div class="stat">HP<span>30</span></div>
+  <div class="stat">SPD<span>70</span></div>
+  <div class="stat">DMG<span>10</span></div>
+  <div class="stat">TYPE<span style="font-size:.6rem">LINKED</span></div>
+</div>
+<div class="special-box">
+  <h3>👥 SPECIAL: DESYNC BURST</h3>
+  실체와 그림자가 동기화됐다 어긋나기를 반복. 동기화 깨짐 순간 주변에 글리치 파동 방출. 동시 처치 필요.
+</div>
+<button class="btn" id="btn">👥 동기화 붕괴</button>
+<script>
+const cv=document.getElementById('c'),ctx=cv.getContext('2d');
+const W=420,H=300;
+let t=0,mx=200,my=150,syncOff=0,desyncing=false,desyncT=0;
+const px=350,py=150;
+let waves=[];
+
+function drawEntity(x,y,shadow,offset){
+  ctx.save();ctx.translate(x+offset,y+offset*0.5);
+  if(shadow){ctx.globalAlpha=0.45;ctx.filter='hue-rotate(40deg) brightness(0.6)';}
+
+  // body - diamond shape
+  const sz=28+Math.sin(t*3+offset)*3;
+  ctx.beginPath();ctx.moveTo(0,-sz);ctx.lineTo(sz*0.7,0);ctx.lineTo(0,sz*0.6);ctx.lineTo(-sz*0.7,0);ctx.closePath();
+  const bg=ctx.createRadialGradient(0,0,3,0,0,sz);
+  if(shadow){
+    bg.addColorStop(0,'#cc2266');bg.addColorStop(1,'#330011');
+  } else {
+    bg.addColorStop(0,'#ff99dd');bg.addColorStop(0.5,'#cc3388');bg.addColorStop(1,'#660022');
+  }
+  ctx.fillStyle=bg;ctx.fill();
+  ctx.strokeStyle=shadow?'#881133':'#ff88cc';ctx.lineWidth=2;ctx.stroke();
+
+  // inner diamond
+  const is=sz*0.45;
+  ctx.beginPath();ctx.moveTo(0,-is);ctx.lineTo(is*0.7,0);ctx.lineTo(0,is*0.6);ctx.lineTo(-is*0.7,0);ctx.closePath();
+  ctx.strokeStyle=shadow?'#cc2244':'#ffaadd';ctx.lineWidth=1;ctx.globalAlpha*=0.5;ctx.stroke();ctx.globalAlpha=shadow?0.45:1;
+
+  // eyes
+  ctx.fillStyle=shadow?'#440011':'#fff';
+  ctx.beginPath();ctx.ellipse(-8,-4,5,6,0,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.ellipse(8,-4,5,6,0,0,Math.PI*2);ctx.fill();
+  if(!shadow){
+    ctx.fillStyle='#110006';
+    ctx.beginPath();ctx.ellipse(-8,-4,3,4,0,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.ellipse(8,-4,3,4,0,0,Math.PI*2);ctx.fill();
+  }
+
+  // status chip
+  ctx.globalAlpha=shadow?0.35:1;
+  ctx.fillStyle=shadow?'#661133':'#ffbbee';ctx.font='7px monospace';ctx.textAlign='center';
+  ctx.fillText(shadow?'SHADOW':'REAL',0,sz*0.2);
+  ctx.restore();
+}
+
+function draw(){
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='#0f0010';ctx.fillRect(0,0,W,H);
+  const glow=ctx.createRadialGradient(mx,my,10,mx,my,140);
+  glow.addColorStop(0,'rgba(238,102,187,0.08)');glow.addColorStop(1,'transparent');
+  ctx.fillStyle=glow;ctx.fillRect(0,0,W,H);
+
+  // desync waves
+  waves=waves.filter(w=>w.life>0);
+  waves.forEach(w=>{
+    w.r+=150*0.016;w.life-=0.025;
+    ctx.save();ctx.globalAlpha=w.life*0.5;ctx.strokeStyle='#ff44aa';ctx.lineWidth=2;
+    ctx.setLineDash([6,4]);ctx.beginPath();ctx.arc(w.x,w.y,w.r,0,Math.PI*2);ctx.stroke();
+    ctx.setLineDash([]);ctx.restore();
+  });
+
+  // shadow entity (offset by syncOff)
+  drawEntity(mx,my,true,syncOff*0.8);
+
+  // real entity
+  drawEntity(mx,my,false,0);
+
+  // sync status
+  const synced=Math.abs(syncOff)<2;
+  ctx.fillStyle=synced?'#44ff88':'#ff4466';
+  ctx.font='9px monospace';ctx.textAlign='center';
+  ctx.fillText(synced?'◉ SYNCED':'◎ DESYNCED',mx,my-70);
+
+  // connection beam
+  if(!synced){
+    ctx.save();ctx.globalAlpha=0.3;ctx.strokeStyle='#ff2244';ctx.lineWidth=3;ctx.setLineDash([4,4]);
+    ctx.lineDashOffset=-t*20;
+    ctx.beginPath();ctx.moveTo(mx,my);ctx.lineTo(mx+syncOff*0.8,my+syncOff*0.4);ctx.stroke();
+    ctx.setLineDash([]);ctx.restore();
+  }
+
+  ctx.save();ctx.globalAlpha=0.6;ctx.fillStyle='#4a90d9';
+  ctx.beginPath();ctx.arc(px,py,12,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#fff';ctx.font='10px monospace';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText('JY',px,py);ctx.restore();
+  ctx.fillStyle='#ee66bb';ctx.font='11px monospace';ctx.textAlign='center';ctx.fillText('RaceCondition',mx,my-90);
+}
+
+function update(dt){
+  t+=dt;
+  const dx=px-mx,dy=py-my,d=Math.sqrt(dx*dx+dy*dy);
+  if(d>65){mx+=dx/d*70*dt;my+=dy/d*70*dt;}
+  // natural sync drift
+  syncOff=Math.sin(t*0.8)*15;
+  if(desyncing){
+    desyncT+=dt;
+    syncOff=50*Math.sin(desyncT*8)*Math.exp(-desyncT*2);
+    if(desyncT>1.5){desyncing=false;desyncT=0;}
+  }
+}
+
+document.getElementById('btn').addEventListener('click',()=>{
+  desyncing=true;desyncT=0;
+  waves.push({x:mx,y:my,r:5,life:1});
+  waves.push({x:mx+syncOff,y:my,r:5,life:0.8});
+});
+
+let last=0;
+function loop(ts){const dt=Math.min((ts-last)/1000,0.05);last=ts;update(dt);draw();requestAnimationFrame(loop);}
+requestAnimationFrame(loop);
+</script>
+</body></html>

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>MemoryLeak - Design 2 | JY Survival</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Orbitron:wght@700;900&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:#030d04;color:#fff;font-family:'Space Mono',monospace;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;overflow:hidden}
+  h1{font-family:'Orbitron',sans-serif;font-size:2rem;color:#33ff66;text-shadow:0 0 20px #33ff6688;margin-bottom:4px;letter-spacing:4px}
+  .subtitle{color:#225533;font-size:.75rem;letter-spacing:3px;margin-bottom:20px}
+  .stage{width:420px;height:300px;background:#030d04;border:2px solid #33ff6644;border-radius:12px;overflow:hidden;box-shadow:0 0 40px #33ff6622}
+  canvas{display:block}
+  .stats{display:flex;gap:14px;margin-top:14px;font-size:.7rem;color:#88ccaa}
+  .stat{background:#081508;border:1px solid #33ff6633;border-radius:6px;padding:7px 12px;text-align:center}
+  .stat span{display:block;color:#33ff66;font-size:1rem;font-weight:700;font-family:'Orbitron',sans-serif}
+  .special-box{margin-top:12px;width:420px;background:#081508;border:1px solid #33ff6644;border-radius:8px;padding:12px 16px;font-size:.7rem;line-height:1.7;color:#aaddbb}
+  .special-box h3{color:#33ff66;font-family:'Orbitron',sans-serif;font-size:.78rem;margin-bottom:6px;letter-spacing:2px}
+  .btn{margin-top:10px;padding:9px 26px;background:#0d3318;color:#fff;font-family:'Space Mono',monospace;font-size:.78rem;border:none;border-radius:6px;cursor:pointer;letter-spacing:2px;box-shadow:0 0 16px #33ff6633;transition:all .2s}
+  .btn:hover{background:#1a4422;transform:scale(1.05)}
+  .tag{display:inline-block;background:#33ff6622;color:#33ff66;font-size:.65rem;padding:2px 8px;border-radius:20px;border:1px solid #33ff6655;margin-bottom:8px;letter-spacing:2px}
+</style>
+</head>
+<body>
+<p class="tag">DESIGN 2 / BLOB VORTEX</p>
+<h1>MEMORY LEAK</h1>
+<p class="subtitle">// 소용돌이 메모리 · 흡수하며 팽창</p>
+<div class="stage"><canvas id="c" width="420" height="300"></canvas></div>
+<div class="stats">
+  <div class="stat">HP<span>20</span></div>
+  <div class="stat">SPD<span>40</span></div>
+  <div class="stat">DMG<span>12</span></div>
+  <div class="stat">TYPE<span style="font-size:.6rem">GROWING</span></div>
+</div>
+<div class="special-box">
+  <h3>🌀 SPECIAL: VORTEX ABSORB</h3>
+  소용돌이 패턴으로 주변 메모리 조각들을 빨아들이며 팽창. 최대 크기 시 폭발적 가비지 분출 후 초기화.
+</div>
+<button class="btn" id="btn">🌀 소용돌이 흡수</button>
+<script>
+const cv=document.getElementById('c'),ctx=cv.getContext('2d');
+const W=420,H=300;
+let t=0,mx=200,my=155,scale=1,growT=0;
+const px=350,py=155;
+let debris=[],vortexAngle=0,exploding=false,explodeT=0,explodeParticles=[];
+
+function spawnDebris(){
+  const a=Math.random()*Math.PI*2,r=100+Math.random()*100;
+  debris.push({x:mx+Math.cos(a)*r,y:my+Math.sin(a)*r,angle:a,orbitR:r,speed:0.5+Math.random(),size:5+Math.random()*10,col:`hsl(${120+Math.random()*40},80%,${40+Math.random()*20}%)`,text:Math.random()<0.5?'GC':'free'});
+}
+for(let i=0;i<12;i++)spawnDebris();
+
+function explode(){
+  exploding=true;explodeT=0;
+  for(let i=0;i<30;i++){
+    const a=Math.random()*Math.PI*2,spd=80+Math.random()*180;
+    explodeParticles.push({x:mx,y:my,vx:Math.cos(a)*spd,vy:Math.sin(a)*spd,life:1.5,col:`hsl(${100+Math.random()*60},100%,60%)`,size:4+Math.random()*8});
+  }
+  scale=1;debris=[];for(let i=0;i<12;i++)spawnDebris();
+}
+
+function draw(){
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='#030d04';ctx.fillRect(0,0,W,H);
+  const glow=ctx.createRadialGradient(mx,my,10,mx,my,140);
+  glow.addColorStop(0,`rgba(50,255,100,${0.05+scale*0.03})`);glow.addColorStop(1,'transparent');
+  ctx.fillStyle=glow;ctx.fillRect(0,0,W,H);
+
+  // orbit rings
+  for(let i=1;i<=3;i++){
+    ctx.save();ctx.globalAlpha=0.08*i;ctx.strokeStyle='#33ff66';ctx.lineWidth=1;
+    ctx.setLineDash([4,6]);ctx.lineDashOffset=-t*20*i;
+    ctx.beginPath();ctx.arc(mx,my,40*scale*i,0,Math.PI*2);ctx.stroke();
+    ctx.setLineDash([]);ctx.restore();
+  }
+
+  // debris orbiting
+  debris.forEach(d=>{
+    d.angle+=d.speed*0.016*(2/d.orbitR*50);
+    d.orbitR=Math.max(d.orbitR-0.3,35*scale);
+    d.x=mx+Math.cos(d.angle)*d.orbitR;
+    d.y=my+Math.sin(d.angle)*d.orbitR;
+    if(d.orbitR<=36*scale){
+      debris.splice(debris.indexOf(d),1);
+      if(scale<3)scale=Math.min(3,scale+0.05);
+      return;
+    }
+    ctx.save();ctx.globalAlpha=0.8;ctx.fillStyle=d.col;
+    ctx.beginPath();ctx.arc(d.x,d.y,d.size/2,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#ccffdd';ctx.font='6px monospace';ctx.textAlign='center';
+    ctx.fillText(d.text,d.x,d.y+d.size/2+6);ctx.restore();
+  });
+
+  // explosion particles
+  explodeParticles=explodeParticles.filter(p=>p.life>0);
+  explodeParticles.forEach(p=>{
+    p.x+=p.vx*0.016;p.y+=p.vy*0.016;p.vx*=0.95;p.vy*=0.95;p.life-=0.02;
+    ctx.globalAlpha=p.life;ctx.fillStyle=p.col;
+    ctx.beginPath();ctx.arc(p.x,p.y,p.size,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
+  });
+
+  if(!exploding){
+    // main vortex body
+    const r=32*scale;
+    ctx.save();ctx.translate(mx,my);
+    // outer swirl rings
+    for(let i=0;i<4;i++){
+      const ring_r=r*(0.6+i*0.15);
+      const ring_a=vortexAngle+i*Math.PI/2;
+      ctx.save();ctx.rotate(ring_a);
+      ctx.strokeStyle=`hsla(${130+i*15},80%,55%,${0.4-i*0.07})`;ctx.lineWidth=(4-i)*scale*0.5;
+      ctx.beginPath();ctx.arc(0,0,ring_r,0,Math.PI*1.6);ctx.stroke();ctx.restore();
+    }
+    // core blob
+    ctx.beginPath();
+    for(let i=0;i<=12;i++){
+      const a=i/12*Math.PI*2+vortexAngle*0.2;
+      const wr=r*(0.9+Math.sin(t*6+i)*0.1);
+      i===0?ctx.moveTo(Math.cos(a)*wr,Math.sin(a)*wr):ctx.lineTo(Math.cos(a)*wr,Math.sin(a)*wr);
+    }
+    ctx.closePath();
+    const cg=ctx.createRadialGradient(0,0,r*0.1,0,0,r);
+    cg.addColorStop(0,'#aaffcc');cg.addColorStop(0.4,'#22bb44');cg.addColorStop(1,'#0a3315');
+    ctx.fillStyle=cg;ctx.fill();
+    ctx.strokeStyle='#66ff88';ctx.lineWidth=2;ctx.stroke();
+    // scale bar
+    ctx.fillStyle='#aaffcc';ctx.font=`${Math.max(8,10/scale)}px monospace`;ctx.textAlign='center';
+    ctx.fillText(`MEM: ${Math.round(scale*100)}%`,0,0);
+    ctx.restore();
+
+    // eyes
+    const ex=mx,ey=my-8*scale;
+    ctx.fillStyle='#002211';
+    ctx.beginPath();ctx.ellipse(ex-12*scale,ey,7*scale,8*scale,0,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.ellipse(ex+12*scale,ey,7*scale,8*scale,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#44ff66';
+    ctx.beginPath();ctx.ellipse(ex-12*scale,ey,4*scale,5*scale,0,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.ellipse(ex+12*scale,ey,4*scale,5*scale,0,0,Math.PI*2);ctx.fill();
+  }
+
+  ctx.save();ctx.globalAlpha=0.6;ctx.fillStyle='#4a90d9';
+  ctx.beginPath();ctx.arc(px,py,12,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#fff';ctx.font='10px monospace';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText('JY',px,py);ctx.restore();
+  ctx.fillStyle='#33ff66';ctx.font='11px monospace';ctx.textAlign='center';ctx.fillText('MemoryLeak',mx,my-100*scale);
+}
+
+function update(dt){
+  t+=dt;vortexAngle+=dt*2;
+  if(exploding){explodeT+=dt;if(explodeT>1){exploding=false;}}
+  growT+=dt;if(growT>=3&&!exploding){growT=0;if(scale>=3){explode();}else{scale=Math.min(3,scale+0.3);}}
+  if(debris.length<6&&!exploding)spawnDebris();
+  const dx=px-mx,dy=py-my,d=Math.sqrt(dx*dx+dy*dy);
+  if(d>65){mx+=dx/d*40*dt;my+=dy/d*40*dt;}
+}
+
+document.getElementById('btn').addEventListener('click',()=>{
+  if(!exploding){if(scale>=2.5)explode();else{scale=Math.min(3,scale+0.3);spawnDebris();}}
+});
+let last=0;
+function loop(ts){const dt=Math.min((ts-last)/1000,0.05);last=ts;update(dt);draw();requestAnimationFrame(loop);}
+requestAnimationFrame(loop);
+</script>
+</body></html>

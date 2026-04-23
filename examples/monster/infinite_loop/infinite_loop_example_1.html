@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>InfiniteLoop - Design 1 | JY Survival</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Orbitron:wght@700;900&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:#000d00;color:#fff;font-family:'Space Mono',monospace;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;overflow:hidden}
+  h1{font-family:'Orbitron',sans-serif;font-size:2rem;color:#00ff44;text-shadow:0 0 20px #00ff4488;margin-bottom:4px;letter-spacing:4px}
+  .subtitle{color:#226633;font-size:.75rem;letter-spacing:3px;margin-bottom:20px}
+  .stage{width:420px;height:300px;background:#000d00;border:2px solid #00ff4444;border-radius:12px;overflow:hidden;box-shadow:0 0 40px #00ff4422}
+  canvas{display:block}
+  .stats{display:flex;gap:14px;margin-top:14px;font-size:.7rem;color:#88ccaa}
+  .stat{background:#001800;border:1px solid #00ff4433;border-radius:6px;padding:7px 12px;text-align:center}
+  .stat span{display:block;color:#00ff44;font-size:1rem;font-weight:700;font-family:'Orbitron',sans-serif}
+  .special-box{margin-top:12px;width:420px;background:#001800;border:1px solid #00ff4444;border-radius:8px;padding:12px 16px;font-size:.7rem;line-height:1.7;color:#aaddbb}
+  .special-box h3{color:#00ff44;font-family:'Orbitron',sans-serif;font-size:.78rem;margin-bottom:6px;letter-spacing:2px}
+  .btn{margin-top:10px;padding:9px 26px;background:#003311;color:#fff;font-family:'Space Mono',monospace;font-size:.78rem;border:none;border-radius:6px;cursor:pointer;letter-spacing:2px;box-shadow:0 0 16px #00ff4433;transition:all .2s}
+  .btn:hover{background:#005522;transform:scale(1.05)}
+  .tag{display:inline-block;background:#00ff4422;color:#00ff44;font-size:.65rem;padding:2px 8px;border-radius:20px;border:1px solid #00ff4455;margin-bottom:8px;letter-spacing:2px}
+</style>
+</head>
+<body>
+<p class="tag">DESIGN 1 / MATRIX LOOP RING</p>
+<h1>INFINITE LOOP</h1>
+<p class="subtitle">// 매트릭스 루프 링 · 공전 + 코드월 발사</p>
+<div class="stage"><canvas id="c" width="420" height="300"></canvas></div>
+<div class="stats">
+  <div class="stat">HP<span>35</span></div>
+  <div class="stat">SPD<span>orbit</span></div>
+  <div class="stat">DMG<span>8</span></div>
+  <div class="stat">TYPE<span style="font-size:.6rem">ORBITER</span></div>
+</div>
+<div class="special-box">
+  <h3>∞ SPECIAL: CODE WALL</h3>
+  플레이어 주위 180px 반경을 0.8rad/s 속도로 공전. 2초마다 코드월 투사체 발사. 맞으면 코드 블록이 플레이어 주변을 가로막음.
+</div>
+<button class="btn" id="btn">∞ 코드월 발사</button>
+<script>
+const cv=document.getElementById('c'),ctx=cv.getContext('2d');
+const W=420,H=300;
+let t=0,angle=0;
+const px=280,py=150; // player center
+let codeWalls=[],matrixDrops=[];
+let shotCD=2;
+
+// Matrix rain
+for(let i=0;i<20;i++){
+  matrixDrops.push({x:Math.random()*W,y:Math.random()*H,speed:60+Math.random()*80,chars:[]});
+}
+const CHARS='while(){};for(){}∞∞{}[];';
+
+function fireCodeWall(){
+  const mx=px+Math.cos(angle)*180, my=py+Math.sin(angle)*180;
+  const dx=px-mx,dy=py-my,d=Math.sqrt(dx*dx+dy*dy)||1;
+  codeWalls.push({x:mx,y:my,vx:dx/d*120,vy:dy/d*120,life:2,angle:Math.atan2(dy,dx)});
+}
+
+function drawMonster(x,y){
+  ctx.save();ctx.translate(x,y);
+
+  // outer rotating ring
+  for(let i=0;i<12;i++){
+    const a=i/12*Math.PI*2+t*1.5;
+    const rx=Math.cos(a)*28,ry=Math.sin(a)*28;
+    ctx.fillStyle=`hsl(${120+i*5},100%,${50+Math.sin(t*4+i)*15}%)`;
+    ctx.beginPath();ctx.arc(rx,ry,4,0,Math.PI*2);ctx.fill();
+  }
+
+  // inner body - loop symbol ∞
+  ctx.fillStyle='#003300';ctx.strokeStyle='#00ff44';ctx.lineWidth=3;
+  ctx.beginPath();ctx.arc(0,0,18,0,Math.PI*2);ctx.fill();ctx.stroke();
+
+  // ∞ symbol
+  ctx.fillStyle='#00ff44';ctx.font='bold 16px monospace';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.shadowColor='#00ff44';ctx.shadowBlur=10;
+  ctx.fillText('∞',0,0);ctx.shadowBlur=0;
+
+  // inner glow
+  const ig=ctx.createRadialGradient(0,0,0,0,0,18);
+  ig.addColorStop(0,'rgba(0,255,68,0.2)');ig.addColorStop(1,'transparent');
+  ctx.fillStyle=ig;ctx.beginPath();ctx.arc(0,0,18,0,Math.PI*2);ctx.fill();
+
+  // orbit trail (arc)
+  ctx.save();ctx.globalAlpha=0.15;ctx.strokeStyle='#00ff44';ctx.lineWidth=2;ctx.setLineDash([4,6]);
+  ctx.beginPath();ctx.arc(0,0,0,0,Math.PI*2); // will be drawn relative to player
+  ctx.restore();
+
+  ctx.restore();
+}
+
+function draw(){
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='#000d00';ctx.fillRect(0,0,W,H);
+
+  // matrix rain
+  ctx.font='9px monospace';
+  matrixDrops.forEach(d=>{
+    d.y+=d.speed*0.016;
+    if(d.y>H){d.y=-20;d.x=Math.random()*W;}
+    const ch=CHARS[Math.floor(Math.random()*CHARS.length)];
+    ctx.globalAlpha=0.12;ctx.fillStyle='#00ff44';ctx.fillText(ch,d.x,d.y);
+    ctx.globalAlpha=0.05;ctx.fillStyle='#00ff44';ctx.fillText(ch,d.x,d.y-12);
+    ctx.globalAlpha=1;
+  });
+
+  // orbit path
+  ctx.save();ctx.globalAlpha=0.1;ctx.strokeStyle='#00ff44';ctx.lineWidth=1;ctx.setLineDash([6,8]);
+  ctx.beginPath();ctx.arc(px,py,180,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);ctx.restore();
+
+  // code walls
+  codeWalls=codeWalls.filter(c=>c.life>0);
+  codeWalls.forEach(c=>{
+    c.x+=c.vx*0.016;c.y+=c.vy*0.016;c.life-=0.02;
+    ctx.save();ctx.globalAlpha=c.life;ctx.translate(c.x,c.y);ctx.rotate(c.angle);
+    ctx.fillStyle='#003300';ctx.strokeStyle='#00ff44';ctx.lineWidth=1.5;
+    ctx.fillRect(-28,-10,56,20);ctx.strokeRect(-28,-10,56,20);
+    ctx.fillStyle='#00ff88';ctx.font='7px monospace';ctx.textAlign='center';
+    ctx.fillText('while(true){}',0,4);ctx.restore();
+  });
+
+  // monster on orbit
+  const mx=px+Math.cos(angle)*180, my=py+Math.sin(angle)*180;
+  drawMonster(mx,my);
+
+  // player
+  ctx.save();ctx.fillStyle='#4a90d9';ctx.globalAlpha=0.7;
+  ctx.beginPath();ctx.arc(px,py,12,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#fff';ctx.font='10px monospace';ctx.textAlign='center';ctx.textBaseline='middle';ctx.globalAlpha=1;
+  ctx.fillText('JY',px,py);ctx.restore();
+
+  // angle indicator
+  ctx.fillStyle='#00ff4466';ctx.font='9px monospace';ctx.textAlign='center';
+  ctx.fillText(`orbit: ${(angle%(Math.PI*2)*(180/Math.PI)).toFixed(0)}°`,px,py-25);
+  ctx.fillStyle='#00ff44';ctx.font='11px monospace';ctx.fillText('InfiniteLoop',mx,my-45);
+}
+
+function update(dt){
+  t+=dt;
+  angle+=0.8*dt;
+  shotCD-=dt;if(shotCD<=0){fireCodeWall();shotCD=2;}
+}
+
+document.getElementById('btn').addEventListener('click',()=>{fireCodeWall();shotCD=2;});
+let last=0;
+function loop(ts){const dt=Math.min((ts-last)/1000,0.05);last=ts;update(dt);draw();requestAnimationFrame(loop);}
+requestAnimationFrame(loop);
+</script>
+</body></html>

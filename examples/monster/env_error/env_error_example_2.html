@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>EnvError - Design 2 | JY Survival</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Orbitron:wght@700;900&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:#00060f;color:#fff;font-family:'Space Mono',monospace;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;overflow:hidden}
+  h1{font-family:'Orbitron',sans-serif;font-size:2rem;color:#66aaff;text-shadow:0 0 20px #66aaff88;margin-bottom:4px;letter-spacing:4px}
+  .subtitle{color:#335577;font-size:.75rem;letter-spacing:3px;margin-bottom:20px}
+  .stage{width:420px;height:300px;background:#00060f;border:2px solid #66aaff44;border-radius:12px;overflow:hidden;box-shadow:0 0 40px #66aaff22}
+  canvas{display:block}
+  .stats{display:flex;gap:14px;margin-top:14px;font-size:.7rem;color:#88aabb}
+  .stat{background:#000e1a;border:1px solid #66aaff33;border-radius:6px;padding:7px 12px;text-align:center}
+  .stat span{display:block;color:#66aaff;font-size:1rem;font-weight:700;font-family:'Orbitron',sans-serif}
+  .special-box{margin-top:12px;width:420px;background:#000e1a;border:1px solid #66aaff44;border-radius:8px;padding:12px 16px;font-size:.7rem;line-height:1.7;color:#aabbdd}
+  .special-box h3{color:#66aaff;font-family:'Orbitron',sans-serif;font-size:.78rem;margin-bottom:6px;letter-spacing:2px}
+  .btn{margin-top:10px;padding:9px 26px;background:#113355;color:#fff;font-family:'Space Mono',monospace;font-size:.78rem;border:none;border-radius:6px;cursor:pointer;letter-spacing:2px;box-shadow:0 0 16px #66aaff33;transition:all .2s}
+  .btn:hover{background:#224466;transform:scale(1.05)}
+  .tag{display:inline-block;background:#66aaff22;color:#66aaff;font-size:.65rem;padding:2px 8px;border-radius:20px;border:1px solid #66aaff55;margin-bottom:8px;letter-spacing:2px}
+</style>
+</head>
+<body>
+<p class="tag">DESIGN 2 / BROKEN TERMINAL</p>
+<h1>ENV ERROR</h1>
+<p class="subtitle">// 고장난 터미널 크리처 · .env 오염</p>
+<div class="stage"><canvas id="c" width="420" height="300"></canvas></div>
+<div class="stats">
+  <div class="stat">HP<span>48</span></div>
+  <div class="stat">SPD<span>35→400</span></div>
+  <div class="stat">DMG<span>15</span></div>
+  <div class="stat">TYPE<span style="font-size:.6rem">DASHER</span></div>
+</div>
+<div class="special-box">
+  <h3>💻 SPECIAL: TERMINAL CRASH</h3>
+  고장난 터미널 모니터 형태의 몸체. 화면에 오류 로그 표시 후 갑자기 돌진. 경로에 잘못된 환경변수 파편 생성.
+</div>
+<button class="btn" id="btn">💻 터미널 크래시</button>
+<script>
+const cv=document.getElementById('c'),ctx=cv.getContext('2d');
+const W=420,H=300;
+let t=0,mx=190,my=155,dashing=false,dashT=0,dashVx=0,dashVy=0,dashCD=3;
+const px=350,py=155;
+let trail=[],scrLines=[],lineT=0;
+let crashing=false;
+
+const LOG_LINES=[
+  'ERROR: .env not found',
+  'FATAL: undefined var',
+  'Missing: API_KEY=???',
+  'PORT=undefined',
+  '>>> SYSTEM CRASH <<<',
+  'Segmentation fault',
+];
+
+function addLine(){
+  if(scrLines.length>6)scrLines.shift();
+  scrLines.push({text:LOG_LINES[Math.floor(Math.random()*LOG_LINES.length)],red:Math.random()<0.4});
+}
+
+function crash(){
+  crashing=true;
+  const dx=px-mx,dy=py-my,d=Math.sqrt(dx*dx+dy*dy)||1;
+  dashVx=dx/d*400;dashVy=dy/d*400;
+  setTimeout(()=>{dashing=true;crashing=false;dashT=0;},600);
+}
+
+function drawTerminal(x,y){
+  ctx.save();ctx.translate(x,y);
+  const bob=dashing?0:Math.sin(t*1.8)*3;ctx.translate(0,bob);
+
+  // monitor body
+  ctx.fillStyle='#112233';ctx.strokeStyle='#4488ff';ctx.lineWidth=3;
+  ctx.beginPath();ctx.roundRect(-55,-55,110,90,8);ctx.fill();ctx.stroke();
+
+  // screen
+  ctx.fillStyle='#001122';
+  ctx.beginPath();ctx.roundRect(-48,-48,96,72,4);ctx.fill();
+
+  // scanlines
+  ctx.save();ctx.globalAlpha=0.05;ctx.fillStyle='#fff';
+  for(let i=-48;i<24;i+=3)ctx.fillRect(-48,i,96,1);
+  ctx.restore();
+
+  // screen text
+  if(crashing||dashing){
+    ctx.fillStyle='#ff3300';ctx.font='bold 10px monospace';ctx.textAlign='center';
+    ctx.fillText('>>> CRASH <<<',0,-10);
+    ctx.fillStyle='#ff6644';ctx.font='8px monospace';
+    ctx.fillText('DASH INCOMING',0,5);
+  } else {
+    ctx.font='7px monospace';
+    scrLines.forEach((ln,i)=>{
+      ctx.fillStyle=ln.red?'#ff4422':'#66ccff';
+      ctx.textAlign='left';ctx.fillText(ln.text.slice(0,18),-46,-40+i*11);
+    });
+    // cursor blink
+    if(Math.floor(t*2)%2===0){
+      ctx.fillStyle='#66ccff';ctx.fillRect(-46,-40+scrLines.length*11,8,8);
+    }
+  }
+
+  // legs (4 little feet)
+  ctx.strokeStyle='#335577';ctx.lineWidth=4;ctx.lineCap='round';
+  ctx.beginPath();ctx.moveTo(-30,35);ctx.lineTo(-38,55);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(30,35);ctx.lineTo(38,55);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(-15,35);ctx.lineTo(-18,55);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(15,35);ctx.lineTo(18,55);ctx.stroke();
+  // feet
+  ctx.fillStyle='#223344';
+  [[-38,55],[38,55],[-18,55],[18,55]].forEach(([fx,fy])=>{
+    ctx.beginPath();ctx.ellipse(fx,fy,8,4,0,0,Math.PI*2);ctx.fill();
+  });
+
+  // power light
+  ctx.fillStyle=crashing?'#ff2200':dashing?'#ff8800':'#00ff88';
+  ctx.beginPath();ctx.arc(48,-50,5,0,Math.PI*2);ctx.fill();
+  ctx.shadowColor=ctx.fillStyle;ctx.shadowBlur=8;
+  ctx.beginPath();ctx.arc(48,-50,3,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;
+
+  // arms (cable antennas)
+  ctx.strokeStyle='#334455';ctx.lineWidth=3;
+  const a1=Math.sin(t*3)*0.3;
+  ctx.save();ctx.translate(-55,0);ctx.rotate(-0.5+a1);
+  ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(-25,-10);ctx.stroke();
+  ctx.fillStyle='#4488ff';ctx.beginPath();ctx.arc(-25,-10,5,0,Math.PI*2);ctx.fill();ctx.restore();
+
+  ctx.save();ctx.translate(55,0);ctx.rotate(0.5-a1);
+  ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(25,-10);ctx.stroke();
+  ctx.fillStyle='#4488ff';ctx.beginPath();ctx.arc(25,-10,5,0,Math.PI*2);ctx.fill();ctx.restore();
+
+  ctx.restore();
+}
+
+function draw(){
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='#00060f';ctx.fillRect(0,0,W,H);
+  const glow=ctx.createRadialGradient(mx,my,10,mx,my,140);
+  glow.addColorStop(0,'rgba(68,136,255,0.07)');glow.addColorStop(1,'transparent');
+  ctx.fillStyle=glow;ctx.fillRect(0,0,W,H);
+
+  // dash trail
+  trail.forEach((tr,i)=>{
+    const a=i/trail.length;
+    ctx.globalAlpha=a*0.12;ctx.fillStyle='#4488ff';
+    ctx.beginPath();ctx.ellipse(tr.x,tr.y,40,30,0,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
+  });
+
+  drawTerminal(mx,my);
+
+  ctx.save();ctx.globalAlpha=0.6;ctx.fillStyle='#4a90d9';
+  ctx.beginPath();ctx.arc(px,py,12,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#fff';ctx.font='10px monospace';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText('JY',px,py);ctx.restore();
+  ctx.fillStyle='#66aaff';ctx.font='11px monospace';ctx.textAlign='center';ctx.fillText('EnvError',mx,my-115);
+}
+
+function update(dt){
+  t+=dt;lineT+=dt;
+  if(lineT>0.4){addLine();lineT=0;}
+  if(dashing){
+    dashT+=dt;trail.push({x:mx,y:my});
+    if(trail.length>18)trail.shift();
+    mx+=dashVx*dt;my+=dashVy*dt;
+    mx=Math.max(30,Math.min(W-30,mx));my=Math.max(30,Math.min(H-30,my));
+    if(dashT>0.4){dashing=false;dashT=0;trail=[];dashCD=3;}
+    return;
+  }
+  if(crashing)return;
+  dashCD-=dt;if(dashCD<=0){crash();dashCD=999;}
+  const dx=px-mx,dy=py-my,d=Math.sqrt(dx*dx+dy*dy);
+  if(d>65){mx+=dx/d*35*dt;my+=dy/d*35*dt;}
+}
+
+document.getElementById('btn').addEventListener('click',()=>{if(!dashing&&!crashing){dashCD=999;crash();}});
+let last=0;
+function loop(ts){const dt=Math.min((ts-last)/1000,0.05);last=ts;update(dt);draw();requestAnimationFrame(loop);}
+requestAnimationFrame(loop);
+</script>
+</body></html>

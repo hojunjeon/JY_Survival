@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>LibraryDependency - Design 2 | JY Survival</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Orbitron:wght@700;900&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:#080500;color:#fff;font-family:'Space Mono',monospace;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;overflow:hidden}
+  h1{font-family:'Orbitron',sans-serif;font-size:1.7rem;color:#ffcc44;text-shadow:0 0 20px #ffcc4488;margin-bottom:4px;letter-spacing:3px}
+  .subtitle{color:#886633;font-size:.73rem;letter-spacing:3px;margin-bottom:20px}
+  .stage{width:420px;height:300px;background:#080500;border:2px solid #ffcc4444;border-radius:12px;overflow:hidden;box-shadow:0 0 40px #ffcc4422}
+  canvas{display:block}
+  .stats{display:flex;gap:14px;margin-top:14px;font-size:.7rem;color:#ccbb77}
+  .stat{background:#120a00;border:1px solid #ffcc4433;border-radius:6px;padding:7px 12px;text-align:center}
+  .stat span{display:block;color:#ffcc44;font-size:1rem;font-weight:700;font-family:'Orbitron',sans-serif}
+  .special-box{margin-top:12px;width:420px;background:#120a00;border:1px solid #ffcc4444;border-radius:8px;padding:12px 16px;font-size:.7rem;line-height:1.7;color:#ddccaa}
+  .special-box h3{color:#ffcc44;font-family:'Orbitron',sans-serif;font-size:.78rem;margin-bottom:6px;letter-spacing:2px}
+  .btn{margin-top:10px;padding:9px 26px;background:#443300;color:#fff;font-family:'Space Mono',monospace;font-size:.78rem;border:none;border-radius:6px;cursor:pointer;letter-spacing:2px;box-shadow:0 0 16px #ffcc4433;transition:all .2s}
+  .btn:hover{background:#665500;transform:scale(1.05)}
+  .tag{display:inline-block;background:#ffcc4422;color:#ffcc44;font-size:.65rem;padding:2px 8px;border-radius:20px;border:1px solid #ffcc4455;margin-bottom:8px;letter-spacing:2px}
+</style>
+</head>
+<body>
+<p class="tag">DESIGN 2 / DEPENDENCY WEB</p>
+<h1>LIBRARY DEPENDENCY</h1>
+<p class="subtitle">// 거미줄 의존성 네트워크 · 얽힌 패키지 크리처</p>
+<div class="stage"><canvas id="c" width="420" height="300"></canvas></div>
+<div class="stats">
+  <div class="stat">HP<span>40</span></div>
+  <div class="stat">SPD<span>35</span></div>
+  <div class="stat">DMG<span>8</span></div>
+  <div class="stat">TYPE<span style="font-size:.6rem">AURA BUFF</span></div>
+</div>
+<div class="special-box">
+  <h3>🕸 SPECIAL: DEP CHAIN PULL</h3>
+  의존성 거미줄로 구성된 크리처. 체인이 주변 적을 끌어당겨 집합시킴. 근처 적 속도+공격력 증가 오라 방출.
+</div>
+<button class="btn" id="btn">🕸 의존성 확장</button>
+<script>
+const cv=document.getElementById('c'),ctx=cv.getContext('2d');
+const W=420,H=300;
+let t=0,mx=200,my=155;
+const px=350,py=155;
+
+// dependency graph nodes
+let nodes=[
+  {id:'core',x:0,y:0,r:20,col:'#cc8800'},
+  {id:'lodash',x:-55,y:-40,r:12,col:'#aa6600'},
+  {id:'axios',x:55,y:-40,r:12,col:'#996600'},
+  {id:'react',x:-70,y:20,r:14,col:'#aa7700'},
+  {id:'webpack',x:65,y:25,r:11,col:'#885500'},
+  {id:'babel',x:-35,y:55,r:10,col:'#774400'},
+  {id:'jest',x:40,y:55,r:10,col:'#775500'},
+  {id:'vite',x:0,y:-65,r:11,col:'#996622'},
+];
+const edges=[
+  [0,1],[0,2],[0,3],[0,4],[1,5],[2,6],[3,5],[4,7],[1,7],[2,3]
+];
+let pulses=[];
+
+function addPulse(){
+  edges.forEach(([a,b],i)=>{
+    setTimeout(()=>{
+      pulses.push({fromIdx:a,toIdx:b,t:0,speed:0.8+Math.random()*0.5});
+    },i*80);
+  });
+}
+
+function drawNode(n,ox,oy){
+  const x=ox+n.x,y=oy+n.y;
+  const bob=Math.sin(t*2+n.x*0.05)*3;
+  // glow
+  ctx.save();ctx.globalAlpha=0.2;const g=ctx.createRadialGradient(x,y+bob,1,x,y+bob,n.r*2);
+  g.addColorStop(0,'#ffcc44');g.addColorStop(1,'transparent');
+  ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y+bob,n.r*2,0,Math.PI*2);ctx.fill();ctx.restore();
+  // node
+  ctx.fillStyle=n.col;ctx.strokeStyle='#ffcc44';ctx.lineWidth=n.id==='core'?2.5:1.5;
+  ctx.beginPath();ctx.arc(x,y+bob,n.r,0,Math.PI*2);ctx.fill();ctx.stroke();
+  // label
+  ctx.fillStyle='#ffeecc';ctx.font=`${n.id==='core'?8:6}px monospace`;ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText(n.id==='core'?'[pkg]':n.id,x,y+bob);
+  if(n.id==='core'){
+    // eyes
+    ctx.fillStyle='#ffcc22';ctx.shadowColor='#ffcc22';ctx.shadowBlur=6;
+    ctx.beginPath();ctx.arc(x-7,y+bob-6,4,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.arc(x+7,y+bob-6,4,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;
+    ctx.fillStyle='#221100';ctx.beginPath();ctx.arc(x-7,y+bob-6,2,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.arc(x+7,y+bob-6,2,0,Math.PI*2);ctx.fill();
+  }
+}
+
+function draw(){
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='#080500';ctx.fillRect(0,0,W,H);
+  const glow=ctx.createRadialGradient(mx,my,20,mx,my,160);
+  glow.addColorStop(0,'rgba(255,200,50,0.06)');glow.addColorStop(1,'transparent');
+  ctx.fillStyle=glow;ctx.fillRect(0,0,W,H);
+
+  // edges
+  edges.forEach(([ai,bi])=>{
+    const a=nodes[ai],b=nodes[bi];
+    const ax=mx+a.x,ay=my+a.y+Math.sin(t*2+a.x*0.05)*3;
+    const bx=mx+b.x,by=my+b.y+Math.sin(t*2+b.x*0.05)*3;
+    ctx.save();ctx.globalAlpha=0.25;ctx.strokeStyle='#aa7700';ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.moveTo(ax,ay);ctx.lineTo(bx,by);ctx.stroke();ctx.restore();
+  });
+
+  // data pulses
+  pulses=pulses.filter(p=>p.t<=1);
+  pulses.forEach(p=>{
+    p.t+=p.speed*0.016;
+    const a=nodes[p.fromIdx],b=nodes[p.toIdx];
+    const ax=mx+a.x,ay=my+a.y;
+    const bx=mx+b.x,by=my+b.y;
+    const px2=ax+(bx-ax)*p.t,py2=ay+(by-ay)*p.t;
+    ctx.save();ctx.globalAlpha=1-p.t*0.5;
+    ctx.fillStyle='#ffee44';ctx.shadowColor='#ffcc22';ctx.shadowBlur=8;
+    ctx.beginPath();ctx.arc(px2,py2,3,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;ctx.restore();
+  });
+
+  // nodes
+  nodes.forEach(n=>drawNode(n,mx,my));
+
+  // aura boundary
+  ctx.save();ctx.globalAlpha=0.06+Math.sin(t*2)*0.02;
+  ctx.fillStyle='#ffaa22';ctx.beginPath();ctx.arc(mx,my,150,0,Math.PI*2);ctx.fill();
+  ctx.globalAlpha=0.1;ctx.strokeStyle='#ffcc44';ctx.lineWidth=2;ctx.setLineDash([6,8]);
+  ctx.beginPath();ctx.arc(mx,my,150,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);ctx.restore();
+
+  ctx.save();ctx.globalAlpha=0.6;ctx.fillStyle='#4a90d9';
+  ctx.beginPath();ctx.arc(px,py,12,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#fff';ctx.font='10px monospace';ctx.textAlign='center';ctx.textBaseline='middle';ctx.globalAlpha=1;
+  ctx.fillText('JY',px,py);ctx.restore();
+  ctx.fillStyle='#ffcc44';ctx.font='9px monospace';ctx.textAlign='center';ctx.fillText('LibraryDependency',mx,my-120);
+
+  // npm tree
+  ctx.globalAlpha=0.35;ctx.fillStyle='#ffcc44';ctx.font='7px monospace';ctx.textAlign='left';
+  ctx.fillText('node_modules/',mx-90,my+100);
+  ctx.fillText('├── core@∞.∞.∞',mx-90,my+111);
+  ctx.fillText('│   ├── lodash',mx-90,my+122);
+  ctx.fillText('│   └── ...',mx-90,my+133);
+  ctx.globalAlpha=1;
+}
+
+function update(dt){
+  t+=dt;
+  const dx=px-mx,dy=py-my,d=Math.sqrt(dx*dx+dy*dy);
+  if(d>65){mx+=dx/d*35*dt;my+=dy/d*35*dt;}
+  // auto pulse every 1.5s
+  if(Math.floor(t*10)%15===0&&Math.random()<0.1)addPulse();
+}
+
+document.getElementById('btn').addEventListener('click',()=>{
+  addPulse();
+  // spawn extra node
+  const a=Math.random()*Math.PI*2,r=60+Math.random()*30;
+  const names=['yarn','pnpm','gulp','grunt','rollup'];
+  nodes.push({id:names[Math.floor(Math.random()*names.length)],x:Math.cos(a)*r,y:Math.sin(a)*r,r:9,col:'#664400'});
+  edges.push([0,nodes.length-1]);
+  setTimeout(()=>{nodes.pop();edges.pop();},3000);
+});
+
+let last=0;
+function loop(ts){const dt=Math.min((ts-last)/1000,0.05);last=ts;update(dt);draw();requestAnimationFrame(loop);}
+requestAnimationFrame(loop);
+</script>
+</body></html>

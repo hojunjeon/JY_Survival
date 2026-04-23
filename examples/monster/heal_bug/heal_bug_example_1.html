@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>HealBug - Design 1 | JY Survival</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Orbitron:wght@700;900&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:#030f06;color:#fff;font-family:'Space Mono',monospace;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;overflow:hidden}
+  h1{font-family:'Orbitron',sans-serif;font-size:2rem;color:#22cc44;text-shadow:0 0 20px #22cc4488;margin-bottom:4px;letter-spacing:4px}
+  .subtitle{color:#44aa66;font-size:.75rem;letter-spacing:3px;margin-bottom:20px}
+  .stage{width:420px;height:300px;background:#030f06;border:2px solid #22cc4444;border-radius:12px;overflow:hidden;box-shadow:0 0 40px #22cc4422}
+  canvas{display:block}
+  .stats{display:flex;gap:16px;margin-top:14px;font-size:.7rem;color:#88ccaa}
+  .stat{background:#041208;border:1px solid #22cc4433;border-radius:6px;padding:7px 12px;text-align:center}
+  .stat span{display:block;color:#22cc44;font-size:1rem;font-weight:700;font-family:'Orbitron',sans-serif}
+  .special-box{margin-top:12px;width:420px;background:#041208;border:1px solid #22cc4444;border-radius:8px;padding:12px 16px;font-size:.7rem;line-height:1.7;color:#aaddbb}
+  .special-box h3{color:#22cc44;font-family:'Orbitron',sans-serif;font-size:.78rem;margin-bottom:6px;letter-spacing:2px}
+  .btn{margin-top:10px;padding:9px 26px;background:#116622;color:#fff;font-family:'Space Mono',monospace;font-size:.78rem;border:none;border-radius:6px;cursor:pointer;letter-spacing:2px;box-shadow:0 0 16px #22cc4433;transition:all .2s}
+  .btn:hover{background:#228833;transform:scale(1.05)}
+  .tag{display:inline-block;background:#22cc4422;color:#22cc44;font-size:.65rem;padding:2px 8px;border-radius:20px;border:1px solid #22cc4455;margin-bottom:8px;letter-spacing:2px}
+</style>
+</head>
+<body>
+<p class="tag">DESIGN 1 / FAIRY BUTTERFLY</p>
+<h1>HEAL BUG</h1>
+<p class="subtitle">// 치유 나비요정 · 도주형 · HP 드롭</p>
+<div class="stage"><canvas id="c" width="420" height="300"></canvas></div>
+<div class="stats">
+  <div class="stat">HP<span>15</span></div>
+  <div class="stat">SPD<span>150</span></div>
+  <div class="stat">DMG<span>0</span></div>
+  <div class="stat">TYPE<span style="font-size:.6rem">FLEE+DROP</span></div>
+</div>
+<div class="special-box">
+  <h3>💚 SPECIAL: HEALING AURA</h3>
+  플레이어를 피해 도망다니며 HP 아이템을 드롭. 날개에서 치유 꽃가루 방출. 처치 시 HP 회복 아이템 생성.
+</div>
+<button class="btn" id="btn">💚 꽃가루 방출</button>
+<script>
+const cv=document.getElementById('c'),ctx=cv.getContext('2d');
+const W=420,H=300;
+let t=0,mx=200,my=150,pollenList=[],sparkles=[],fleeing=false;
+const px=350,py=150;
+let wingFlap=0;
+
+function spawnPollen(){
+  for(let i=0;i<15;i++){
+    const a=Math.random()*Math.PI*2,spd=30+Math.random()*80;
+    pollenList.push({x:mx,y:my,vx:Math.cos(a)*spd,vy:Math.sin(a)*spd,life:1,size:3+Math.random()*4,col:`hsl(${120+Math.random()*40},80%,60%)`});
+  }
+}
+function spawnSparkle(x,y){
+  sparkles.push({x,y,life:1,size:4+Math.random()*6,a:Math.random()*Math.PI*2});
+}
+
+function drawWing(flip,phase){
+  ctx.save();
+  ctx.scale(flip,1);
+  ctx.rotate(Math.sin(phase)*0.4);
+  // outer wing
+  ctx.beginPath();
+  ctx.moveTo(0,0);
+  ctx.bezierCurveTo(30,-50,80,-60,70,-20);
+  ctx.bezierCurveTo(60,10,30,20,0,0);
+  ctx.closePath();
+  const wg=ctx.createRadialGradient(30,-30,2,30,-30,55);
+  wg.addColorStop(0,'rgba(100,255,120,0.85)');wg.addColorStop(0.6,'rgba(30,180,60,0.6)');wg.addColorStop(1,'rgba(10,80,20,0.2)');
+  ctx.fillStyle=wg;ctx.fill();
+  ctx.strokeStyle='#44ff6688';ctx.lineWidth=1.5;ctx.stroke();
+  // inner vein
+  ctx.beginPath();ctx.moveTo(0,0);ctx.bezierCurveTo(20,-25,50,-35,55,-15);
+  ctx.strokeStyle='rgba(180,255,180,0.5)';ctx.lineWidth=1;ctx.stroke();
+  // lower wing
+  ctx.beginPath();
+  ctx.moveTo(0,0);
+  ctx.bezierCurveTo(25,20,55,35,45,55);
+  ctx.bezierCurveTo(30,65,10,40,0,0);
+  ctx.closePath();
+  ctx.fillStyle='rgba(60,200,80,0.6)';ctx.fill();
+  ctx.strokeStyle='#22cc4488';ctx.lineWidth=1;ctx.stroke();
+  ctx.restore();
+}
+
+function drawBug(x,y){
+  ctx.save();ctx.translate(x,y);
+  const bob=Math.sin(t*4)*5;
+  ctx.translate(0,bob);
+  // wings
+  ctx.save();ctx.translate(0,-5);
+  drawWing(1,wingFlap);
+  drawWing(-1,wingFlap+0.5);
+  ctx.restore();
+  // body
+  const bg=ctx.createRadialGradient(0,-8,2,0,-8,20);
+  bg.addColorStop(0,'#66ee88');bg.addColorStop(1,'#118833');
+  ctx.beginPath();ctx.ellipse(0,-5,10,22,0,0,Math.PI*2);ctx.fillStyle=bg;ctx.fill();
+  ctx.strokeStyle='#22cc44';ctx.lineWidth=1.5;ctx.stroke();
+  // head
+  ctx.beginPath();ctx.arc(0,-25,12,0,Math.PI*2);
+  const hg=ctx.createRadialGradient(-3,-28,2,0,-25,12);
+  hg.addColorStop(0,'#88ff99');hg.addColorStop(1,'#229944');
+  ctx.fillStyle=hg;ctx.fill();ctx.strokeStyle='#22cc44';ctx.lineWidth=1.5;ctx.stroke();
+  // eyes
+  ctx.fillStyle='#fff';
+  ctx.beginPath();ctx.ellipse(-5,-26,4,5,0,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.ellipse(5,-26,4,5,0,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#000';
+  ctx.beginPath();ctx.ellipse(-5,-26,2,3,0,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.ellipse(5,-26,2,3,0,0,Math.PI*2);ctx.fill();
+  // heart on body
+  ctx.fillStyle='rgba(255,100,120,0.8)';ctx.font='12px sans-serif';ctx.textAlign='center';
+  ctx.fillText('♥',0,-4);
+  // antennae
+  ctx.strokeStyle='#44ff66';ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.moveTo(-4,-36);ctx.quadraticCurveTo(-12,-50,-8,-56);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(4,-36);ctx.quadraticCurveTo(12,-50,8,-56);ctx.stroke();
+  ctx.fillStyle='#88ff99';
+  ctx.beginPath();ctx.arc(-8,-56,3,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.arc(8,-56,3,0,Math.PI*2);ctx.fill();
+  ctx.restore();
+}
+
+function draw(){
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='#030f06';ctx.fillRect(0,0,W,H);
+  const glow=ctx.createRadialGradient(mx,my,10,mx,my,130);
+  glow.addColorStop(0,'rgba(34,200,68,0.06)');glow.addColorStop(1,'transparent');
+  ctx.fillStyle=glow;ctx.fillRect(0,0,W,H);
+
+  pollenList=pollenList.filter(p=>p.life>0);
+  pollenList.forEach(p=>{
+    p.x+=p.vx*0.016;p.y+=p.vy*0.016;p.vx*=0.95;p.vy*=0.95;p.life-=0.015;
+    ctx.globalAlpha=p.life;ctx.fillStyle=p.col;
+    ctx.beginPath();ctx.arc(p.x,p.y,p.size,0,Math.PI*2);ctx.fill();
+    ctx.globalAlpha=1;
+  });
+
+  sparkles=sparkles.filter(s=>s.life>0);
+  sparkles.forEach(s=>{
+    s.y-=20*0.016;s.life-=0.025;
+    ctx.globalAlpha=s.life;ctx.fillStyle='#aaffcc';
+    ctx.font=`${s.size}px sans-serif`;ctx.textAlign='center';
+    ctx.fillText('✦',s.x,s.y);ctx.globalAlpha=1;
+  });
+
+  drawBug(mx,my);
+
+  // HP drop indicator
+  ctx.save();ctx.globalAlpha=0.4;ctx.fillStyle='#ff6688';ctx.font='14px sans-serif';ctx.textAlign='center';
+  ctx.fillText('♥',mx-30+Math.sin(t*1.5)*5,my+40+Math.cos(t*2)*5);
+  ctx.fillText('♥',mx+30+Math.sin(t*2)*5,my+35+Math.cos(t*1.8)*5);
+  ctx.restore();
+
+  ctx.save();ctx.globalAlpha=0.6;ctx.fillStyle='#4a90d9';
+  ctx.beginPath();ctx.arc(px,py,12,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#fff';ctx.font='10px monospace';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText('JY',px,py);ctx.restore();
+  ctx.fillStyle='#22cc44';ctx.font='11px monospace';ctx.textAlign='center';ctx.fillText('HealBug',mx,my-95);
+}
+
+function update(dt){
+  t+=dt;wingFlap=t*5;
+  const dx=px-mx,dy=py-my,d=Math.sqrt(dx*dx+dy*dy);
+  // flee from player
+  if(d<200){mx-=dx/d*150*dt;my-=dy/d*150*dt;}
+  mx=Math.max(30,Math.min(W-30,mx));my=Math.max(40,Math.min(H-40,my));
+  if(Math.random()<0.04)spawnSparkle(mx+(-30+Math.random()*60),my+(-30+Math.random()*60));
+}
+
+document.getElementById('btn').addEventListener('click',spawnPollen);
+let last=0;
+function loop(ts){const dt=Math.min((ts-last)/1000,0.05);last=ts;update(dt);draw();requestAnimationFrame(loop);}
+requestAnimationFrame(loop);
+</script>
+</body></html>

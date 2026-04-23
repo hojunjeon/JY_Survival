@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>MemoryLeak - Design 1 | JY Survival</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Orbitron:wght@700;900&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:#030d04;color:#fff;font-family:'Space Mono',monospace;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;overflow:hidden}
+  h1{font-family:'Orbitron',sans-serif;font-size:2rem;color:#00dd44;text-shadow:0 0 20px #00dd4488;margin-bottom:4px;letter-spacing:4px}
+  .subtitle{color:#225533;font-size:.75rem;letter-spacing:3px;margin-bottom:20px}
+  .stage{width:420px;height:300px;background:#030d04;border:2px solid #00dd4444;border-radius:12px;overflow:hidden;box-shadow:0 0 40px #00dd4422}
+  canvas{display:block}
+  .stats{display:flex;gap:14px;margin-top:14px;font-size:.7rem;color:#88ccaa}
+  .stat{background:#081508;border:1px solid #00dd4433;border-radius:6px;padding:7px 12px;text-align:center}
+  .stat span{display:block;color:#00dd44;font-size:1rem;font-weight:700;font-family:'Orbitron',sans-serif}
+  .special-box{margin-top:12px;width:420px;background:#081508;border:1px solid #00dd4444;border-radius:8px;padding:12px 16px;font-size:.7rem;line-height:1.7;color:#aaddbb}
+  .special-box h3{color:#00dd44;font-family:'Orbitron',sans-serif;font-size:.78rem;margin-bottom:6px;letter-spacing:2px}
+  .btn{margin-top:10px;padding:9px 26px;background:#114422;color:#fff;font-family:'Space Mono',monospace;font-size:.78rem;border:none;border-radius:6px;cursor:pointer;letter-spacing:2px;box-shadow:0 0 16px #00dd4433;transition:all .2s}
+  .btn:hover{background:#226633;transform:scale(1.05)}
+  .tag{display:inline-block;background:#00dd4422;color:#00dd44;font-size:.65rem;padding:2px 8px;border-radius:20px;border:1px solid #00dd4455;margin-bottom:8px;letter-spacing:2px}
+</style>
+</head>
+<body>
+<p class="tag">DESIGN 1 / GROWING OOZE</p>
+<h1>MEMORY LEAK</h1>
+<p class="subtitle">// 성장하는 슬라임 · RAM 흡수 · 가비지 방출</p>
+<div class="stage"><canvas id="c" width="420" height="300"></canvas></div>
+<div class="stats">
+  <div class="stat">HP<span>20</span></div>
+  <div class="stat">SPD<span>40</span></div>
+  <div class="stat">DMG<span>12</span></div>
+  <div class="stat">TYPE<span style="font-size:.6rem">GROWING</span></div>
+</div>
+<div class="special-box">
+  <h3>📈 SPECIAL: MEMORY GROW</h3>
+  3초마다 크기 +30% 성장 (최대 3배). 0.5초마다 가비지 오브젝트 생성. 몸에서 메모리 블록 조각 흡수.
+</div>
+<button class="btn" id="btn">📈 즉시 성장</button>
+<script>
+const cv=document.getElementById('c'),ctx=cv.getContext('2d');
+const W=420,H=300;
+let t=0,mx=200,my=160,scale=1,growT=0,garbageList=[],ramChips=[];
+const px=350,py=150;
+
+// spawn ram chips around
+function spawnRam(){
+  const a=Math.random()*Math.PI*2,r=60+Math.random()*80;
+  ramChips.push({x:mx+Math.cos(a)*r,y:my+Math.sin(a)*r,absorbing:false,absorbeT:0,size:8+Math.random()*6,text:'RAM'+(Math.floor(Math.random()*16))+'MB'});
+}
+for(let i=0;i<5;i++)spawnRam();
+
+function spawnGarbage(bx,by){
+  const a=Math.random()*Math.PI*2,spd=30+Math.random()*50;
+  garbageList.push({x:bx,y:by,vx:Math.cos(a)*spd,vy:Math.sin(a)*spd,life:3,text:'0x'+Math.floor(Math.random()*0xFFFF).toString(16).padStart(4,'0')});
+}
+
+let growFlash=0;
+function grow(){
+  scale=Math.min(scale+0.3,3);growFlash=0.4;
+  spawnGarbage(mx,my);spawnGarbage(mx,my);spawnGarbage(mx,my);
+}
+
+function drawOoze(x,y,sc){
+  ctx.save();ctx.translate(x,y);ctx.scale(sc,sc);
+  const r=32;
+
+  // drip bottom
+  ctx.save();ctx.fillStyle='#009933';
+  for(let i=0;i<3;i++){
+    const dx=(-12+i*12)/sc,dy=r;
+    const dripLen=8+Math.sin(t*3+i*2)*5;
+    ctx.beginPath();ctx.ellipse(dx,dy,4,dripLen,0,0,Math.PI*2);ctx.fill();
+  }ctx.restore();
+
+  // shadow
+  ctx.save();ctx.globalAlpha=0.2;ctx.fillStyle='#000';
+  ctx.beginPath();ctx.ellipse(0,r+5,r*1.2,r*0.25,0,0,Math.PI*2);ctx.fill();ctx.restore();
+
+  // main blob
+  ctx.beginPath();
+  const pts=14;
+  for(let i=0;i<=pts;i++){
+    const a=i/pts*Math.PI*2;
+    const wobble=1+Math.sin(t*5+a*3)*0.1+Math.cos(t*3+a*2)*0.07;
+    const br=r*wobble;
+    i===0?ctx.moveTo(Math.cos(a)*br,Math.sin(a)*br):ctx.lineTo(Math.cos(a)*br,Math.sin(a)*br);
+  }
+  ctx.closePath();
+  const bg=ctx.createRadialGradient(-8,-8,3,0,0,r);
+  bg.addColorStop(0,'#66ff88');bg.addColorStop(0.4,'#00cc44');bg.addColorStop(1,'#004422');
+  ctx.fillStyle=bg;ctx.fill();
+  ctx.strokeStyle='#44ff66';ctx.lineWidth=2/sc;ctx.stroke();
+
+  // inner highlight
+  ctx.beginPath();ctx.ellipse(-10,-12,r*0.35,r*0.25,Math.PI/5,0,Math.PI*2);
+  ctx.fillStyle='rgba(150,255,150,0.25)';ctx.fill();
+
+  // RAM chip inclusions
+  ctx.fillStyle='rgba(0,0,0,0.3)';ctx.strokeStyle='#00ff66';ctx.lineWidth=1/sc;
+  for(let i=0;i<4;i++){
+    const cx=(-15+i*10), cy=(-5+Math.sin(t+i)*5);
+    ctx.beginPath();ctx.roundRect(cx-6,cy-4,12,8,2);ctx.fill();ctx.stroke();
+    ctx.fillStyle='#00ff44';ctx.font='4px monospace';ctx.textAlign='center';ctx.fillText('RAM',cx,cy+2);
+    ctx.fillStyle='rgba(0,0,0,0.3)';
+  }
+
+  // eyes
+  ctx.fillStyle='#001100';ctx.beginPath();ctx.ellipse(-10,-10,8,9,0,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.ellipse(10,-10,8,9,0,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#00ff44';ctx.shadowColor='#00ff44';ctx.shadowBlur=5;
+  ctx.beginPath();ctx.ellipse(-10,-10,4,5,0,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.ellipse(10,-10,4,5,0,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;
+  // scale indicator
+  ctx.fillStyle='#aaffcc';ctx.font=`${7/sc}px monospace`;ctx.textAlign='center';
+  ctx.fillText(`×${sc.toFixed(1)}`,0,12);
+
+  if(growFlash>0){
+    ctx.globalAlpha=growFlash*0.4;ctx.fillStyle='#88ffaa';
+    ctx.beginPath();ctx.arc(0,0,r*1.4,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
+  }
+  ctx.restore();
+}
+
+function draw(){
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='#030d04';ctx.fillRect(0,0,W,H);
+  const glow=ctx.createRadialGradient(mx,my,10,mx,my,140);
+  glow.addColorStop(0,`rgba(0,200,68,${0.04+scale*0.02})`);glow.addColorStop(1,'transparent');
+  ctx.fillStyle=glow;ctx.fillRect(0,0,W,H);
+
+  // garbage blobs
+  garbageList=garbageList.filter(g=>g.life>0);
+  garbageList.forEach(g=>{
+    g.x+=g.vx*0.016;g.y+=g.vy*0.016;g.vx*=0.97;g.vy*=0.97;g.life-=0.015;
+    ctx.globalAlpha=Math.min(g.life,1)*0.7;
+    ctx.fillStyle='#226633';ctx.fillRect(g.x-18,g.y-6,36,12);
+    ctx.strokeStyle='#44aa66';ctx.lineWidth=1;ctx.strokeRect(g.x-18,g.y-6,36,12);
+    ctx.fillStyle='#88ffaa';ctx.font='7px monospace';ctx.textAlign='center';ctx.fillText(g.text,g.x,g.y+4);
+    ctx.globalAlpha=1;
+  });
+
+  // RAM chips
+  ramChips.forEach(r=>{
+    const dist=Math.sqrt((r.x-mx)**2+(r.y-my)**2);
+    if(dist<40*scale){r.absorbing=true;}
+    if(r.absorbing){r.x+=(mx-r.x)*0.05;r.y+=(my-r.y)*0.05;}
+    ctx.fillStyle='#003311';ctx.strokeStyle='#00aa44';ctx.lineWidth=1;
+    ctx.beginPath();ctx.roundRect(r.x-r.size,r.y-r.size/2,r.size*2,r.size,2);ctx.fill();ctx.stroke();
+    ctx.fillStyle='#44ff66';ctx.font='6px monospace';ctx.textAlign='center';ctx.fillText(r.text,r.x,r.y+3);
+  });
+
+  drawOoze(mx,my,scale);
+
+  ctx.save();ctx.globalAlpha=0.6;ctx.fillStyle='#4a90d9';
+  ctx.beginPath();ctx.arc(px,py,12,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#fff';ctx.font='10px monospace';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText('JY',px,py);ctx.restore();
+  ctx.fillStyle='#00dd44';ctx.font='11px monospace';ctx.textAlign='center';ctx.fillText('MemoryLeak',mx,my-80*scale);
+}
+
+function update(dt){
+  t+=dt;if(growFlash>0)growFlash-=dt;
+  growT+=dt;
+  if(growT>=3){growT=0;if(scale<3)grow();}
+  const dx=px-mx,dy=py-my,d=Math.sqrt(dx*dx+dy*dy);
+  if(d>65){mx+=dx/d*40*dt;my+=dy/d*40*dt;}
+  if(Math.random()<0.02)spawnRam();
+  if(Math.random()<0.04)spawnGarbage(mx+(-40+Math.random()*80),my+(-40+Math.random()*80));
+}
+
+document.getElementById('btn').addEventListener('click',grow);
+let last=0;
+function loop(ts){const dt=Math.min((ts-last)/1000,0.05);last=ts;update(dt);draw();requestAnimationFrame(loop);}
+requestAnimationFrame(loop);
+</script>
+</body></html>
