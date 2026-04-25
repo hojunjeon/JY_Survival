@@ -373,6 +373,14 @@ export const PixelRenderer = {
   drawPlayer(ctx, x, y, scale = 1) {
     this.drawSprite(ctx, PLAYER_SPRITE, x - (32 * scale) / 2, y - (32 * scale) / 2, scale);
   },
+
+  drawSpriteWithGlow(ctx, sprite, x, y, scale, glowColor) {
+    ctx.save();
+    ctx.shadowBlur = 16;
+    ctx.shadowColor = glowColor;
+    this.drawSprite(ctx, sprite, x, y, scale);
+    ctx.restore();
+  },
 };
 
 export { NPC_SPRITES, BOSS_SPRITE };
