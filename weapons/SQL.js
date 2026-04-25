@@ -28,7 +28,7 @@ export class SQLWeapon extends WeaponBase {
     this.cooldown = this.maxCooldown;
   }
 
-  update(dt) {
+  update(dt, particleSystem) {
     if (this.cooldown > 0) this.cooldown = Math.max(0, this.cooldown - dt);
     if (this.flashTimer > 0) this.flashTimer = Math.max(0, this.flashTimer - dt);
 

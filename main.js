@@ -466,17 +466,8 @@ function startGame() {
 
     // 2. 무기 업데이트 + 자동 발사
     for (const weapon of ownedWeapons) {
-      if (weapon.name !== 'Java') weapon.update(dt, game.particleSystem);
+      weapon.update(dt, game.particleSystem, player.x, player.y);
       tryFireWeapon(weapon, player);
-    }
-    const javaWeapon = ownedWeapons.find(w => w.name === 'Java');
-    if (javaWeapon) {
-      javaWeapon.update(dt);
-      // Java 무기 오브 위치마다 addOrbitalTail 호출
-      const orbPositions = javaWeapon.getOrbPositions(player.x, player.y);
-      for (const orbPos of orbPositions) {
-        game.particleSystem.addOrbitalTail(orbPos.x, orbPos.y);
-      }
     }
 
     // 3. 투사체 업데이트 + 범위 이탈 제거

@@ -206,3 +206,26 @@ describe('JavaWeapon', () => {
     expect(weapon.canFire()).toBe(false);
   });
 });
+
+// ─── Particle Integration Tests ──────────────────────────────────────────────
+describe('Weapon Particle Integration', () => {
+  it('PythonWeapon.update calls addWeaponTrail with active projectile', () => {
+    const w = new PythonWeapon();
+    const ps = { addWeaponTrail: vi.fn() };
+    w.fire(100, 100, 1, 0);
+    w.update(0.016, ps);
+    expect(ps.addWeaponTrail).toHaveBeenCalledWith(
+      expect.any(Number), expect.any(Number), 'python'
+    );
+  });
+
+  it('CWeapon.update calls addWeaponTrail with active projectile', () => {
+    const w = new CWeapon();
+    const ps = { addWeaponTrail: vi.fn() };
+    w.fire(100, 100, 1, 0);
+    w.update(0.016, ps);
+    expect(ps.addWeaponTrail).toHaveBeenCalledWith(
+      expect.any(Number), expect.any(Number), 'c'
+    );
+  });
+});

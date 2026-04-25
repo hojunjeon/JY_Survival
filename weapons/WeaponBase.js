@@ -13,7 +13,7 @@ export class WeaponBase {
     return this._timer <= 0;
   }
 
-  update(dt) {
+  update(dt, particleSystem) {
     if (this._timer > 0) {
       this._timer = Math.max(0, this._timer - dt);
     }

@@ -34,7 +34,7 @@ export class JavaWeapon extends WeaponBase {
     return [];
   }
 
-  update(dt) {
+  update(dt, particleSystem, playerX, playerY) {
     // 부모 update(쿨다운) 건너뜀 — 오비탈은 쿨다운 없음
     this.orbs.forEach(orb => {
       orb.angle += ORB_SPEED * dt;
@@ -51,6 +51,14 @@ export class JavaWeapon extends WeaponBase {
     if (this._blackholeTimer <= 0) {
       this._pendingBlackhole = true;
       this._blackholeTimer = 5.0;
+    }
+
+    // 파티클 시스템이 전달되면 오브 위치마다 addOrbitalTail 호출
+    if (particleSystem && playerX !== undefined && playerY !== undefined) {
+      const orbPositions = this.getOrbPositions(playerX, playerY);
+      for (const orbPos of orbPositions) {
+        particleSystem.addOrbitalTail(orbPos.x, orbPos.y);
+      }
     }
   }
 

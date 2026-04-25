@@ -15,7 +15,7 @@ export class GitWeapon extends WeaponBase {
     return this.cooldown <= 0 && !this.branchPoint;
   }
 
-  update(dt) {
+  update(dt, particleSystem) {
     if (this.cooldown > 0) {
       this.cooldown = Math.max(0, this.cooldown - dt);
     }
