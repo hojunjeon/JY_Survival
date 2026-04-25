@@ -12,6 +12,16 @@ export class HUD {
     orange:      '#f9e2af',   // 중체력
     orangeAcc:   '#fab387',
     teal:        '#94e2d5',
+    // Phase 11 UI 확장 토큰
+    teal2:       '#4ec9b0',   // VSCode teal — accent highlight
+    red2:        '#f44747',   // VSCode red — error
+    orange2:     '#ce9178',   // VSCode orange — string
+    yellow:      '#dcdcaa',   // VSCode yellow — constant
+    blue:        '#9cdcfe',   // VSCode blue — variable
+    green:       '#b5cea8',   // VSCode green — number
+    statusBar:   '#007acc',   // VSCode status bar blue
+    sidebar:     '#252526',   // VSCode sidebar dark
+    panel:       '#2d2d2d',   // VSCode panel dark
   };
 
   constructor({ canvasWidth, canvasHeight }) {
