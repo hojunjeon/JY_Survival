@@ -1,3 +1,12 @@
+export const ENEMY_TYPE_COLORS = {
+  syntax_error:      '#ff2200',
+  null_pointer:      '#aabbff',
+  seg_fault:         '#cc6600',
+  heal_bug:          '#22cc44',
+  indentation_error: '#ff8800',
+  env_error:         '#2255cc',
+};
+
 export class ParticleSystem {
   constructor() {
     this.particles = [];
@@ -19,8 +28,14 @@ export class ParticleSystem {
     }
   }
 
-  addEnemyDeath(x, y, count = 8) {
-    const colors = ['#ff69b4', '#aaaaaa', '#ff99cc'];
+  addEnemyDeath(x, y, count = 8, enemyType = null) {
+    let colors;
+    if (enemyType && ENEMY_TYPE_COLORS[enemyType]) {
+      const mainColor = ENEMY_TYPE_COLORS[enemyType];
+      colors = [mainColor, '#ffffff', mainColor];
+    } else {
+      colors = ['#ff69b4', '#aaaaaa', '#ff99cc'];
+    }
     for (let i = 0; i < count; i++) {
       const angle = Math.random() * Math.PI * 2;
       const speed = 60 + Math.random() * 100;
