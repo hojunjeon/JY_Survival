@@ -19,6 +19,10 @@ function makeCtx() {
     beginPath: vi.fn(),
     rect: vi.fn(),
     clip: vi.fn(),
+    measureText: vi.fn((text) => ({ width: text.length * 8 })),
+    createLinearGradient: vi.fn(() => ({
+      addColorStop: vi.fn(),
+    })),
   };
 }
 
@@ -150,6 +154,10 @@ describe('HUD + EventSystem 연동', () => {
       textBaseline: '',
       lineWidth: 1,
       fillText: vi.fn((...args) => calls.push(args)),
+      measureText: vi.fn((text) => ({ width: text.length * 8 })),
+      createLinearGradient: vi.fn(() => ({
+        addColorStop: vi.fn(),
+      })),
       _calls: calls,
     };
   };

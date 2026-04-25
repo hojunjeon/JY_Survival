@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>Phase 10.5 — UI 디자인 컨셉 프리뷰</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Orbitron:wght@700;900&family=Space+Mono:wght@400;700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #0d0d0d;
+    color: #cdd6f4;
+    font-family: 'JetBrains Mono', monospace;
+    min-height: 100vh;
+    padding: 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+  }
+
+  .section-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.7rem;
+    letter-spacing: 4px;
+    color: #585b70;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  /* ── CYCLE 1: HUD — IDE 컨셉 ── */
+  .hud-demo {
+    background: #1e1e2e;
+    border: 1px solid #313244;
+    border-radius: 8px;
+    overflow: hidden;
+    width: 680px;
+  }
+
+  .ide-titlebar {
+    background: #181825;
+    padding: 8px 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid #313244;
+  }
+  .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .dot-r { background: #f38ba8; }
+  .dot-y { background: #f9e2af; }
+  .dot-g { background: #a6e3a1; }
+  .ide-filename { margin-left: 8px; font-size: 0.72rem; color: #6c7086; }
+  .ide-filename span { color: #cdd6f4; }
+
+  .ide-body {
+    display: flex;
+  }
+  .line-nums {
+    padding: 14px 10px 14px 14px;
+    background: #1e1e2e;
+    color: #45475a;
+    font-size: 0.72rem;
+    line-height: 1.9;
+    text-align: right;
+    user-select: none;
+    min-width: 36px;
+    border-right: 1px solid #313244;
+  }
+  .hud-content {
+    padding: 14px 18px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  /* HP 바 */
+  .hp-row { display: flex; align-items: center; gap: 10px; }
+  .hp-label { font-size: 0.7rem; color: #7f849c; width: 60px; }
+  .hp-label .key { color: #cba6f7; }
+  .hp-label .eq { color: #89dceb; }
+  .hp-track {
+    flex: 1;
+    height: 12px;
+    background: #313244;
+    border-radius: 2px;
+    overflow: hidden;
+    position: relative;
+  }
+  .hp-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.3s;
+    position: relative;
+  }
+  .hp-fill.high {
+    width: 75%;
+    background: linear-gradient(90deg, #a6e3a1, #94e2d5);
+    box-shadow: 0 0 8px #a6e3a188;
+  }
+  .hp-fill.mid {
+    width: 40%;
+    background: linear-gradient(90deg, #f9e2af, #fab387);
+    box-shadow: 0 0 8px #f9e2af88;
+  }
+  .hp-fill.low {
+    width: 18%;
+    background: linear-gradient(90deg, #f38ba8, #f38ba8);
+    box-shadow: 0 0 12px #f38ba8cc;
+    animation: hp-pulse 0.8s ease-in-out infinite alternate;
+  }
+  @keyframes hp-pulse {
+    from { opacity: 0.6; box-shadow: 0 0 8px #f38ba888; }
+    to   { opacity: 1.0; box-shadow: 0 0 20px #f38ba8ff; }
+  }
+  .hp-text { font-size: 0.68rem; color: #6c7086; width: 70px; text-align: right; }
+
+  /* 킬 카운트 */
+  .stat-row { display: flex; align-items: center; gap: 10px; }
+  .stat-key { color: #cba6f7; font-size: 0.7rem; }
+  .stat-eq  { color: #89dceb; font-size: 0.7rem; }
+  .stat-val { color: #a6e3a1; font-size: 0.7rem; }
+  .stat-comment { color: #45475a; font-size: 0.7rem; }
+
+  /* 타이머 */
+  .timer-row { display: flex; align-items: center; gap: 10px; }
+  .timer-key { color: #89b4fa; font-size: 0.7rem; }
+  .timer-val { color: #f5c2e7; font-size: 0.7rem; font-weight: 700; }
+
+  /* 이벤트 배지 */
+  .event-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .badge {
+    font-size: 0.65rem;
+    padding: 3px 8px;
+    border-radius: 4px;
+    border: 1px solid;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .badge-warn { background: #f9e2af11; border-color: #f9e2af44; color: #f9e2af; }
+  .badge-ok   { background: #a6e3a111; border-color: #a6e3a144; color: #a6e3a1; }
+  .badge-danger { background: #f38ba811; border-color: #f38ba844; color: #f38ba8; animation: badge-pulse 1s infinite alternate; }
+  @keyframes badge-pulse { from { border-color: #f38ba844; } to { border-color: #f38ba8cc; } }
+
+  .statusbar {
+    background: #89b4fa;
+    padding: 3px 14px;
+    font-size: 0.65rem;
+    color: #1e1e2e;
+    font-weight: 600;
+    display: flex;
+    gap: 20px;
+  }
+
+  /* ── CYCLE 2: 무기 이펙트 (hero_*.html 스타일) ── */
+  .weapon-demo {
+    display: flex;
+    gap: 20px;
+  }
+  .weapon-card {
+    background: rgba(255,255,255,0.02);
+    border-radius: 16px;
+    backdrop-filter: blur(20px);
+    border: 1px solid;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    width: 200px;
+  }
+  .weapon-card.python { border-color: rgba(68,255,68,0.25); box-shadow: 0 0 30px rgba(68,255,68,0.08); }
+  .weapon-card.c      { border-color: rgba(100,180,255,0.25); box-shadow: 0 0 30px rgba(100,180,255,0.08); }
+  .weapon-card.java   { border-color: rgba(255,160,50,0.25); box-shadow: 0 0 30px rgba(255,160,50,0.08); }
+
+  .weapon-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 900;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+  .weapon-card.python .weapon-title { color: #44ff44; text-shadow: 0 0 12px #44ff4488; }
+  .weapon-card.c      .weapon-title { color: #64b4ff; text-shadow: 0 0 12px #64b4ff88; }
+  .weapon-card.java   .weapon-title { color: #ffa032; text-shadow: 0 0 12px #ffa03288; }
+
+  .weapon-canvas-wrap { position: relative; border-radius: 10px; overflow: hidden; }
+  .weapon-sub { font-family: 'Space Mono', monospace; font-size: 0.6rem; opacity: 0.5; text-align: center; }
+
+  /* ── CYCLE 3: 몬스터 이펙트 (_*.html 스타일) ── */
+  .monster-demo {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  .monster-card {
+    background: #0a0a0f;
+    border: 2px solid;
+    border-radius: 10px;
+    padding: 14px;
+    width: 190px;
+    position: relative;
+    overflow: hidden;
+  }
+  .monster-card .grid-bg {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+    background-size: 20px 20px;
+    pointer-events: none;
+  }
+  .monster-card.syntax  { border-color: #ff220033; box-shadow: 0 0 24px #ff220018; }
+  .monster-card.null    { border-color: #8899ff33; box-shadow: 0 0 24px #8899ff18; }
+  .monster-card.seg     { border-color: #cc660033; box-shadow: 0 0 24px #cc660018; }
+  .monster-card.heal    { border-color: #22cc4433; box-shadow: 0 0 24px #22cc4418; }
+  .monster-card.indent  { border-color: #ff880033; box-shadow: 0 0 24px #ff880018; }
+  .monster-card.env     { border-color: #2255cc33; box-shadow: 0 0 24px #2255cc18; }
+
+  .monster-tag {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.55rem;
+    letter-spacing: 2px;
+    padding: 2px 6px;
+    border-radius: 20px;
+    border: 1px solid;
+    display: inline-block;
+    margin-bottom: 6px;
+    position: relative;
+  }
+  .monster-name {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 900;
+    letter-spacing: 2px;
+    margin-bottom: 4px;
+    position: relative;
+  }
+  .monster-sub {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    opacity: 0.5;
+    margin-bottom: 10px;
+    position: relative;
+  }
+
+  .monster-stats {
+    display: flex;
+    gap: 6px;
+    position: relative;
+  }
+  .mstat {
+    flex: 1;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 4px;
+    padding: 4px 2px;
+    text-align: center;
+    font-size: 0.55rem;
+    color: #585b70;
+  }
+  .mstat span {
+    display: block;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 700;
+    margin-top: 2px;
+  }
+
+  /* 색상별 */
+  .syntax  .monster-tag  { background: #ff220015; border-color: #ff220055; color: #ff4422; }
+  .syntax  .monster-name { color: #ff2200; text-shadow: 0 0 12px #ff220066; }
+  .syntax  .mstat span   { color: #ff4422; }
+
+  .null    .monster-tag  { background: #8899ff15; border-color: #8899ff55; color: #aabbff; }
+  .null    .monster-name { color: #aabbff; text-shadow: 0 0 12px #8899ff66; }
+  .null    .mstat span   { color: #aabbff; }
+
+  .seg     .monster-tag  { background: #cc660015; border-color: #cc660055; color: #dd8833; }
+  .seg     .monster-name { color: #cc6600; text-shadow: 0 0 12px #cc660066; }
+  .seg     .mstat span   { color: #dd8833; }
+
+  .heal    .monster-tag  { background: #22cc4415; border-color: #22cc4455; color: #44ee66; }
+  .heal    .monster-name { color: #22cc44; text-shadow: 0 0 12px #22cc4466; }
+  .heal    .mstat span   { color: #44ee66; }
+
+  .indent  .monster-tag  { background: #ff880015; border-color: #ff880055; color: #ffaa44; }
+  .indent  .monster-name { color: #ff8800; text-shadow: 0 0 12px #ff880066; }
+  .indent  .mstat span   { color: #ffaa44; }
+
+  .env     .monster-tag  { background: #2255cc15; border-color: #2255cc55; color: #4488ff; }
+  .env     .monster-name { color: #2255cc; text-shadow: 0 0 12px #2255cc66; }
+  .env     .mstat span   { color: #4488ff; }
+</style>
+</head>
+<body>
+
+<!-- ── CYCLE 1: HUD IDE 컨셉 ── -->
+<div>
+  <div class="section-title">Cycle 1 — HUD · IDE 컨셉</div>
+  <div class="hud-demo">
+    <div class="ide-titlebar">
+      <div class="dot dot-r"></div>
+      <div class="dot dot-y"></div>
+      <div class="dot dot-g"></div>
+      <div class="ide-filename">hud.<span>js</span> — <span>김지윤의 디버그 서바이벌</span></div>
+    </div>
+    <div class="ide-body">
+      <div class="line-nums">1<br>2<br>3<br>4<br>5<br>6<br>7<br>8<br>9</div>
+      <div class="hud-content">
+
+        <!-- HP 바 3단계 -->
+        <div class="hp-row">
+          <div class="hp-label"><span class="key">hp</span><span class="eq"> = </span></div>
+          <div class="hp-track"><div class="hp-fill high"></div></div>
+          <div class="hp-text">75 / 100</div>
+        </div>
+        <div class="hp-row">
+          <div class="hp-label"><span class="key">hp</span><span class="eq"> = </span></div>
+          <div class="hp-track"><div class="hp-fill mid"></div></div>
+          <div class="hp-text">40 / 100</div>
+        </div>
+        <div class="hp-row">
+          <div class="hp-label"><span class="key">hp</span><span class="eq"> = </span></div>
+          <div class="hp-track"><div class="hp-fill low"></div></div>
+          <div class="hp-text" style="color:#f38ba8">18 / 100</div>
+        </div>
+
+        <!-- 킬 카운트 -->
+        <div class="stat-row">
+          <span class="stat-key">kills</span>
+          <span class="stat-eq"> = </span>
+          <span class="stat-val">23</span>
+          <span class="stat-comment">&nbsp;// target: 30</span>
+        </div>
+
+        <!-- 타이머 -->
+        <div class="timer-row">
+          <span class="timer-key">elapsed</span>
+          <span class="stat-eq"> = </span>
+          <span class="timer-val">"3:42"</span>
+        </div>
+
+        <!-- 이벤트 배지 -->
+        <div class="event-row">
+          <div class="badge badge-danger">⚠ BOSS 장선형</div>
+          <div class="badge badge-warn">E1 IndentationError (8/15)</div>
+          <div class="badge badge-ok">E2 클리어 ✓</div>
+        </div>
+
+      </div>
+    </div>
+    <div class="statusbar">
+      <span>🟢 WAVE 3</span>
+      <span>UTF-8</span>
+      <span>JavaScript</span>
+      <span>JY Survival v1.0</span>
+    </div>
+  </div>
+</div>
+
+<!-- ── CYCLE 2: 무기 이펙트 (hero_*.html 스타일) ── -->
+<div>
+  <div class="section-title">Cycle 2 — 무기 이펙트 · hero_*.html 스타일</div>
+  <div class="weapon-demo">
+
+    <div class="weapon-card python">
+      <div class="weapon-title">Python</div>
+      <canvas id="c-python" width="160" height="120"></canvas>
+      <div class="weapon-sub">Serpent Chain · 360° 네온 번개</div>
+    </div>
+
+    <div class="weapon-card c">
+      <div class="weapon-title">C / C++</div>
+      <canvas id="c-cpp" width="160" height="120"></canvas>
+      <div class="weapon-sub">Hypersonic Pierce · 고속 관통 슬래시</div>
+    </div>
+
+    <div class="weapon-card java">
+      <div class="weapon-title">Java</div>
+      <canvas id="c-java" width="160" height="120"></canvas>
+      <div class="weapon-sub">Orbital JVM · 회전 글로우 오브</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── CYCLE 3: 몬스터 카드 (_*.html 스타일) ── -->
+<div>
+  <div class="section-title">Cycle 3 — 몬스터 이펙트 · _*.html 스타일</div>
+  <div class="monster-demo">
+
+    <div class="monster-card syntax">
+      <div class="grid-bg"></div>
+      <div class="monster-tag">AGGRESSIVE SPIKY</div>
+      <div class="monster-name">SYNTAX ERROR</div>
+      <div class="monster-sub">// 빨간 각진 딱정벌레형</div>
+      <div class="monster-stats">
+        <div class="mstat">HP<span>24</span></div>
+        <div class="mstat">SPD<span>65</span></div>
+        <div class="mstat">DMG<span>10</span></div>
+      </div>
+    </div>
+
+    <div class="monster-card null">
+      <div class="grid-bg"></div>
+      <div class="monster-tag">PHANTOM GHOST</div>
+      <div class="monster-name">NULL PTR</div>
+      <div class="monster-sub">// 반투명 유령 · 고속 페이드</div>
+      <div class="monster-stats">
+        <div class="mstat">HP<span>20</span></div>
+        <div class="mstat">SPD<span>110</span></div>
+        <div class="mstat">DMG<span>5</span></div>
+      </div>
+    </div>
+
+    <div class="monster-card seg">
+      <div class="grid-bg"></div>
+      <div class="monster-tag">ARMOR BREAKER</div>
+      <div class="monster-name">SEG FAULT</div>
+      <div class="monster-sub">// 갈색 육각형 · 균열</div>
+      <div class="monster-stats">
+        <div class="mstat">HP<span>40</span></div>
+        <div class="mstat">SPD<span>45</span></div>
+        <div class="mstat">DMG<span>15</span></div>
+      </div>
+    </div>
+
+    <div class="monster-card heal">
+      <div class="grid-bg"></div>
+      <div class="monster-tag">SUPPORT HEAL</div>
+      <div class="monster-name">HEAL BUG</div>
+      <div class="monster-sub">// 녹색 하트 · 회복 필드</div>
+      <div class="monster-stats">
+        <div class="mstat">HP<span>30</span></div>
+        <div class="mstat">SPD<span>55</span></div>
+        <div class="mstat">DMG<span>0</span></div>
+      </div>
+    </div>
+
+    <div class="monster-card indent">
+      <div class="grid-bg"></div>
+      <div class="monster-tag">TAB CHAOS</div>
+      <div class="monster-name">INDENT ERR</div>
+      <div class="monster-sub">// 주황 사각형 · 줄 충격파</div>
+      <div class="monster-stats">
+        <div class="mstat">HP<span>28</span></div>
+        <div class="mstat">SPD<span>70</span></div>
+        <div class="mstat">DMG<span>12</span></div>
+      </div>
+    </div>
+
+    <div class="monster-card env">
+      <div class="grid-bg"></div>
+      <div class="monster-tag">ENV BREAKER</div>
+      <div class="monster-name">ENV ERROR</div>
+      <div class="monster-sub">// 파란 삼각 경고 · PATH 오염</div>
+      <div class="monster-stats">
+        <div class="mstat">HP<span>22</span></div>
+        <div class="mstat">SPD<span>80</span></div>
+        <div class="mstat">DMG<span>8</span></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ── Python: 뱀 체인 번개 ──
+(function(){
+  const cv = document.getElementById('c-python');
+  const ctx = cv.getContext('2d');
+  const W = 160, H = 120;
+  const snakes = [];
+
+  function spawnSnake() {
+    const angle = Math.random() * Math.PI * 2;
+    snakes.push({
+      x: W/2, y: H/2,
+      tx: 20 + Math.random() * (W-40),
+      ty: 20 + Math.random() * (H-40),
+      pts: Array.from({length: 20}, () => ({x: W/2, y: H/2})),
+      t: 0, speed: 3.5, active: true,
+      angle: angle, life: 1
+    });
+  }
+
+  function loop() {
+    ctx.fillStyle = 'rgba(0,0,0,0.15)';
+    ctx.fillRect(0, 0, W, H);
+
+    snakes.forEach((s, i) => {
+      if (!s.active) return;
+      s.t += 0.12;
+      const wave = Math.sin(s.t) * 3;
+      s.x += Math.cos(s.angle) * s.speed + Math.cos(s.angle + Math.PI/2) * wave;
+      s.y += Math.sin(s.angle) * s.speed + Math.sin(s.angle + Math.PI/2) * wave;
+      s.pts.unshift({x: s.x, y: s.y});
+      s.pts.pop();
+      if (Math.hypot(s.tx - s.x, s.ty - s.y) < 10) s.active = false;
+
+      ctx.save();
+      ctx.shadowBlur = 12; ctx.shadowColor = '#44ff44';
+      for (let j = 1; j < s.pts.length; j++) {
+        const alpha = 1 - j / s.pts.length;
+        ctx.globalAlpha = alpha * 0.9;
+        ctx.strokeStyle = j < 5 ? '#88ffaa' : '#44ff44';
+        ctx.lineWidth = (1 - j / s.pts.length) * 3;
+        ctx.beginPath();
+        ctx.moveTo(s.pts[j-1].x, s.pts[j-1].y);
+        ctx.lineTo(s.pts[j].x, s.pts[j].y);
+        ctx.stroke();
+      }
+      ctx.restore();
+    });
+
+    // 플레이어 점
+    ctx.save();
+    ctx.shadowBlur = 16; ctx.shadowColor = '#44ff44';
+    ctx.fillStyle = '#44ff44';
+    ctx.beginPath(); ctx.arc(W/2, H/2, 5, 0, Math.PI*2); ctx.fill();
+    ctx.restore();
+
+    requestAnimationFrame(loop);
+  }
+
+  setInterval(spawnSnake, 600);
+  spawnSnake();
+  loop();
+})();
+
+// ── C/C++: 고속 슬래시 ──
+(function(){
+  const cv = document.getElementById('c-cpp');
+  const ctx = cv.getContext('2d');
+  const W = 160, H = 120;
+  const slashes = [];
+
+  function spawnSlash() {
+    const angle = -0.2 + Math.random() * 0.4;
+    slashes.push({ x: W/2, y: H/2, angle, speed: 14, trail: [], life: 1 });
+  }
+
+  function loop() {
+    ctx.fillStyle = 'rgba(0,0,0,0.2)';
+    ctx.fillRect(0, 0, W, H);
+
+    slashes.forEach((s, i) => {
+      s.x += Math.cos(s.angle) * s.speed;
+      s.y += Math.sin(s.angle) * s.speed;
+      s.trail.push({x: s.x, y: s.y});
+      if (s.trail.length > 12) s.trail.shift();
+      s.life -= 0.04;
+
+      ctx.save();
+      ctx.shadowBlur = 10; ctx.shadowColor = '#64b4ff';
+      for (let j = 1; j < s.trail.length; j++) {
+        const alpha = (j / s.trail.length) * s.life;
+        ctx.globalAlpha = alpha;
+        ctx.strokeStyle = '#64b4ff';
+        ctx.lineWidth = (j / s.trail.length) * 4;
+        ctx.beginPath();
+        ctx.moveTo(s.trail[j-1].x, s.trail[j-1].y);
+        ctx.lineTo(s.trail[j].x, s.trail[j].y);
+        ctx.stroke();
+      }
+      // 충격파 원
+      if (s.life > 0.5) {
+        ctx.globalAlpha = (1 - s.life) * 0.5;
+        ctx.strokeStyle = '#aaddff';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, (1 - s.life) * 20, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+      ctx.restore();
+    });
+
+    for (let i = slashes.length - 1; i >= 0; i--) {
+      if (slashes[i].life <= 0 || slashes[i].x > W || slashes[i].x < 0) slashes.splice(i, 1);
+    }
+
+    ctx.save();
+    ctx.shadowBlur = 14; ctx.shadowColor = '#64b4ff';
+    ctx.fillStyle = '#64b4ff';
+    ctx.beginPath(); ctx.arc(W/2, H/2, 5, 0, Math.PI*2); ctx.fill();
+    ctx.restore();
+
+    requestAnimationFrame(loop);
+  }
+
+  setInterval(spawnSlash, 400);
+  spawnSlash();
+  loop();
+})();
+
+// ── Java: 오비탈 글로우 오브 ──
+(function(){
+  const cv = document.getElementById('c-java');
+  const ctx = cv.getContext('2d');
+  const W = 160, H = 120;
+  const ORBS = 3;
+  let t = 0;
+
+  function loop() {
+    ctx.fillStyle = 'rgba(0,0,0,0.18)';
+    ctx.fillRect(0, 0, W, H);
+
+    t += 0.03;
+
+    // 링
+    ctx.save();
+    ctx.strokeStyle = 'rgba(255,160,50,0.15)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.arc(W/2, H/2, 36, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+
+    for (let i = 0; i < ORBS; i++) {
+      const angle = t + (i * Math.PI * 2 / ORBS);
+      const ox = W/2 + Math.cos(angle) * 36;
+      const oy = H/2 + Math.sin(angle) * 36;
+
+      // 궤적
+      ctx.save();
+      ctx.shadowBlur = 16; ctx.shadowColor = '#ffa032';
+      ctx.globalAlpha = 0.4;
+      for (let j = 1; j <= 8; j++) {
+        const ta = angle - j * 0.12;
+        const tx = W/2 + Math.cos(ta) * 36;
+        const ty = H/2 + Math.sin(ta) * 36;
+        ctx.fillStyle = '#ffa032';
+        ctx.globalAlpha = 0.05 * (8 - j);
+        ctx.beginPath(); ctx.arc(tx, ty, 3, 0, Math.PI*2); ctx.fill();
+      }
+      ctx.restore();
+
+      // 오브
+      ctx.save();
+      ctx.shadowBlur = 20; ctx.shadowColor = '#ffa032';
+      ctx.fillStyle = '#ffcc88';
+      ctx.beginPath(); ctx.arc(ox, oy, 5, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath(); ctx.arc(ox - 1, oy - 1, 2, 0, Math.PI*2); ctx.fill();
+      ctx.restore();
+    }
+
+    // 플레이어 점
+    ctx.save();
+    ctx.shadowBlur = 14; ctx.shadowColor = '#ffa032';
+    ctx.fillStyle = '#ffa032';
+    ctx.beginPath(); ctx.arc(W/2, H/2, 5, 0, Math.PI*2); ctx.fill();
+    ctx.restore();
+
+    requestAnimationFrame(loop);
+  }
+
+  loop();
+})();
+</script>
+</body>
+</html>

@@ -6,18 +6,37 @@
 
 ---
 
-## 현재 Phase: 11
+## 현재 Phase: 10.5
 
 **업데이트**: 2026-04-25
-**상태**: 대기 중 (Phase 진입 시 Cycle 분할 필요)
+**상태**: 진행 중
 
-### 활성 Cycle: (없음)
+### 활성 Cycle: Cycle 1 — HUD IDE 컨셉 리뉴얼
 
-> Phase 진입 시 메인 에이전트가 `phase_feedback/phase_11.md` 검토 후 Cycle 목록을 채운다.
+**Spec:** `docs/superpowers/specs/2026-04-25-phase10-5-cycle1-hud-design.md`
+
+### Cycle 목록
+
+- [ ] Cycle 1 — HUD IDE 컨셉 리뉴얼 (spec ✅ / plan 없음 → Step 1 시작)
+- [ ] Cycle 2 — 무기 이펙트 hero_*.html 스타일 이식
+- [ ] Cycle 3 — 몬스터 이펙트 _*.html 스타일 이식
+
+**Spec 파일:**
+- `docs/superpowers/specs/2026-04-25-phase10-5-cycle1-hud-design.md`
+- `docs/superpowers/specs/2026-04-25-phase10-5-cycle2-weapon-effect-design.md`
+- `docs/superpowers/specs/2026-04-25-phase10-5-cycle3-monster-effect-design.md`
+
+---
+
+Phase 10 완료 / Phase 10.5 진행 중 / Phase 11 대기
+
+---
+
+## Phase 11 — 대기 중
+
+**상태**: 대기 중 (Phase 10.5 완료 후 진입)
 
 ### Cycle 목록 (후보)
-
-> 출처: 기존 phase-status.md Phase 11 후보 태스크. Step 0 진입 시 Cycle 단위로 분할 예정.
 
 수정 사이클 후보:
 - [ ] 이벤트 UI 감성화 — 경고창 텍스트 → 터미널 타자 연출 or 홀로그램 스타일
@@ -28,10 +47,6 @@
 - [ ] 스테이지 추가 — 테마 맵 2종: 프론트엔드 정원(파스텔톤), 백엔드 서버룸(다크 모드)
 - [ ] 빌드 검증형 스테이지 기믹 — 스테이지별 유리 무기 조합 강제 환경 디버프
 - [ ] 단계적 보상 시스템 — 스테이지별 차별화 드롭 아이템
-
----
-
-Phase 10 완료 / Phase 11 진행 대기 중
 
 ---
 
