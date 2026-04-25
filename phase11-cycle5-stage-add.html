@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>Phase 11 Cycle 5 — 스테이지 추가</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:#0f0f17; font-family:'JetBrains Mono',monospace; color:#cdd6f4; padding:20px; }
+h1 { font-size:13px; color:#6c7086; letter-spacing:2px; margin-bottom:4px; text-transform:uppercase; }
+.sub { font-size:10px; color:#45475a; margin-bottom:20px; }
+.layout { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+
+.stage-card { border-radius:4px; overflow:hidden; }
+
+/* Stage 2: Frontend Garden */
+.garden { border:1px solid #fab38788; }
+.garden .stage-header { background:linear-gradient(135deg, #2a1a2e, #1a1a2a); padding:10px 14px; border-bottom:1px solid #fab38844; }
+.garden .stage-title { font-size:14px; font-weight:700; color:#fab387; }
+.garden .stage-sub { font-size:9px; color:#f5c2e7; margin-top:2px; }
+.garden canvas { display:block; }
+.garden .stage-body { padding:12px 14px; background:#1a0f1a; }
+
+/* Stage 3: Backend Serverroom */
+.server { border:1px solid #89b4fa88; }
+.server .stage-header { background:linear-gradient(135deg, #0f1a2a, #0a0f1a); padding:10px 14px; border-bottom:1px solid #89b4fa44; }
+.server .stage-title { font-size:14px; font-weight:700; color:#89b4fa; }
+.server .stage-sub { font-size:9px; color:#94e2d5; margin-top:2px; }
+.server canvas { display:block; }
+.server .stage-body { padding:12px 14px; background:#0a0f1a; }
+
+.stat-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:6px; margin-top:8px; }
+.stat-item { padding:6px 8px; border-radius:2px; }
+.stat-key { font-size:7px; letter-spacing:1px; margin-bottom:2px; }
+.stat-val { font-size:10px; font-weight:700; }
+
+.bug-list { margin-top:8px; font-size:8px; line-height:2; }
+.bug-tag { display:inline-block; padding:0 5px; border-radius:2px; margin-right:4px; font-size:8px; }
+</style>
+</head>
+<body>
+<h1>Phase 11 · Cycle 5 — 스테이지 추가</h1>
+<p class="sub">테마 맵 2종: Stage 2 프론트엔드 정원 · Stage 3 백엔드 서버룸</p>
+
+<div class="layout">
+
+  <!-- Stage 2: Frontend Garden -->
+  <div class="stage-card garden">
+    <div class="stage-header">
+      <div class="stage-title">🌸 Stage 2 — 프론트엔드 정원</div>
+      <div class="stage-sub">파스텔 톤 · CSS 버그 생태계</div>
+    </div>
+    <canvas id="garden" width="360" height="180"></canvas>
+    <div class="stage-body">
+      <div class="stat-grid">
+        <div class="stat-item" style="background:rgba(250,179,135,0.1);border:1px solid #fab38733">
+          <div class="stat-key" style="color:#f5c2e7">THEME</div>
+          <div class="stat-val" style="color:#fab387">Pastel</div>
+        </div>
+        <div class="stat-item" style="background:rgba(245,194,231,0.1);border:1px solid #f5c2e733">
+          <div class="stat-key" style="color:#f5c2e7">MUSIC</div>
+          <div class="stat-val" style="color:#f5c2e7">Lo-fi</div>
+        </div>
+        <div class="stat-item" style="background:rgba(203,166,247,0.1);border:1px solid #cba6f733">
+          <div class="stat-key" style="color:#f5c2e7">GIMMICK</div>
+          <div class="stat-val" style="color:#cba6f7" style="font-size:8px">CSS 미적용 디버프</div>
+        </div>
+        <div class="stat-item" style="background:rgba(166,227,161,0.1);border:1px solid #a6e3a133">
+          <div class="stat-key" style="color:#f5c2e7">BOSS</div>
+          <div class="stat-val" style="color:#a6e3a1" style="font-size:9px">장선형 v2</div>
+        </div>
+      </div>
+      <div class="bug-list" style="color:#6c7086">
+        <div>등장 버그:</div>
+        <span class="bug-tag" style="background:rgba(250,179,135,0.15);color:#fab387">CSSError</span>
+        <span class="bug-tag" style="background:rgba(245,194,231,0.15);color:#f5c2e7">LayoutBug</span>
+        <span class="bug-tag" style="background:rgba(203,166,247,0.15);color:#cba6f7">FlexboxGhost</span>
+        <span class="bug-tag" style="background:rgba(166,227,161,0.15);color:#a6e3a1">AnimationLeak</span>
+      </div>
+      <div style="margin-top:8px;font-size:8px;color:#45475a">
+        유리 무기: <span style="color:#fab387">Python</span> · 권장: <span style="color:#a6e3a1">JavaScript, Django</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stage 3: Backend Serverroom -->
+  <div class="stage-card server">
+    <div class="stage-header">
+      <div class="stage-title">🖥️ Stage 3 — 백엔드 서버룸</div>
+      <div class="stage-sub">다크 모드 · DB 버그 생태계</div>
+    </div>
+    <canvas id="server" width="360" height="180"></canvas>
+    <div class="stage-body">
+      <div class="stat-grid">
+        <div class="stat-item" style="background:rgba(137,180,250,0.1);border:1px solid #89b4fa33">
+          <div class="stat-key" style="color:#94e2d5">THEME</div>
+          <div class="stat-val" style="color:#89b4fa">Dark CRT</div>
+        </div>
+        <div class="stat-item" style="background:rgba(148,226,213,0.1);border:1px solid #94e2d533">
+          <div class="stat-key" style="color:#94e2d5">MUSIC</div>
+          <div class="stat-val" style="color:#94e2d5">Synthwave</div>
+        </div>
+        <div class="stat-item" style="background:rgba(243,139,168,0.1);border:1px solid #f38ba833">
+          <div class="stat-key" style="color:#94e2d5">GIMMICK</div>
+          <div class="stat-val" style="color:#f38ba8">DB 잠금 장판</div>
+        </div>
+        <div class="stat-item" style="background:rgba(249,226,175,0.1);border:1px solid #f9e2af33">
+          <div class="stat-key" style="color:#94e2d5">BOSS</div>
+          <div class="stat-val" style="color:#f9e2af">장선형 v3</div>
+        </div>
+      </div>
+      <div class="bug-list" style="color:#6c7086">
+        <div>등장 버그:</div>
+        <span class="bug-tag" style="background:rgba(137,180,250,0.15);color:#89b4fa">DeadlockError</span>
+        <span class="bug-tag" style="background:rgba(243,139,168,0.15);color:#f38ba8">SQLInjection</span>
+        <span class="bug-tag" style="background:rgba(148,226,213,0.15);color:#94e2d5">N+1Query</span>
+        <span class="bug-tag" style="background:rgba(249,226,175,0.15);color:#f9e2af">MemoryLeak</span>
+      </div>
+      <div style="margin-top:8px;font-size:8px;color:#45475a">
+        유리 무기: <span style="color:#89b4fa">JavaScript</span> · 권장: <span style="color:#a6e3a1">SQL, Java</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// Garden canvas - pastel floating particles
+const gc = document.getElementById('garden');
+const gx = gc.getContext('2d');
+const gardenParticles = Array.from({length:30},()=>({
+  x:Math.random()*360, y:Math.random()*180,
+  r:2+Math.random()*4,
+  vx:(Math.random()-0.5)*0.3, vy:-0.2-Math.random()*0.3,
+  color:['#fab387','#f5c2e7','#cba6f7','#a6e3a1','#f9e2af'][Math.floor(Math.random()*5)],
+  alpha:0.4+Math.random()*0.5, life:Math.random()
+}));
+
+// Serverroom canvas - scanline + terminal blink
+const sc = document.getElementById('server');
+const sx = sc.getContext('2d');
+let scanY = 0;
+
+function drawGarden(t) {
+  // Soft gradient BG
+  const grad = gx.createLinearGradient(0,0,0,180);
+  grad.addColorStop(0,'#1a0f1f');
+  grad.addColorStop(1,'#0f0a15');
+  gx.fillStyle = grad;
+  gx.fillRect(0,0,360,180);
+
+  // Grid (soft)
+  gx.strokeStyle = 'rgba(250,179,135,0.06)';
+  gx.lineWidth = 1;
+  for(let x=0;x<360;x+=24){gx.beginPath();gx.moveTo(x,0);gx.lineTo(x,180);gx.stroke();}
+  for(let y=0;y<180;y+=24){gx.beginPath();gx.moveTo(0,y);gx.lineTo(360,y);gx.stroke();}
+
+  // Floating petals
+  gardenParticles.forEach(p => {
+    p.x += p.vx + Math.sin(t*0.02+p.life*10)*0.2;
+    p.y += p.vy;
+    p.life += 0.005;
+    if(p.y < -10) { p.y = 190; p.x = Math.random()*360; }
+    gx.beginPath();
+    gx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+    gx.fillStyle = p.color + Math.floor(p.alpha*(0.4+0.3*Math.sin(t*0.03+p.life))*255).toString(16).padStart(2,'0');
+    gx.shadowBlur = 8; gx.shadowColor = p.color;
+    gx.fill(); gx.shadowBlur=0;
+  });
+
+  // Player dot
+  const px = 180 + Math.sin(t*0.02)*40, py = 90+Math.cos(t*0.015)*20;
+  gx.beginPath();gx.arc(px,py,6,0,Math.PI*2);
+  gx.fillStyle='#fab387'; gx.shadowBlur=16; gx.shadowColor='#fab387';
+  gx.fill(); gx.shadowBlur=0;
+}
+
+function drawServer(t) {
+  sx.fillStyle='#040810';
+  sx.fillRect(0,0,360,180);
+
+  // Grid
+  sx.strokeStyle='rgba(137,180,250,0.06)';
+  sx.lineWidth=1;
+  for(let x=0;x<360;x+=20){sx.beginPath();sx.moveTo(x,0);sx.lineTo(x,180);sx.stroke();}
+  for(let y=0;y<180;y+=20){sx.beginPath();sx.moveTo(0,y);sx.lineTo(360,y);sx.stroke();}
+
+  // Server rack silhouettes
+  [[20,20,50,140],[90,10,50,160],[170,30,50,130],[240,15,50,150],[310,25,50,135]].forEach(([x,y,w,h])=>{
+    sx.fillStyle='rgba(137,180,250,0.04)';
+    sx.fillRect(x,y,w,h);
+    sx.strokeStyle='rgba(137,180,250,0.12)';
+    sx.strokeRect(x,y,w,h);
+    // LED blinks
+    for(let i=0;i<4;i++){
+      const on = Math.sin(t*0.1+x+i*2)>0.3;
+      sx.fillStyle=on?'#a6e3a1':'#1a2a1a';
+      sx.fillRect(x+6,y+10+i*12,4,4);
+    }
+  });
+
+  // Scanline
+  scanY = (scanY+1)%180;
+  const sg = sx.createLinearGradient(0,scanY-6,0,scanY+6);
+  sg.addColorStop(0,'rgba(137,180,250,0)');
+  sg.addColorStop(0.5,'rgba(137,180,250,0.06)');
+  sg.addColorStop(1,'rgba(137,180,250,0)');
+  sx.fillStyle=sg; sx.fillRect(0,scanY-6,360,12);
+
+  // Player dot
+  const px2=180+Math.cos(t*0.025)*50, py2=90+Math.sin(t*0.02)*30;
+  sx.beginPath();sx.arc(px2,py2,5,0,Math.PI*2);
+  sx.fillStyle='#89b4fa';sx.shadowBlur=20;sx.shadowColor='#89b4fa';
+  sx.fill();sx.shadowBlur=0;
+}
+
+let frame=0;
+function loop(){
+  frame++;
+  drawGarden(frame);
+  drawServer(frame);
+  requestAnimationFrame(loop);
+}
+loop();
+</script>
+</body>
+</html>

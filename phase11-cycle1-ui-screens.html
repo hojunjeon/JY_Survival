@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>Phase 11 Cycle 1 — 미구현 화면 7개</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:#0f0f17; font-family:'JetBrains Mono',monospace; color:#cdd6f4; padding:20px; }
+
+h1 { font-size:13px; color:#6c7086; letter-spacing:2px; margin-bottom:20px; text-transform:uppercase; }
+
+.grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
+.grid-2 { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; margin-top:12px; }
+
+.screen { background:#1e1e2e; border:1px solid #313244; border-radius:4px; overflow:hidden; }
+.screen-title { background:#181825; padding:5px 10px; font-size:9px; color:#6c7086; border-bottom:1px solid #313244; display:flex; align-items:center; gap:6px; }
+.screen-title .dot { width:7px; height:7px; border-radius:50%; }
+.screen-body { padding:12px; }
+.label { font-size:8px; color:#45475a; margin-bottom:8px; letter-spacing:1px; }
+
+/* ─── WeaponSelect ─── */
+.ws-sidebar { display:flex; flex-direction:column; gap:4px; margin-bottom:10px; }
+.ws-item { padding:4px 8px; border-left:2px solid #313244; font-size:9px; color:#6c7086; display:flex; gap:6px; align-items:center; }
+.ws-item.active { border-color:#4ec9b0; color:#4ec9b0; background:rgba(78,201,176,0.08); }
+.ws-code { font-size:8px; line-height:1.8; }
+.kw { color:#cba6f7; } .fn { color:#89dceb; } .str { color:#f38ba8; } .cm { color:#45475a; } .val { color:#a6e3a1; }
+
+/* ─── EventToast ─── */
+.toast { background:#2a2139; border:1px solid #f9e2af44; padding:10px; }
+.toast-header { display:flex; align-items:center; gap:8px; margin-bottom:8px; font-size:9px; }
+.toast-char { width:28px; height:28px; background:#1a1a2e; border:1px solid #f9e2af66; display:flex; align-items:center; justify-content:center; font-size:16px; }
+.toast-line { font-size:9px; color:#f5c2e7; font-style:italic; line-height:1.6; font-family:'Noto Sans KR',sans-serif; }
+.toast-btns { display:flex; gap:6px; margin-top:8px; }
+.btn { padding:3px 8px; font-size:8px; font-family:'JetBrains Mono',monospace; border:none; cursor:pointer; }
+.btn-skip { background:transparent; border:1px solid #313244; color:#6c7086; }
+.btn-ok { background:#f9e2af; color:#1e1e2e; font-weight:700; }
+
+/* ─── EventModal ─── */
+.em-mission { background:#181825; border:1px solid #313244; padding:8px; margin:8px 0; }
+.progress-bar { height:4px; background:#313244; margin:4px 0; }
+.progress-fill { height:100%; background:#4ec9b0; }
+.em-reward { background:rgba(249,226,175,0.08); border:1px solid #f9e2af33; padding:6px 8px; }
+
+/* ─── StatUpgrade ─── */
+.stat-opt { border:1px solid #313244; padding:8px 10px; margin-bottom:6px; background:#181825; }
+.stat-opt.sel { border-color:#4ec9b0; background:rgba(78,201,176,0.08); }
+.stat-row { display:flex; justify-content:space-between; align-items:center; }
+.stat-val { font-size:13px; font-weight:700; }
+
+/* ─── WeaponGet ─── */
+.weapon-box { border:1px solid #f9e2af; background:rgba(249,226,175,0.05); padding:12px; text-align:center; }
+.weapon-name { font-size:14px; font-weight:700; color:#f9e2af; margin:6px 0 2px; }
+.weapon-code { text-align:left; background:#181825; border:1px solid #313244; padding:6px 8px; font-size:8px; margin-top:8px; }
+
+/* ─── BossIntro ─── */
+.boss-hp { height:5px; background:#313244; margin:6px 0; }
+.boss-hp-fill { height:100%; background:linear-gradient(90deg,#f38ba8,#fab387); }
+.boss-sprite { font-size:36px; text-align:center; padding:10px 0; filter:drop-shadow(0 0 8px #f38ba888); }
+.boss-quote { background:#2d1b1b; border:1px solid #f38ba833; padding:8px; font-size:9px; font-style:italic; color:#f5c2e7; font-family:'Noto Sans KR',sans-serif; line-height:1.7; }
+
+/* ─── GameOver ─── */
+.stack { font-size:8px; line-height:2; }
+.stack .err { color:#f38ba8; }
+.stack .trace { color:#45475a; padding-left:10px; }
+.run-summary { background:#181825; border:1px solid #313244; padding:8px; margin:8px 0; }
+.run-row { display:flex; justify-content:space-between; font-size:9px; margin-bottom:2px; }
+
+/* ─── StageClear ─── */
+.commit-box { background:rgba(78,201,176,0.08); border:1px solid #4ec9b066; padding:8px; margin:8px 0; }
+.clear-log { font-size:9px; line-height:2; }
+
+.status-bar { background:#007acc; height:16px; padding:0 8px; display:flex; align-items:center; font-size:8px; color:rgba(255,255,255,0.9); justify-content:space-between; flex-shrink:0; }
+</style>
+</head>
+<body>
+<h1>Phase 11 · Cycle 1 — 미구현 화면 7개 Canvas 오버레이</h1>
+
+<div class="grid">
+
+  <!-- WeaponSelect -->
+  <div class="screen">
+    <div class="screen-title">
+      <span class="dot" style="background:#f55"></span>
+      <span class="dot" style="background:#fb0"></span>
+      <span class="dot" style="background:#5c5"></span>
+      <span>weapon-select.js</span>
+    </div>
+    <div class="screen-body">
+      <div class="label">WEAPON SELECT</div>
+      <div class="ws-sidebar">
+        <div style="font-size:8px;color:#f9e2af;margin-bottom:2px">▾ weapons/</div>
+        <div class="ws-item active">⬡ Python.py</div>
+        <div class="ws-item">⬡ C_Cpp.c</div>
+        <div class="ws-item">⬡ Java.class</div>
+      </div>
+      <div class="ws-code">
+        <div><span class="kw">import</span> <span class="fn">Python</span> <span class="kw">from</span> <span class="str">'Python.py'</span></div>
+        <div class="cm">/** 360° 자동 투사체 */</div>
+        <div><span class="kw">const</span> <span style="color:#4ec9b0">weapon</span> = <span class="kw">new</span> <span class="fn">Python</span>()</div>
+        <div class="cm">// 추천도: ★★★</div>
+      </div>
+      <div style="margin-top:8px;background:rgba(78,201,176,0.1);border:1px solid #4ec9b0;padding:5px 8px;display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:8px;color:#4ec9b0">선택됨: Python.py</span>
+        <span style="background:#4ec9b0;color:#1e1e2e;padding:3px 8px;font-size:8px;font-weight:700">시작 →</span>
+      </div>
+    </div>
+    <div class="status-bar"><span>⎇ main</span><span>Stage 1 시작</span></div>
+  </div>
+
+  <!-- EventToast -->
+  <div class="screen">
+    <div class="screen-title">
+      <span class="dot" style="background:#f55"></span>
+      <span class="dot" style="background:#fb0"></span>
+      <span class="dot" style="background:#5c5"></span>
+      <span>stage1.run() [PAUSED]</span>
+    </div>
+    <div class="screen-body">
+      <div class="label">EVENT TOAST</div>
+      <div style="font-size:8px;color:#f9e2af;text-align:center;border:1px solid #f9e2af33;padding:3px;margin-bottom:8px;background:rgba(249,226,175,0.06)">⚡ EVENT TRIGGER — E1</div>
+      <div class="toast">
+        <div class="toast-header">
+          <div class="toast-char">🧑‍💻</div>
+          <span style="color:#cdd6f4;font-size:9px;font-weight:700">박민준</span>
+          <span style="color:#45475a;font-size:8px;margin-left:auto">SSAFY 15기</span>
+        </div>
+        <div class="toast-line">"야 이거 IndentationError가<br>왜 자꾸 뜨는 거야?!"</div>
+        <div style="font-size:8px;color:#45475a;margin-top:6px;border:1px solid #313244;padding:4px 6px">
+          <span style="color:#45475a">// </span><span style="color:#4ec9b0">들여쓰기 지옥</span> ×15 → <span style="color:#f9e2af">재화 +3</span>
+        </div>
+        <div class="toast-btns">
+          <button class="btn btn-skip">무시하기</button>
+          <button class="btn btn-ok">도와주기 →</button>
+        </div>
+      </div>
+    </div>
+    <div class="status-bar"><span>⏸ PAUSED</span><span>Wave 2</span></div>
+  </div>
+
+  <!-- EventModal -->
+  <div class="screen">
+    <div class="screen-title">
+      <span class="dot" style="background:#f55"></span>
+      <span class="dot" style="background:#fb0"></span>
+      <span class="dot" style="background:#5c5"></span>
+      <span>event.E1.js</span>
+    </div>
+    <div class="screen-body">
+      <div class="label">EVENT MODAL</div>
+      <div class="ws-code" style="margin-bottom:8px">
+        <div class="cm">// [EVENT E1] 들여쓰기 지옥</div>
+        <div><span class="kw">const</span> <span style="color:#4ec9b0">e</span> = <span class="fn">Event</span>.trigger(<span class="str">'E1'</span>)</div>
+      </div>
+      <div class="em-mission">
+        <div style="font-size:7px;color:#6c7086;margin-bottom:4px">MISSION</div>
+        <div style="display:flex;justify-content:space-between;font-size:9px;margin-bottom:4px">
+          <span style="color:#f38ba8">IndentationError ×15</span>
+          <span style="color:#a6e3a1">8 / 15</span>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" style="width:53%"></div></div>
+      </div>
+      <div class="em-reward">
+        <div style="font-size:7px;color:#6c7086;margin-bottom:3px">REWARD</div>
+        <div style="font-size:9px"><span class="kw">return</span> { <span style="color:#4ec9b0">enhance</span>: <span class="val">3</span> }</div>
+      </div>
+      <div style="display:flex;gap:6px;margin-top:8px">
+        <button class="btn btn-skip" style="flex:1">일시정지 해제</button>
+        <button class="btn btn-ok" style="flex:1">계속 플레이</button>
+      </div>
+    </div>
+    <div class="status-bar"><span>● PAUSED · E1</span><span>8/15</span></div>
+  </div>
+
+  <!-- StatUpgrade -->
+  <div class="screen">
+    <div class="screen-title">
+      <span class="dot" style="background:#f55"></span>
+      <span class="dot" style="background:#fb0"></span>
+      <span class="dot" style="background:#5c5"></span>
+      <span>upgrade.select()</span>
+    </div>
+    <div class="screen-body">
+      <div class="label">STAT UPGRADE</div>
+      <div class="cm" style="font-size:8px;margin-bottom:6px">// Q1 완료 — 스탯 업그레이드 선택</div>
+      <div style="font-size:11px;color:#4ec9b0;margin-bottom:8px">player.upgrade(<span style="color:#cdd6f4">?</span>)</div>
+      <div class="stat-opt sel">
+        <div class="stat-row"><span style="color:#4ec9b0;font-size:9px">moveSpeed</span><span class="stat-val" style="color:#4ec9b0">+15%</span></div>
+        <div style="font-size:7px;color:#6c7086;margin-top:2px">이동 속도 증가</div>
+        <div style="font-size:7px;color:#4ec9b0;margin-top:3px">↵ press to select</div>
+      </div>
+      <div class="stat-opt">
+        <div class="stat-row"><span style="color:#f9e2af;font-size:9px">attackSpeed</span><span class="stat-val" style="color:#f9e2af">+20%</span></div>
+        <div style="font-size:7px;color:#6c7086;margin-top:2px">공격 속도 증가</div>
+      </div>
+      <div class="stat-opt">
+        <div class="stat-row"><span style="color:#f38ba8;font-size:9px">damageMulti</span><span class="stat-val" style="color:#f38ba8">+25%</span></div>
+        <div style="font-size:7px;color:#6c7086;margin-top:2px">피해량 증가</div>
+      </div>
+    </div>
+    <div class="status-bar"><span>✓ Q1 COMPLETE</span><span>버그 100마리!</span></div>
+  </div>
+
+</div>
+
+<div class="grid-2">
+
+  <!-- WeaponGet -->
+  <div class="screen">
+    <div class="screen-title">
+      <span class="dot" style="background:#f55"></span>
+      <span class="dot" style="background:#fb0"></span>
+      <span class="dot" style="background:#5c5"></span>
+      <span>weapon.acquired()</span>
+    </div>
+    <div class="screen-body" style="display:flex;flex-direction:column;align-items:center;padding:16px">
+      <div class="label" style="text-align:center;letter-spacing:2px">NEW WEAPON ACQUIRED</div>
+      <div class="weapon-box" style="width:100%;margin-top:8px">
+        <div style="font-size:24px;filter:drop-shadow(0 0 12px #f9e2af)">⚔️</div>
+        <div class="weapon-name">Git.exe</div>
+        <div style="font-size:8px;color:#6c7086">범위 스턴/롤백 CC기</div>
+        <div class="weapon-code">
+          <div class="cm">// git.attack()</div>
+          <div><span class="kw">await</span> <span style="color:#4ec9b0">git</span>.<span class="fn">rollback</span>(enemies, <span class="str">'HEAD~3'</span>)</div>
+          <div class="cm">// 범위 내 버그 2초 스턴</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;width:100%;margin-top:10px">
+        <button class="btn btn-skip" style="flex:1">버리기</button>
+        <button class="btn btn-ok" style="flex:2">장착 (슬롯 3)</button>
+      </div>
+    </div>
+    <div class="status-bar"><span>✓ EVENT E2</span><span>무기 획득!</span></div>
+  </div>
+
+  <!-- BossIntro + GameOver side by side -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+
+    <!-- BossIntro -->
+    <div class="screen">
+      <div class="screen-title">
+        <span class="dot" style="background:#f55"></span>
+        <span class="dot" style="background:#fb0"></span>
+        <span class="dot" style="background:#5c5"></span>
+        <span>boss.spawn()</span>
+      </div>
+      <div class="screen-body" style="background:rgba(243,139,168,0.04)">
+        <div style="background:rgba(243,139,168,0.15);border-bottom:1px solid #f38ba833;padding:6px 0;margin:-12px -12px 10px">
+          <div style="display:flex;justify-content:space-between;font-size:8px;padding:0 10px;margin-bottom:4px">
+            <span style="color:#f38ba8;font-weight:700">BOSS — 장선형</span>
+            <span style="color:#45475a">Phase 1</span>
+          </div>
+          <div style="margin:0 10px;height:4px;background:#313244"><div style="width:100%;height:100%;background:linear-gradient(90deg,#f38ba8,#fab387)"></div></div>
+        </div>
+        <div class="boss-sprite">👿</div>
+        <div class="boss-quote">"지윤님... 이번엔 제가 꼭 이깁니다!"</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-top:8px">
+          <div style="background:#181825;border:1px solid #313244;padding:4px;text-align:center;font-size:7px">
+            <div style="color:#45475a">HP</div><div style="color:#f38ba8;font-weight:700">500</div>
+          </div>
+          <div style="background:#181825;border:1px solid #313244;padding:4px;text-align:center;font-size:7px">
+            <div style="color:#45475a">공격</div><div style="color:#fab387;font-weight:700">3방향</div>
+          </div>
+          <div style="background:#181825;border:1px solid #313244;padding:4px;text-align:center;font-size:7px">
+            <div style="color:#45475a">추적</div><div style="color:#f9e2af;font-weight:700">보통</div>
+          </div>
+        </div>
+      </div>
+      <div class="status-bar" style="background:#c0392b"><span>⚠ BOSS!</span><span>장선형 P1</span></div>
+    </div>
+
+    <!-- GameOver -->
+    <div class="screen">
+      <div class="screen-title">
+        <span class="dot" style="background:#f55"></span>
+        <span class="dot" style="background:#fb0"></span>
+        <span class="dot" style="background:#5c5"></span>
+        <span>FATAL: PlayerDied</span>
+      </div>
+      <div class="screen-body">
+        <div style="background:rgba(243,139,168,0.12);border:1px solid #f38ba855;padding:6px 10px;margin-bottom:8px">
+          <div style="color:#f38ba8;font-weight:700;font-size:9px">✗ PlayerDied</div>
+          <div style="color:#45475a;font-size:8px">exit code 1</div>
+        </div>
+        <div class="stack">
+          <div class="err">Error: PlayerHP = 0</div>
+          <div class="trace">at Game.checkDeath</div>
+          <div class="trace">at Enemy.onContact</div>
+          <div class="trace">at GameLoop.update</div>
+        </div>
+        <div class="run-summary" style="margin-top:8px">
+          <div class="run-row"><span style="color:#45475a">생존 시간</span><span style="color:#89b4fa">03:21</span></div>
+          <div class="run-row"><span style="color:#45475a">버그 처치</span><span style="color:#4ec9b0">82마리</span></div>
+          <div class="run-row"><span style="color:#45475a">최대 콤보</span><span style="color:#f9e2af">×14</span></div>
+        </div>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-skip" style="flex:1">exit</button>
+          <button class="btn btn-ok" style="flex:2">game.restart()</button>
+        </div>
+      </div>
+      <div class="status-bar" style="background:#6c1a1a"><span>✗ GAME OVER</span><span>03:21</span></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- StageClear -->
+<div style="margin-top:12px">
+  <div class="screen" style="max-width:360px">
+    <div class="screen-title">
+      <span class="dot" style="background:#f55"></span>
+      <span class="dot" style="background:#fb0"></span>
+      <span class="dot" style="background:#5c5"></span>
+      <span>git commit — Stage 1 완료</span>
+    </div>
+    <div class="screen-body">
+      <div style="font-size:8px;color:#4ec9b0;margin-bottom:8px">$ git commit -m "feat: Stage 1 완료"</div>
+      <div class="commit-box">
+        <div style="font-size:7px;color:#6c7086;margin-bottom:2px">COMMIT</div>
+        <div style="font-size:9px;color:#4ec9b0;font-weight:700">feat: Stage 1 Python 기초 완료</div>
+        <div style="font-size:7px;color:#45475a">Author: 김지윤</div>
+      </div>
+      <div class="clear-log">
+        <div style="color:#4ec9b0">  Stage 1 완료</div>
+        <div style="color:#a6e3a1">  보스 "장선형" 처치 ✓</div>
+        <div style="color:#a6e3a1">  퀘스트 Q1 달성 ✓</div>
+        <div style="color:#f9e2af">  보상: Git.exe, 재화 ×5</div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);border:1px solid #313244;margin:8px 0">
+        <div style="padding:5px;text-align:center;border-right:1px solid #313244">
+          <div style="font-size:7px;color:#45475a">처치</div><div style="color:#4ec9b0;font-weight:700">154</div>
+        </div>
+        <div style="padding:5px;text-align:center;border-right:1px solid #313244">
+          <div style="font-size:7px;color:#45475a">시간</div><div style="color:#89b4fa;font-weight:700">04:12</div>
+        </div>
+        <div style="padding:5px;text-align:center">
+          <div style="font-size:7px;color:#45475a">재화</div><div style="color:#f9e2af;font-weight:700">+5</div>
+        </div>
+      </div>
+      <button class="btn btn-ok" style="width:100%;padding:7px">git push origin Stage2 →</button>
+    </div>
+    <div class="status-bar"><span>✓ STAGE CLEAR</span><span>main ↑1</span></div>
+  </div>
+</div>
+
+</body>
+</html>
