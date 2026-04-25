@@ -11,7 +11,7 @@ import { Projectile } from './entities/Projectile.js';
 import { EventModal } from './ui/EventModal.js';
 import { HUD } from './ui/HUD.js';
 import { FloatingTextManager } from './ui/FloatingText.js';
-import { ParticleSystem } from './systems/ParticleSystem.js';
+import { ParticleSystem, ENEMY_TYPE_COLORS } from './systems/ParticleSystem.js';
 import { GitWeapon } from './weapons/Git.js';
 import { SQLWeapon } from './weapons/SQL.js';
 import { JavaScriptWeapon } from './weapons/JavaScript.js';
@@ -377,7 +377,7 @@ function startGame() {
           if (!enemy.isDead) {
             enemy.takeDamage(p.damage);
             triggerScreenShake(2, 0.1);
-            particleSystem.addHitSpark(enemy.x, enemy.y, WEAPON_COLOR['LinuxBash'], 4);
+            particleSystem.addHitSpark(enemy.x, enemy.y, ENEMY_TYPE_COLORS[enemy.type] || WEAPON_COLOR['LinuxBash'], 4);
             floatingTextManager.add(`-${p.damage}`, enemy.x, enemy.y - 20, WEAPON_COLOR['LinuxBash'], { size: 14 });
           }
         }
@@ -787,7 +787,7 @@ function startGame() {
               if (enemy._isBuffed) dmg = Math.max(1, Math.floor(dmg * 0.2));
               enemy.takeDamage(dmg);
               triggerScreenShake(2, 0.1);
-              particleSystem.addHitSpark(enemy.x, enemy.y, proj.color, 5);
+              particleSystem.addHitSpark(enemy.x, enemy.y, ENEMY_TYPE_COLORS[enemy.type] || proj.color, 5);
               particleSystem.addWeaponHit(enemy.x, enemy.y, proj.weaponType);
               { const isCrit = dmg >= 20; floatingTextManager.add(isCrit ? `!!-${dmg}!!` : `-${dmg}`, enemy.x, enemy.y - 20, proj.color, { size: isCrit ? 22 : 14, duration: isCrit ? 1.3 : 1.0 }); }
               proj.hitEnemies.add(enemy);
@@ -798,7 +798,7 @@ function startGame() {
             if (enemy._isBuffed) dmg = Math.max(1, Math.floor(dmg * 0.2));
             enemy.takeDamage(dmg);
             triggerScreenShake(2, 0.1);
-            particleSystem.addHitSpark(enemy.x, enemy.y, proj.color, 5);
+            particleSystem.addHitSpark(enemy.x, enemy.y, ENEMY_TYPE_COLORS[enemy.type] || proj.color, 5);
             particleSystem.addWeaponHit(enemy.x, enemy.y, proj.weaponType);
             { const isCrit = dmg >= 20; floatingTextManager.add(isCrit ? `!!-${dmg}!!` : `-${dmg}`, enemy.x, enemy.y - 20, proj.color, { size: isCrit ? 22 : 14, duration: isCrit ? 1.3 : 1.0 }); }
 
@@ -901,7 +901,7 @@ function startGame() {
             if (selectedWeapon.tryHit(orbIdx, enemy)) {
               enemy.takeDamage(orb.damage);
               triggerScreenShake(3, 0.1);
-              particleSystem.addHitSpark(enemy.x, enemy.y, '#b07219', 5);
+              particleSystem.addHitSpark(enemy.x, enemy.y, ENEMY_TYPE_COLORS[enemy.type] || '#b07219', 5);
               { const jd = orb.damage; const isCrit = jd >= 20; floatingTextManager.add(isCrit ? `!!-${jd}!!` : `-${jd}`, enemy.x, enemy.y - 20, '#b07219', { size: isCrit ? 22 : 14, duration: isCrit ? 1.3 : 1.0 }); }
             }
           }
@@ -1038,7 +1038,7 @@ function startGame() {
       const floatingTexts = ['Bug Fixed!', 'Error Resolved!'];
       const randomText = floatingTexts[Math.floor(Math.random() * floatingTexts.length)];
       floatingTextManager.add(randomText, e.x, e.y, '#ffffff');
-      particleSystem.addEnemyDeath(e.x, e.y, 8);
+      particleSystem.addEnemyDeath(e.x, e.y, 8, e.type);
       triggerScreenShake(3, 0.15);
       const killNotifs = eventSystem.notifyKill(e.type);
       for (const n of killNotifs) {
