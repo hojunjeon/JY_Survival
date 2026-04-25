@@ -32,4 +32,53 @@ describe('ParticleSystem', () => {
     ps.update(999);
     expect(ps.particles.length).toBe(0);
   });
+
+  it('addWeaponTrail(x, y, "python")은 20개 파티클을 추가한다', () => {
+    ps.addWeaponTrail(100, 100, 'python');
+    expect(ps.particles.length).toBe(20);
+  });
+
+  it('Python trail 파티클은 shadowBlur 속성을 가진다', () => {
+    ps.addWeaponTrail(100, 100, 'python');
+    expect(ps.particles[0].shadowBlur).toBe(20);
+    expect(ps.particles[0].shadowColor).toBe('#44ff44');
+  });
+
+  it('addWeaponTrail(x, y, "c")은 12개 파티클을 추가한다', () => {
+    ps.addWeaponTrail(100, 100, 'c');
+    expect(ps.particles.length).toBe(12);
+  });
+
+  it('C trail 파티클은 shadowBlur 속성을 가진다', () => {
+    ps.addWeaponTrail(100, 100, 'c');
+    expect(ps.particles[0].shadowBlur).toBe(10);
+    expect(ps.particles[0].shadowColor).toBe('#64b4ff');
+  });
+
+  it('addWeaponHit(x, y, "c")은 8개 파티클을 추가한다', () => {
+    ps.addWeaponHit(100, 100, 'c');
+    expect(ps.particles.length).toBe(8);
+  });
+
+  it('C hit 파티클은 8방향으로 확산된다', () => {
+    ps.addWeaponHit(100, 100, 'c');
+    const velocities = ps.particles.map(p => ({ vx: p.vx, vy: p.vy }));
+    expect(velocities.every(v => Math.sqrt(v.vx ** 2 + v.vy ** 2) > 0)).toBe(true);
+  });
+
+  it('addWeaponHit(x, y, "unknown")은 addHitSpark으로 fallback한다', () => {
+    ps.addWeaponHit(100, 100, 'unknown');
+    expect(ps.particles.length).toBe(3); // addHitSpark default count
+  });
+
+  it('addOrbitalTail(x, y)은 8개 파티클을 추가한다', () => {
+    ps.addOrbitalTail(100, 100);
+    expect(ps.particles.length).toBe(8);
+  });
+
+  it('OrbitalTail 파티클은 shadowBlur 속성을 가진다', () => {
+    ps.addOrbitalTail(100, 100);
+    expect(ps.particles[0].shadowBlur).toBe(20);
+    expect(ps.particles[0].shadowColor).toBe('#ffa032');
+  });
 });
