@@ -18,6 +18,16 @@ import { JavaScriptWeapon } from './weapons/JavaScript.js';
 import { DjangoWeapon } from './weapons/Django.js';
 import { LinuxBashWeapon } from './weapons/LinuxBash.js';
 import { PythonWeapon } from './weapons/Python.js';
+// Phase 11 Cycle 1 UI Screens
+import { WeaponSelect } from './ui/WeaponSelect.js';
+import { EventToast } from './ui/EventToast.js';
+import { EventModalScreen } from './ui/EventModalScreen.js';
+import { StatUpgrade } from './ui/StatUpgrade.js';
+import { WeaponGet } from './ui/WeaponGet.js';
+import { BossIntro } from './ui/BossIntro.js';
+import { BossPhase2 } from './ui/BossPhase2.js';
+import { GameOver } from './ui/GameOver.js';
+import { StageClear } from './ui/StageClear.js';
 
 const canvas = document.getElementById('game-canvas');
 const ctx = canvas.getContext('2d');
@@ -26,8 +36,22 @@ const input = new Input();
 input.listen(window);
 
 // ─── 상태 관리 ──────────────────────────────────────────────────────────────
-let state = 'intro'; // 'intro' | 'menu' | 'playing' | 'game_over' | 'stage_clear'
+let gameState = 'intro'; // Phase 11 expanded states
 let selectedWeapon = null;
+let gameSession = null; // 현재 게임 세션 데이터
+
+// UI Screen 인스턴스들
+const uiScreens = {
+  weaponSelect: new WeaponSelect({ canvasWidth: canvas.width, canvasHeight: canvas.height }),
+  eventToast: new EventToast({ canvasWidth: canvas.width, canvasHeight: canvas.height }),
+  eventModalScreen: new EventModalScreen({ canvasWidth: canvas.width, canvasHeight: canvas.height }),
+  statUpgrade: new StatUpgrade({ canvasWidth: canvas.width, canvasHeight: canvas.height }),
+  weaponGet: new WeaponGet({ canvasWidth: canvas.width, canvasHeight: canvas.height }),
+  bossIntro: new BossIntro({ canvasWidth: canvas.width, canvasHeight: canvas.height }),
+  bossPhase2: new BossPhase2({ canvasWidth: canvas.width, canvasHeight: canvas.height }),
+  gameOver: new GameOver({ canvasWidth: canvas.width, canvasHeight: canvas.height }),
+  stageClear: new StageClear({ canvasWidth: canvas.width, canvasHeight: canvas.height }),
+};
 
 // ─── 인트로 화면 ──────────────────────────────────────────────────────────────
 function renderIntro() {
@@ -98,77 +122,208 @@ function renderIntro() {
 function handleIntroKey(e) {
   if (e.key === ' ' || e.key === 'Enter') {
     window.removeEventListener('keydown', handleIntroKey);
-    state = 'menu';
-    menuLoop();
+    gameState = 'weapon-select';
+    // 무기 선택 화면 준비
+    const AVAILABLE_WEAPONS = [
+      new PythonWeapon(),
+      new JavaScriptWeapon(),
+      new PythonWeapon(), // placeholder for third weapon
+    ];
+    uiScreens.weaponSelect.show(AVAILABLE_WEAPONS);
+    mainLoopId = requestAnimationFrame(mainLoop);
   }
 }
 window.addEventListener('keydown', handleIntroKey);
 
 function introLoop() {
-  if (state !== 'intro') return;
+  if (gameState !== 'intro') return;
   renderIntro();
   requestAnimationFrame(introLoop);
 }
 introLoop();
 
-// ─── 메뉴 ────────────────────────────────────────────────────────────────────
+let mainLoopId = null;
+
+// ─── 통합 메인 루프 ──────────────────────────────────────────────────────────
+function mainLoop() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // 무기 선택 화면
+  if (gameState === 'weapon-select') {
+    renderWeaponSelect();
+  }
+  // 게임 플레이 + UI 화면들
+  else if (gameState === 'playing' || gameState === 'event-toast' || gameState === 'event-modal' ||
+           gameState === 'stat-upgrade' || gameState === 'weapon-get' || gameState === 'boss-intro' ||
+           gameState === 'boss-phase2') {
+    if (gameSession && gameSession.updateGame) {
+      gameSession.updateGame();
+      gameSession.renderGame();
+    }
+  }
+  // 게임 오버
+  else if (gameState === 'game-over') {
+    uiScreens.gameOver.render(ctx);
+  }
+  // 스테이지 클리어
+  else if (gameState === 'stage-clear') {
+    uiScreens.stageClear.render(ctx);
+  }
+
+  mainLoopId = requestAnimationFrame(mainLoop);
+}
+
+function renderWeaponSelect() {
+  uiScreens.weaponSelect.render(ctx);
+}
+
+// ─── UI 입력 처리 ────────────────────────────────────────────────────────────
+document.addEventListener('mousedown', (e) => {
+  if (gameState === 'weapon-select') {
+    const hitboxes = uiScreens.weaponSelect.getHitboxes();
+    for (const hb of hitboxes) {
+      if (e.clientX >= hb.x && e.clientX < hb.x + hb.w &&
+          e.clientY >= hb.y && e.clientY < hb.y + hb.h) {
+        if (hb.action === 'confirm') {
+          const selected = uiScreens.weaponSelect.getSelected();
+          selectedWeapon = selected;
+          startGame();
+        }
+      }
+    }
+  } else if (gameState === 'event-toast') {
+    const hitboxes = uiScreens.eventToast.getHitboxes();
+    for (const hb of hitboxes) {
+      if (e.clientX >= hb.x && e.clientX < hb.x + hb.w &&
+          e.clientY >= hb.y && e.clientY < hb.y + hb.h) {
+        if (hb.action === 'skip') {
+          gameState = 'playing';
+          gameSession.paused = false;
+        } else if (hb.action === 'help') {
+          gameState = 'event-modal';
+          uiScreens.eventModalScreen.show(gameSession.currentEvent);
+        }
+      }
+    }
+  } else if (gameState === 'event-modal') {
+    const hitboxes = uiScreens.eventModalScreen.getHitboxes();
+    for (const hb of hitboxes) {
+      if (e.clientX >= hb.x && e.clientX < hb.x + hb.w &&
+          e.clientY >= hb.y && e.clientY < hb.y + hb.h) {
+        if (hb.action === 'continue' || hb.action === 'unpause') {
+          gameState = 'playing';
+          gameSession.paused = false;
+        }
+      }
+    }
+  } else if (gameState === 'stat-upgrade') {
+    const hitboxes = uiScreens.statUpgrade.getHitboxes();
+    for (const hb of hitboxes) {
+      if (e.clientX >= hb.x && e.clientX < hb.x + hb.w &&
+          e.clientY >= hb.y && e.clientY < hb.y + hb.h) {
+        if (hb.action === 'select-stat') {
+          uiScreens.statUpgrade.selectIndex(hb.statIndex);
+          const selected = uiScreens.statUpgrade.getSelected();
+          // Apply stat upgrade to player
+          if (gameSession && gameSession.player) {
+            if (selected.name === 'moveSpeed') {
+              gameSession.player.speed *= 1.15;
+            } else if (selected.name === 'attackSpeed') {
+              for (const weapon of gameSession.ownedWeapons) {
+                weapon.fireRate *= 0.833; // faster
+              }
+            } else if (selected.name === 'damageMulti') {
+              for (const weapon of gameSession.ownedWeapons) {
+                weapon.damage *= 1.25;
+              }
+            }
+          }
+          gameState = 'playing';
+          gameSession.paused = false;
+        }
+      }
+    }
+  } else if (gameState === 'weapon-get') {
+    const hitboxes = uiScreens.weaponGet.getHitboxes();
+    for (const hb of hitboxes) {
+      if (e.clientX >= hb.x && e.clientX < hb.x + hb.w &&
+          e.clientY >= hb.y && e.clientY < hb.y + hb.h) {
+        gameState = 'playing';
+        gameSession.paused = false;
+      }
+    }
+  } else if (gameState === 'game-over') {
+    const hitboxes = uiScreens.gameOver.getHitboxes();
+    for (const hb of hitboxes) {
+      if (e.clientX >= hb.x && e.clientX < hb.x + hb.w &&
+          e.clientY >= hb.y && e.clientY < hb.y + hb.h) {
+        if (hb.action === 'restart') {
+          location.reload();
+        } else if (hb.action === 'exit') {
+          gameState = 'intro';
+          renderIntro();
+        }
+      }
+    }
+  } else if (gameState === 'stage-clear') {
+    const hitboxes = uiScreens.stageClear.getHitboxes();
+    for (const hb of hitboxes) {
+      if (e.clientX >= hb.x && e.clientX < hb.x + hb.w &&
+          e.clientY >= hb.y && e.clientY < hb.y + hb.h) {
+        if (hb.action === 'next-stage') {
+          gameState = 'weapon-select';
+          uiScreens.weaponSelect.show([]);
+        }
+      }
+    }
+  }
+});
+
+// 키보드 입력 처리
+document.addEventListener('keydown', (e) => {
+  if (gameState === 'weapon-select') {
+    if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') {
+      uiScreens.weaponSelect.selectPrevious();
+      e.preventDefault();
+    } else if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') {
+      uiScreens.weaponSelect.selectNext();
+      e.preventDefault();
+    } else if (e.key === 'Enter') {
+      const selected = uiScreens.weaponSelect.getSelected();
+      selectedWeapon = selected;
+      startGame();
+      e.preventDefault();
+    }
+  } else if (gameState === 'stat-upgrade') {
+    if (e.key === 'ArrowUp') {
+      uiScreens.statUpgrade.selectIndex(uiScreens.statUpgrade.selectedIndex - 1);
+      e.preventDefault();
+    } else if (e.key === 'ArrowDown') {
+      uiScreens.statUpgrade.selectIndex(uiScreens.statUpgrade.selectedIndex + 1);
+      e.preventDefault();
+    } else if (e.key === 'Enter') {
+      const selected = uiScreens.statUpgrade.getSelected();
+      // Apply and close
+      if (gameSession && gameSession.player) {
+        if (selected.name === 'moveSpeed') {
+          gameSession.player.speed *= 1.15;
+        }
+      }
+      gameState = 'playing';
+      gameSession.paused = false;
+      e.preventDefault();
+    }
+  }
+});
+
+// ─── 레거시 메뉴 (지원 중단) ────────────────────────────────────────────────
 const weaponMenu = new WeaponMenu();
-
-function renderMenu() {
-  ctx.fillStyle = '#0d0d0d';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  ctx.fillStyle = '#4fc3f7';
-  ctx.font = 'bold 28px monospace';
-  ctx.textAlign = 'center';
-  ctx.fillText('김지윤의 디버그 서바이벌', canvas.width / 2, 100);
-
-  ctx.fillStyle = '#ffffff';
-  ctx.font = '18px monospace';
-  ctx.fillText('무기를 선택하세요 (1 / 2 / 3)', canvas.width / 2, 145);
-
-  const options = weaponMenu.getOptions();
-  const colors = ['#4caf50', '#f44336', '#ff9800'];
-  const descs = [
-    '360° 자동 투사체  |  범위 ↑  속도 ↓',
-    '전방 고속 관통탄  |  속도 ↑  데미지 ↑',
-    '오비탈 오브 3개  |  자동 접촉 공격',
-  ];
-
-  options.forEach((opt, i) => {
-    const y = 220 + i * 90;
-    ctx.fillStyle = colors[i];
-    ctx.font = 'bold 22px monospace';
-    ctx.fillText(`[${i + 1}]  ${opt.name}`, canvas.width / 2, y);
-    ctx.fillStyle = '#aaaaaa';
-    ctx.font = '14px monospace';
-    ctx.fillText(descs[i], canvas.width / 2, y + 28);
-  });
-}
-
-// 메뉴 키 입력
-function handleMenuKey(e) {
-  if (state !== 'menu') return;
-  const idx = { '1': 0, '2': 1, '3': 2 }[e.key];
-  if (idx === undefined) return;
-  selectedWeapon = weaponMenu.select(idx);
-  window.removeEventListener('keydown', handleMenuKey);
-  startGame();
-}
-window.addEventListener('keydown', handleMenuKey);
-
-// 메뉴 루프
-function menuLoop() {
-  if (state !== 'menu') return;
-  renderMenu();
-  requestAnimationFrame(menuLoop);
-}
 
 // ─── 게임 시작 ───────────────────────────────────────────────────────────────
 function startGame() {
   game.clearEntities();
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  state = 'playing';
+  gameState = 'playing';
 
   const playerRenderer = {
     draw(ctx, x, y) { PixelRenderer.drawPlayer(ctx, x, y, 2); },
@@ -204,6 +359,16 @@ function startGame() {
 
   const eventModal = new EventModal({ canvasWidth: canvas.width, canvasHeight: canvas.height });
   let paused = false;
+
+  // gameSession 객체에 필요한 데이터 저장
+  gameSession = {
+    player,
+    paused: false,
+    currentEvent: null,
+    ownedWeapons: [selectedWeapon],
+    updateGame: null,
+    renderGame: null,
+  };
 
   const WORLD_W = 2000;
   const WORLD_H = 2000;
@@ -402,7 +567,7 @@ function startGame() {
       eventModal.hide();
       paused = false;
     }
-    if ((e.key === 'r' || e.key === 'R') && state === 'game_over') {
+    if ((e.key === 'r' || e.key === 'R') && gameState === 'game-over') {
       window.removeEventListener('keydown', handleGameKey);
       startGame();
     }
@@ -430,9 +595,15 @@ function startGame() {
 
     // 사망 감지
     if (player.isDead) {
-      state = 'game_over';
+      gameState = 'game-over';
+      const runStats = {
+        elapsed: Math.floor(eventSystem.elapsed),
+        kills: eventSystem.totalKills,
+        maxCombo: 0,  // 향후 구현
+        maxWave: 0,   // 향후 구현
+      };
+      uiScreens.gameOver.show(runStats);
       game.stop();
-      gameOverLoop();
       return;
     }
 
@@ -879,10 +1050,16 @@ function startGame() {
             for (const n of killNotifs) {
               if (n.type === 'stage_clear') {
                 setTimeout(() => {
-                  state = 'stage_clear';
-                  stageClearDialogue = bossDialogue;
+                  gameState = 'stage-clear';
+                  const stageStats = {
+                    stageNumber: 1,  // 향후 동적 할당
+                    kills: eventSystem.totalKills,
+                    elapsed: Math.floor(eventSystem.elapsed),
+                    enhance: 0,
+                    coins: 0,
+                  };
+                  uiScreens.stageClear.show(stageStats);
                   game.stop();
-                  renderStageClear();
                 }, 3000);
               }
             }
@@ -1414,59 +1591,44 @@ function startGame() {
   floatingTextManager.texts = [];
   garbageObjects = [];
 
+  // gameSession에 update/render 함수 연결
+  gameSession.updateGame = () => {
+    if (!paused) {
+      game.update(1 / 60);
+    }
+  };
+
+  gameSession.renderGame = () => {
+    game.render();
+
+    // Phase 11 UI 렌더링
+    if (gameState === 'event-toast') {
+      uiScreens.eventToast.render(ctx);
+    } else if (gameState === 'event-modal') {
+      uiScreens.eventModalScreen.render(ctx);
+    } else if (gameState === 'stat-upgrade') {
+      uiScreens.statUpgrade.render(ctx);
+    } else if (gameState === 'weapon-get') {
+      uiScreens.weaponGet.render(ctx);
+    } else if (gameState === 'boss-intro') {
+      uiScreens.bossIntro.render(ctx);
+      if (uiScreens.bossIntro.isAutoTransitionReady()) {
+        gameState = 'playing';
+        paused = false;
+        uiScreens.bossIntro.hide();
+      }
+    } else if (gameState === 'boss-phase2') {
+      uiScreens.bossPhase2.render(ctx);
+      if (uiScreens.bossPhase2.isAutoTransitionReady()) {
+        gameState = 'playing';
+        paused = false;
+        uiScreens.bossPhase2.hide();
+      }
+    }
+  };
+
   game.addEntity(player);
   game.start();
 }
 
-// ─── 게임 오버 루프 ──────────────────────────────────────────────────────────
-function gameOverLoop() {
-  if (state !== 'game_over') return;
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  renderGameOver();
-  requestAnimationFrame(gameOverLoop);
-}
-
-// ─── 스테이지 클리어 화면 ─────────────────────────────────────────────────────
-function renderStageClear() {
-  ctx.fillStyle = '#0d0d0d';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  ctx.fillStyle = '#ffd700';
-  ctx.font = 'bold 36px monospace';
-  ctx.textAlign = 'center';
-  ctx.fillText('STAGE CLEAR!', canvas.width / 2, canvas.height / 2 - 80);
-
-  ctx.fillStyle = '#ffccee';
-  ctx.font = '15px monospace';
-  ctx.fillText('장선형: "말도 안 돼... 이건 진짜 억울하다고요!!"', canvas.width / 2, canvas.height / 2 - 20);
-
-  ctx.fillStyle = '#4fc3f7';
-  ctx.font = '14px monospace';
-  ctx.fillText('보상: 강화 재화 획득 + 무기 획득!', canvas.width / 2, canvas.height / 2 + 30);
-
-  ctx.fillStyle = '#aaaaaa';
-  ctx.font = '13px monospace';
-  ctx.fillText('[ 새로고침으로 다시 시작 ]', canvas.width / 2, canvas.height / 2 + 80);
-
-  ctx.textAlign = 'left';
-}
-
-function renderGameOver() {
-  ctx.fillStyle = '#0d0d0d';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  ctx.fillStyle = '#f44336';
-  ctx.font = 'bold 36px monospace';
-  ctx.textAlign = 'center';
-  ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2 - 60);
-
-  ctx.fillStyle = '#ffcccc';
-  ctx.font = '16px monospace';
-  ctx.fillText('김지윤이 쓰러졌다...', canvas.width / 2, canvas.height / 2);
-
-  ctx.fillStyle = '#aaaaaa';
-  ctx.font = '13px monospace';
-  ctx.fillText('[ R키로 재시작 ]', canvas.width / 2, canvas.height / 2 + 50);
-
-  ctx.textAlign = 'left';
-}
+// Phase 11 Cycle 1: 통합 상태 시스템으로 이관됨 (gameOverLoop, renderGameOver 등은 mainLoop에서 처리)
