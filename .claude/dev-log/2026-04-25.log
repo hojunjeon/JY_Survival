@@ -89,3 +89,81 @@
 22:03:22 | Edit | C:\\Users\\hojun\\Desktop\\JY_Survival\\tests\\ParticleSystem.test.js
 22:07:18 | Write | C:\\Users\\hojun\\Desktop\\JY_Survival\\blog\\game-dev\\draft-24-monster-effect.md
 22:07:35 | Edit | C:\\Users\\hojun\\Desktop\\JY_Survival\\docs\\phase-status.md
+22:24:18 | Write | C:\\Users\\hojun\\Desktop\\JY_Survival\\.superpowers\\brainstorm\\2292-1777123419\\content\\phase11-cycles.html
+22:26:58 | Write | C:\\Users\\hojun\\Desktop\\JY_Survival\\.superpowers\\brainstorm\\2292-1777123419\\content\\phase11-order.html
+22:45:59 | Write | C:\\Users\\hojun\\Desktop\\JY_Survival\\phase11-cycle1-ui-screens.html
+22:46:33 | Write | C:\\Users\\hojun\\Desktop\\JY_Survival\\phase11-cycle2-weapon-levelup-fx.html
+22:47:13 | Write | C:\\Users\\hojun\\Desktop\\JY_Survival\\phase11-cycle3-reward-system.html
+22:47:52 | Write | C:\\Users\\hojun\\Desktop\\JY_Survival\\phase11-cycle4-weapon-synergy.html
+22:48:45 | Write | C:\\Users\\hojun\\Desktop\\JY_Survival\\phase11-cycle5-stage-add.html
+23:05:30 | Write | C:\\Users\\hojun\\Desktop\\JY_Survival\\docs\\superpowers\\specs\\2026-04-25-phase11-cycle1-ui-screens-design.md
+23:05:50 | Write | C:\\Users\\hojun\\Desktop\\JY_Survival\\docs\\superpowers\\specs\\2026-04-25-phase11-cycle2-weapon-levelup-fx-design.md
+23:06:12 | Write | C:\\Users\\hojun\\Desktop\\JY_Survival\\docs\\superpowers\\specs\\2026-04-25-phase11-cycle3-reward-system-design.md
+23:06:31 | Write | C:\\Users\\hojun\\Desktop\\JY_Survival\\docs\\superpowers\\specs\\2026-04-25-phase11-cycle4-weapon-synergy-design.md
+23:06:58 | Write | C:\\Users\\hojun\\Desktop\\JY_Survival\\docs\\superpowers\\specs\\2026-04-25-phase11-cycle5-stage-add-design.md
+23:07:31 | Edit | C:\\Users\\hojun\\Desktop\\JY_Survival\\docs\\superpowers\\specs\\2026-04-25-phase11-cycle5-stage-add-design.md
+23:10:52 | Edit | C:\\Users\\hojun\\Desktop\\JY_Survival\\docs\\phase-status.md
+23:16:16 | Edit | C:\\Users\\hojun\\Desktop\\JY_Survival\\ui\\HUD.js
+23:16:40 | Write | C:\\Users\\hojun\\Desktop\\JY_Survival\\ui\\WeaponSelect.js
+23:17:00 | Write | C:\\Users\\hojun\\Desktop\\JY_Survival\\ui\\EventToast.js
+23:17:23 | Write | C:\\Users\\hojun\\Desktop\\JY_Survival\\ui\\EventModalScreen.js
+23:17:42 | Write | C:\\Users\\hojun\\Desktop\\JY_Survival\\ui\\StatUpgrade.js
+23:17:59 | Write | C:\\Users\\hojun\\Desktop\\JY_Survival\\ui\\WeaponGet.js
+23:18:19 | Write | C:\\Users\\hojun\\Desktop\\JY_Survival\\ui\\BossIntro.js
+23:18:36 | Write | C:\\Users\\hojun\\Desktop\\JY_Survival\\ui\\BossPhase2.js
+23:18:51 | Write | C:\\Users\\hojun\\Desktop\\JY_Survival\\ui\\GameOver.js
+23:19:08 | Write | C:\\Users\\hojun\\Desktop\\JY_Survival\\ui\\StageClear.js
+23:19:29 | Edit | C:\\Users\\hojun\\Desktop\\JY_Survival\\main.js
+23:19:34 | Edit | C:\\Users\\hojun\\Desktop\\JY_Survival\\main.js
+23:19:39 | Edit | C:\\Users\\hojun\\Desktop\\JY_Survival\\main.js
+23:19:44 | Edit | C:\\Users\\hojun\\Desktop\\JY_Survival\\main.js
+23:19:55 | Edit | C:\\Users\\hojun\\Desktop\\JY_Survival\\main.js
+23:20:10 | Edit | C:\\Users\\hojun\\Desktop\\JY_Survival\\main.js
+23:20:14 | Edit | C:\\Users\\hojun\\Desktop\\JY_Survival\\main.js
+23:20:21 | Edit | C:\\Users\\hojun\\Desktop\\JY_Survival\\main.js
+23:20:39 | Edit | C:\\Users\\hojun\\Desktop\\JY_Survival\\main.js
+23:20:48 | Edit | C:\\Users\\hojun\\Desktop\\JY_Survival\\main.js
+23:21:03 | Edit | C:\\Users\\hojun\\Desktop\\JY_Survival\\main.js
+23:21:15 | Edit | C:\\Users\\hojun\\Desktop\\JY_Survival\\main.js
+23:21:48 | Edit | C:\\Users\\hojun\\Desktop\\JY_Survival\\docs\\superpowers\\plans\\2026-04-25-phase11-cycle1-ui-screens-plan.md
+23:21:59 | Edit | C:\\Users\\hojun\\Desktop\\JY_Survival\\docs\\phase-status.md
+
+# Phase 11 Cycle 1 — 미구현 화면 Canvas 오버레이 구현 완료
+## 세션: executing-plans 사용 (2026-04-25 23:30~)
+
+### 산출물
+1. **HUD.js** — 색상 팔레트 확장 (10개 VSCode 토큰)
+2. **9개 UI 클래스** — 각 화면별 render() + getHitboxes() 구현
+   - WeaponSelect.js (무기 선택, 키보드 입력)
+   - EventToast.js (이벤트 알림, 도움/무시 버튼)
+   - EventModalScreen.js (진행도 표시)
+   - StatUpgrade.js (스탯 선택)
+   - WeaponGet.js (무기 획득)
+   - BossIntro.js (보스 등장, 자동 전환)
+   - BossPhase2.js (페이즈 2, 자동 전환)
+   - GameOver.js (게임 오버, 스택 트레이스)
+   - StageClear.js (스테이지 클리어, git 형식)
+3. **main.js 통합** — 10개 gameState + 입력 처리 + 자동 전환
+
+### 주요 결정사항
+- gameState로 상태 관리 통합 (기존 state 변수 대체)
+- uiScreens 객체에 모든 화면 인스턴스 보관
+- mousedown / keydown 이벤트로 hitbox 입력 처리
+- gameSession 객체로 현재 게임 세션 데이터 유지
+- boss-intro / boss-phase2 자동 전환 (2초 후)
+
+### 구현 패턴
+- 모든 UI 클래스 동일 인터페이스: show(data), hide(), render(ctx), getHitboxes()
+- hitbox 구조: { x, y, w, h, action }
+- 상태 전환: mainLoop에서 gameState 분기 → 각 상태의 render/update 호출
+
+### 이슈 및 미해결 사항
+- 스탯 업그레이드 적용 (stat-upgrade → 플레이어 스탯 변경) — 임시 구현
+- 무기 획득 (weapon-get) — 기존 로직과의 통합 필요
+- boss-intro/boss-phase2 데이터 구조 (현재 bossData 임시)
+- 스테이지 전환 후 무기 선택 화면 복귀 로직
+
+### 다음 Cycle 고려사항
+- Cycle 1B로 분할 가능 (EventModal 계열 3개 화면 추가 작업)
+- 실제 게임 플레이 테스트 필요 (mousedown 이벤트 좌표 변환 검증)
+- 각 화면 자동 테스트 작성 (hitbox 영역 검증)

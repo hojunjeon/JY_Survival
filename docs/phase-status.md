@@ -22,21 +22,18 @@ Phase 10 완료 / Phase 10.5 완료 / Phase 11 대기
 
 ---
 
-## Phase 11 — 대기 중
+## Phase 11 — 진행 중
 
-**상태**: 대기 중 (Phase 10.5 완료 후 진입)
+**상태**: Cycle 1 완료 / Cycle 2 대기
+**업데이트**: 2026-04-25
 
-### Cycle 목록 (후보)
+### Cycle 목록
 
-수정 사이클 후보:
-- [ ] 이벤트 UI 감성화 — 경고창 텍스트 → 터미널 타자 연출 or 홀로그램 스타일
-- [ ] 무기 레벨업 시 이펙트 스케일업 — 레벨에 따라 파티클 화려도 증가
-
-추가 사이클 후보:
-- [ ] 무기 시너지/진화 시스템 — 특정 무기 조합 시 융합 무기 생성 (예: Python+C = Cython)
-- [ ] 스테이지 추가 — 테마 맵 2종: 프론트엔드 정원(파스텔톤), 백엔드 서버룸(다크 모드)
-- [ ] 빌드 검증형 스테이지 기믹 — 스테이지별 유리 무기 조합 강제 환경 디버프
-- [ ] 단계적 보상 시스템 — 스테이지별 차별화 드롭 아이템
+- [x] Cycle 1 — 미구현 화면 7개 Canvas 오버레이 ✅ (spec: `2026-04-25-phase11-cycle1-ui-screens-design.md`) — 9개 UI 클래스 + gameState 통합 + 입력 처리 완료
+- [ ] Cycle 2 — 무기 레벨업 이펙트 스케일업 (spec: `2026-04-25-phase11-cycle2-weapon-levelup-fx-design.md`)
+- [ ] Cycle 3 — 단계적 보상 시스템 (spec: `2026-04-25-phase11-cycle3-reward-system-design.md`)
+- [ ] Cycle 4 — 무기 시너지/진화 시스템 (spec: `2026-04-25-phase11-cycle4-weapon-synergy-design.md`)
+- [ ] Cycle 5 — 스테이지 추가 (spec: `2026-04-25-phase11-cycle5-stage-add-design.md`)
 
 ---
 
