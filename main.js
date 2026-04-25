@@ -466,11 +466,18 @@ function startGame() {
 
     // 2. 무기 업데이트 + 자동 발사
     for (const weapon of ownedWeapons) {
-      if (weapon.name !== 'Java') weapon.update(dt);
+      if (weapon.name !== 'Java') weapon.update(dt, game.particleSystem);
       tryFireWeapon(weapon, player);
     }
     const javaWeapon = ownedWeapons.find(w => w.name === 'Java');
-    if (javaWeapon) javaWeapon.update(dt);
+    if (javaWeapon) {
+      javaWeapon.update(dt);
+      // Java 무기 오브 위치마다 addOrbitalTail 호출
+      const orbPositions = javaWeapon.getOrbPositions(player.x, player.y);
+      for (const orbPos of orbPositions) {
+        game.particleSystem.addOrbitalTail(orbPos.x, orbPos.y);
+      }
+    }
 
     // 3. 투사체 업데이트 + 범위 이탈 제거
     for (const proj of projectiles) {
@@ -790,6 +797,7 @@ function startGame() {
               enemy.takeDamage(dmg);
               triggerScreenShake(2, 0.1);
               particleSystem.addHitSpark(enemy.x, enemy.y, proj.color, 5);
+              particleSystem.addWeaponHit(enemy.x, enemy.y, proj.weaponType);
               { const isCrit = dmg >= 20; floatingTextManager.add(isCrit ? `!!-${dmg}!!` : `-${dmg}`, enemy.x, enemy.y - 20, proj.color, { size: isCrit ? 22 : 14, duration: isCrit ? 1.3 : 1.0 }); }
               proj.hitEnemies.add(enemy);
             }
@@ -800,6 +808,7 @@ function startGame() {
             enemy.takeDamage(dmg);
             triggerScreenShake(2, 0.1);
             particleSystem.addHitSpark(enemy.x, enemy.y, proj.color, 5);
+            particleSystem.addWeaponHit(enemy.x, enemy.y, proj.weaponType);
             { const isCrit = dmg >= 20; floatingTextManager.add(isCrit ? `!!-${dmg}!!` : `-${dmg}`, enemy.x, enemy.y - 20, proj.color, { size: isCrit ? 22 : 14, duration: isCrit ? 1.3 : 1.0 }); }
 
             // Chain Lightning 체이닝
@@ -856,6 +865,7 @@ function startGame() {
               boss.takeDamage(proj.damage);
               triggerScreenShake(6, 0.3);
               particleSystem.addHitSpark(boss.x, boss.y, '#ff4444', 8);
+              particleSystem.addWeaponHit(boss.x, boss.y, proj.weaponType);
               { const isCrit = proj.damage >= 20; floatingTextManager.add(isCrit ? `!!-${proj.damage}!!` : `-${proj.damage}`, boss.x, boss.y - 30, '#ff4444', { size: isCrit ? 22 : 18 }); }
               proj.hitEnemies.add(boss);
             }
@@ -863,6 +873,7 @@ function startGame() {
             boss.takeDamage(proj.damage);
             triggerScreenShake(6, 0.3);
             particleSystem.addHitSpark(boss.x, boss.y, '#ff4444', 8);
+            particleSystem.addWeaponHit(boss.x, boss.y, proj.weaponType);
             { const isCrit = proj.damage >= 20; floatingTextManager.add(isCrit ? `!!-${proj.damage}!!` : `-${proj.damage}`, boss.x, boss.y - 30, '#ff4444', { size: isCrit ? 22 : 18 }); }
             proj.deactivate();
           }
