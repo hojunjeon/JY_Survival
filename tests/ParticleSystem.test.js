@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { ParticleSystem } from '../systems/ParticleSystem.js';
+import { ParticleSystem, ENEMY_TYPE_COLORS } from '../systems/ParticleSystem.js';
 
 describe('ParticleSystem', () => {
   let ps;
@@ -102,5 +102,16 @@ describe('ParticleSystem', () => {
     expect(ps.particles[0].type).toBe('ring-expand');
     expect(ps.particles[0].maxSize).toBe(20);
     expect(ps.particles[0].shadowBlur).toBe(10);
+  });
+
+  it('addEnemyDeath(x, y, count, "syntax_error")은 타입 색상을 사용한다', () => {
+    ps.addEnemyDeath(100, 100, 4, 'syntax_error');
+    expect(ps.particles.length).toBe(4);
+    // 모든 파티클이 syntax_error 색상 또는 흰색이어야 함
+    const colors = ps.particles.map(p => p.color);
+    const expectedColors = ['#ff2200', '#ffffff'];
+    for (const color of colors) {
+      expect(expectedColors).toContain(color);
+    }
   });
 });
