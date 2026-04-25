@@ -55,15 +55,15 @@ describe('ParticleSystem', () => {
     expect(ps.particles[0].shadowColor).toBe('#64b4ff');
   });
 
-  it('addWeaponHit(x, y, "c")은 8개 파티클을 추가한다', () => {
+  it('addWeaponHit(x, y, "c")은 1개 ring-expand 파티클을 추가한다', () => {
     ps.addWeaponHit(100, 100, 'c');
-    expect(ps.particles.length).toBe(8);
+    expect(ps.particles.length).toBe(1);
   });
 
-  it('C hit 파티클은 8방향으로 확산된다', () => {
+  it('C hit 파티클은 ring-expand 타입이다', () => {
     ps.addWeaponHit(100, 100, 'c');
-    const velocities = ps.particles.map(p => ({ vx: p.vx, vy: p.vy }));
-    expect(velocities.every(v => Math.sqrt(v.vx ** 2 + v.vy ** 2) > 0)).toBe(true);
+    expect(ps.particles[0].type).toBe('ring-expand');
+    expect(ps.particles[0].maxSize).toBe(20);
   });
 
   it('addWeaponHit(x, y, "unknown")은 addHitSpark으로 fallback한다', () => {
@@ -71,14 +71,36 @@ describe('ParticleSystem', () => {
     expect(ps.particles.length).toBe(3); // addHitSpark default count
   });
 
-  it('addOrbitalTail(x, y)은 8개 파티클을 추가한다', () => {
+  it('addOrbitalTail(x, y)은 8개 잔상 + 1개 링 파티클을 추가한다 (총 9개)', () => {
     ps.addOrbitalTail(100, 100);
-    expect(ps.particles.length).toBe(8);
+    expect(ps.particles.length).toBe(9);
   });
 
-  it('OrbitalTail 파티클은 shadowBlur 속성을 가진다', () => {
+  it('OrbitalTail 잔상 파티클은 shadowBlur 속성을 가진다', () => {
     ps.addOrbitalTail(100, 100);
     expect(ps.particles[0].shadowBlur).toBe(20);
     expect(ps.particles[0].shadowColor).toBe('#ffa032');
+  });
+
+  it('OrbitalTail 링 파티클은 마지막 파티클이고 type ring을 가진다', () => {
+    ps.addOrbitalTail(100, 100);
+    const ringParticle = ps.particles[8];
+    expect(ringParticle.type).toBe('ring');
+    expect(ringParticle.size).toBe(36);
+    expect(ringParticle.color).toBe('rgba(255,160,50,0.15)');
+    expect(ringParticle.maxLife).toBe(0.1);
+  });
+
+  it('ring 타입 파티클은 render에서 원형으로 그려진다', () => {
+    ps.addOrbitalTail(100, 100);
+    const ringParticle = ps.particles[8];
+    expect(ringParticle.type).toBe('ring');
+  });
+
+  it('ring-expand 타입 파티클은 maxSize 속성을 가진다', () => {
+    ps.addWeaponHit(100, 100, 'c');
+    expect(ps.particles[0].type).toBe('ring-expand');
+    expect(ps.particles[0].maxSize).toBe(20);
+    expect(ps.particles[0].shadowBlur).toBe(10);
   });
 });

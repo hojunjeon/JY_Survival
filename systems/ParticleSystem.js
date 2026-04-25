@@ -94,21 +94,21 @@ export class ParticleSystem {
 
   addWeaponHit(x, y, weaponType) {
     if (weaponType === 'c') {
-      // C 명중: 8방향 확산 파티클, 색상 #64b4ff, 속도 80px/s, 생존 0.3s
-      for (let i = 0; i < 8; i++) {
-        const angle = (i / 8) * Math.PI * 2;
-        const speed = 80;
-        this.particles.push({
-          x,
-          y,
-          vx: Math.cos(angle) * speed,
-          vy: Math.sin(angle) * speed,
-          life: 0.3,
-          maxLife: 0.3,
-          color: '#64b4ff',
-          size: 2 + Math.random() * 1.5,
-        });
-      }
+      // C 명중: 링 확장 파티클 (반경 0 → 20px, 0.3s)
+      this.particles.push({
+        x,
+        y,
+        vx: 0,
+        vy: 0,
+        life: 0.3,
+        maxLife: 0.3,
+        color: '#64b4ff',
+        size: 1,
+        maxSize: 20,
+        type: 'ring-expand',
+        shadowBlur: 10,
+        shadowColor: '#64b4ff',
+      });
     } else {
       // 기타 weaponType: addHitSpark fallback
       this.addHitSpark(x, y, '#ffffff', 3);
@@ -132,6 +132,18 @@ export class ParticleSystem {
         shadowColor: '#ffa032',
       });
     }
+    // 공전 링 파티클: 반경 36, life 0.1s
+    this.particles.push({
+      x,
+      y,
+      vx: 0,
+      vy: 0,
+      life: 0.1,
+      maxLife: 0.1,
+      color: 'rgba(255,160,50,0.15)',
+      size: 36,
+      type: 'ring',
+    });
   }
 
   update(dt) {
@@ -146,17 +158,41 @@ export class ParticleSystem {
   render(ctx, cameraX = 0, cameraY = 0) {
     for (const p of this.particles) {
       const alpha = Math.max(0, p.life / p.maxLife);
-      const size = p.size * alpha;
       ctx.save();
-      ctx.globalAlpha = alpha;
-      ctx.fillStyle = p.color;
-      if (p.shadowBlur) {
-        ctx.shadowBlur = p.shadowBlur;
-        ctx.shadowColor = p.shadowColor || p.color;
+
+      if (p.type === 'ring') {
+        ctx.globalAlpha = alpha * 0.5;
+        ctx.strokeStyle = p.color;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.arc(p.x - cameraX, p.y - cameraY, p.size, 0, Math.PI * 2);
+        ctx.stroke();
+      } else if (p.type === 'ring-expand') {
+        const r = p.maxSize * (1 - p.life / p.maxLife);
+        ctx.globalAlpha = alpha;
+        if (p.shadowBlur) {
+          ctx.shadowBlur = p.shadowBlur;
+          ctx.shadowColor = p.shadowColor || 'transparent';
+        }
+        ctx.strokeStyle = p.color;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(p.x - cameraX, p.y - cameraY, r, 0, Math.PI * 2);
+        ctx.stroke();
+      } else {
+        // 기존 원형 파티클
+        const size = p.size * alpha;
+        ctx.globalAlpha = alpha;
+        ctx.fillStyle = p.color;
+        if (p.shadowBlur) {
+          ctx.shadowBlur = p.shadowBlur;
+          ctx.shadowColor = p.shadowColor || p.color;
+        }
+        ctx.beginPath();
+        ctx.arc(p.x - cameraX, p.y - cameraY, size, 0, Math.PI * 2);
+        ctx.fill();
       }
-      ctx.beginPath();
-      ctx.arc(p.x - cameraX, p.y - cameraY, size, 0, Math.PI * 2);
-      ctx.fill();
+
       ctx.restore();
     }
   }
