@@ -6,29 +6,19 @@
 
 ---
 
-## 현재 Phase: 10.5
+## 현재 Phase: 11
 
 **업데이트**: 2026-04-25
-**상태**: 진행 중
-
-### 활성 Cycle: Cycle 1 — HUD IDE 컨셉 리뉴얼
-
-**Spec:** `docs/superpowers/specs/2026-04-25-phase10-5-cycle1-hud-design.md`
-
-### Cycle 목록
-
-- [ ] Cycle 1 — HUD IDE 컨셉 리뉴얼 (spec ✅ / plan 없음 → Step 1 시작)
-- [ ] Cycle 2 — 무기 이펙트 hero_*.html 스타일 이식
-- [ ] Cycle 3 — 몬스터 이펙트 _*.html 스타일 이식
-
-**Spec 파일:**
-- `docs/superpowers/specs/2026-04-25-phase10-5-cycle1-hud-design.md`
-- `docs/superpowers/specs/2026-04-25-phase10-5-cycle2-weapon-effect-design.md`
-- `docs/superpowers/specs/2026-04-25-phase10-5-cycle3-monster-effect-design.md`
+**상태**: 대기 중 (Phase 10.5 완료)
 
 ---
 
-Phase 10 완료 / Phase 10.5 진행 중 / Phase 11 대기
+Phase 10 완료 / Phase 10.5 완료 / Phase 11 대기
+
+### Phase 10.5 완료 요약
+- Cycle 1 — HUD IDE 컨셉 리뉴얼 ✅ (draft-22-hud-ide.md)
+- Cycle 2 — 무기 이펙트 hero_*.html 스타일 이식 ✅ (draft-23-weapon-effect.md)
+- Cycle 3 — 몬스터 이펙트 _*.html 스타일 이식 ✅ (draft-24-monster-effect.md)
 
 ---
 
