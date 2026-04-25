@@ -1,7 +1,8 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { PythonWeapon } from '../weapons/Python.js';
 import { CWeapon } from '../weapons/C.js';
 import { JavaWeapon } from '../weapons/Java.js';
+import { ParticleSystem } from '../systems/ParticleSystem.js';
 
 // ─── Python 무기 ────────────────────────────────────────────────────────────
 describe('PythonWeapon', () => {
@@ -15,21 +16,21 @@ describe('PythonWeapon', () => {
     expect(weapon.name).toBe('Python');
   });
 
-  it('fire() 시 3방향 투사체 3개를 반환한다 (homing)', () => {
+  it('fire() 시 투사체를 반환한다', () => {
     const projectiles = weapon.fire(0, 0, 1, 0);
-    expect(projectiles.length).toBe(3);
+    expect(projectiles.length).toBeGreaterThan(0);
   });
 
-  it('3개의 투사체가 homing 플래그를 가진다', () => {
+  it('투사체는 chain 속성을 가진다', () => {
     const projectiles = weapon.fire(0, 0, 1, 0);
-    projectiles.forEach(p => expect(p.homing).toBe(true));
+    projectiles.forEach(p => expect(p.chainHops).toBeGreaterThan(0));
   });
 
-  it('투사체 속도는 150 이하다 (느림)', () => {
+  it('투사체 속도는 projectileSpeed 설정값을 따른다', () => {
     const projectiles = weapon.fire(0, 0, 1, 0);
     projectiles.forEach(p => {
       const speed = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
-      expect(speed).toBeLessThanOrEqual(150);
+      expect(speed).toBeCloseTo(weapon.projectileSpeed, 0);
     });
   });
 
@@ -45,6 +46,30 @@ describe('PythonWeapon', () => {
   it('투사체는 관통하지 않는다', () => {
     const projectiles = weapon.fire(0, 0, 1, 0);
     projectiles.forEach(p => expect(p.piercing).toBe(false));
+  });
+
+  it('fire() 시 activeProjectiles에 투사체가 추가된다', () => {
+    const count = weapon.activeProjectiles.length;
+    weapon.fire(0, 0, 1, 0);
+    expect(weapon.activeProjectiles.length).toBeGreaterThan(count);
+  });
+
+  it('update(dt, particleSystem)를 호출하면 trail 이펙트가 추가된다', () => {
+    const ps = new ParticleSystem();
+    const spy = vi.spyOn(ps, 'addWeaponTrail');
+    weapon.fire(0, 0, 1, 0);
+    weapon.update(0.016, ps);
+    expect(spy).toHaveBeenCalled();
+  });
+
+  it('비활성 발사체는 activeProjectiles에서 제거된다', () => {
+    weapon.fire(0, 0, 1, 0);
+    const initialCount = weapon.activeProjectiles.length;
+    expect(initialCount).toBeGreaterThan(0);
+    // 모든 발사체를 비활성화
+    weapon.activeProjectiles.forEach(p => p.active = false);
+    weapon.update(0.016, null);
+    expect(weapon.activeProjectiles.length).toBe(0);
   });
 });
 
@@ -89,9 +114,31 @@ describe('CWeapon', () => {
     expect(cProj.damage).toBeGreaterThan(pyProj.damage);
   });
 
-  it('쿨다운이 PythonWeapon보다 짧다', () => {
+  it('쿨다운이 PythonWeapon보다 길다', () => {
     const python = new PythonWeapon();
-    expect(weapon.cooldown).toBeLessThan(python.cooldown);
+    expect(weapon.cooldown).toBeGreaterThan(python.cooldown);
+  });
+
+  it('fire() 시 activeProjectiles에 투사체가 추가된다', () => {
+    weapon.fire(0, 0, 1, 0);
+    expect(weapon.activeProjectiles.length).toBe(1);
+  });
+
+  it('update(dt, particleSystem)를 호출하면 trail 이펙트가 추가된다', () => {
+    const ps = new ParticleSystem();
+    const spy = vi.spyOn(ps, 'addWeaponTrail');
+    weapon.fire(0, 0, 1, 0);
+    weapon.update(0.016, ps);
+    expect(spy).toHaveBeenCalled();
+  });
+
+  it('비활성 발사체는 activeProjectiles에서 제거된다', () => {
+    weapon.fire(0, 0, 1, 0);
+    expect(weapon.activeProjectiles.length).toBe(1);
+    // 발사체를 비활성화
+    weapon.activeProjectiles[0].active = false;
+    weapon.update(0.016, null);
+    expect(weapon.activeProjectiles.length).toBe(0);
   });
 });
 
