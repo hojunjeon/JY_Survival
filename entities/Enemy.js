@@ -1,4 +1,5 @@
 import { PixelRenderer } from '../sprites/PixelRenderer.js';
+import { ENEMY_TYPE_COLORS } from '../systems/ParticleSystem.js';
 
 export class Enemy {
   constructor(x, y, { hp, speed, contactDamage, flees = false, dropsHpItem = false, type = 'enemy' }) {
@@ -227,7 +228,12 @@ export class Enemy {
   render(ctx) {
     const sprite = PixelRenderer.BUG_SPRITES[this.type];
     if (sprite) {
-      PixelRenderer.drawSprite(ctx, sprite, this.x - this.width / 2, this.y - this.height / 2, 2);
+      const glowColor = ENEMY_TYPE_COLORS[this.type];
+      if (glowColor) {
+        PixelRenderer.drawSpriteWithGlow(ctx, sprite, this.x - this.width / 2, this.y - this.height / 2, 2, glowColor + '88');
+      } else {
+        PixelRenderer.drawSprite(ctx, sprite, this.x - this.width / 2, this.y - this.height / 2, 2);
+      }
     } else {
       // 폴백: 단색 사각형 (알 수 없는 타입)
       const colors = {
