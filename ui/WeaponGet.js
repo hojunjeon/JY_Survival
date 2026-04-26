@@ -22,6 +22,8 @@ export class WeaponGet {
   render(ctx) {
     if (!this.visible || !this.weaponData) return;
 
+    ctx.save();
+
     // 반투명 오버레이
     ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
     ctx.fillRect(0, 0, this.cw, this.ch);
@@ -150,6 +152,8 @@ export class WeaponGet {
     ctx.font = 'bold 8px monospace';
     ctx.textAlign = 'center';
     ctx.fillText(`장착 (슬롯 ${this.slotIndex + 1})`, btn2X + btnW / 2, contentY + btnH / 2);
+
+    ctx.restore();
   }
 
   getHitboxes() {
