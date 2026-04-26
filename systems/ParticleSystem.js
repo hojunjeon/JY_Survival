@@ -222,9 +222,19 @@ export class ParticleSystem {
   }
 
   addOrbitalTail(x, y, level = 1) {
-    // Java 오브: 8개 잔상 점, 색상 #ffa032, shadowBlur:20, 뒤로 갈수록 alpha 감소
-    for (let i = 0; i < 8; i++) {
-      const alpha = (8 - i) / 8; // 뒤로 갈수록 alpha 감소 (1 ~ 0)
+    // Java (Orbital JVM): Level-based orbital effects (Lv1-5)
+    const levelConfig = {
+      1: { tailCount: 4, orbitalCount: 3, ringRadius: 0, hasRing: false, hasGlow: false, hasOuterRing: false, hasPulse: false },
+      2: { tailCount: 6, orbitalCount: 3, ringRadius: 36, hasRing: true, hasGlow: false, hasOuterRing: false, hasPulse: false },
+      3: { tailCount: 8, orbitalCount: 3, ringRadius: 40, hasRing: true, hasGlow: true, hasOuterRing: false, hasPulse: false },
+      4: { tailCount: 8, orbitalCount: 4, ringRadius: 40, hasRing: true, hasGlow: true, hasOuterRing: false, hasPulse: false },
+      5: { tailCount: 10, orbitalCount: 4, ringRadius: 45, hasRing: true, hasGlow: true, hasOuterRing: true, hasPulse: true },
+    };
+    const config = levelConfig[Math.min(level, 5)] || levelConfig[1];
+
+    // Tail particles
+    for (let i = 0; i < config.tailCount; i++) {
+      const alpha = (config.tailCount - i) / config.tailCount;
       this.particles.push({
         x,
         y,
@@ -238,18 +248,52 @@ export class ParticleSystem {
         shadowColor: '#ffa032',
       });
     }
-    // 공전 링 파티클: 반경 36, life 0.1s
-    this.particles.push({
-      x,
-      y,
-      vx: 0,
-      vy: 0,
-      life: 0.1,
-      maxLife: 0.1,
-      color: 'rgba(255,160,50,0.15)',
-      size: 36,
-      type: 'ring',
-    });
+
+    // Main orbital ring
+    if (config.hasRing) {
+      this.particles.push({
+        x,
+        y,
+        vx: 0,
+        vy: 0,
+        life: 0.1,
+        maxLife: 0.1,
+        color: config.hasGlow ? 'rgba(255,160,50,0.25)' : 'rgba(255,160,50,0.15)',
+        size: config.ringRadius,
+        type: 'ring',
+      });
+    }
+
+    // Outer ring for Lv5
+    if (config.hasOuterRing) {
+      this.particles.push({
+        x,
+        y,
+        vx: 0,
+        vy: 0,
+        life: 0.12,
+        maxLife: 0.12,
+        color: 'rgba(255,160,50,0.1)',
+        size: config.ringRadius + 20,
+        type: 'ring',
+      });
+    }
+
+    // Core pulse for Lv5
+    if (config.hasPulse) {
+      this.particles.push({
+        x,
+        y,
+        vx: 0,
+        vy: 0,
+        life: 0.15,
+        maxLife: 0.15,
+        color: '#ffa032',
+        size: 3,
+        shadowBlur: 15,
+        shadowColor: '#ffa032',
+      });
+    }
   }
 
   update(dt) {
