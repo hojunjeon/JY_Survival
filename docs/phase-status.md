@@ -77,6 +77,7 @@ Phase 10 완료 / Phase 10.5 완료 / Phase 11 대기
 | 23편 (Phase 10.5 무기이펙트) | `blog/game-dev/draft-23-weapon-effect.md` | Phase 10.5 Cycle 2 | ✅ 작성 완료 (퇴고 후 발행) |
 | 24편 (Phase 10.5 몬스터이펙트) | `blog/game-dev/draft-24-monster-effect.md` | Phase 10.5 Cycle 3 | ✅ 작성 완료 (퇴고 후 발행) |
 | 25편 (Phase 11 UI 화면) | `blog/game-dev/draft-25-ui-screens.md` | Phase 11 Cycle 1 | ✅ 작성 완료 (퇴고 후 발행) |
+| 26편 (Phase 11 무기 레벨업) | `blog/game-dev/draft-26-weapon-levelup-fx.md` | Phase 11 Cycle 2 | ✅ 작성 완료 (퇴고 후 발행) |
 
 ### prompt-diary 시리즈
 
