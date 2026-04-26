@@ -73,6 +73,10 @@ Phase 10 완료 / Phase 10.5 완료 / Phase 11 대기
 | 19편 (Phase8 추가) | `blog/game-dev/draft-19-추가3.md` | Phase 8 Cycle 2 | ✅ 작성 완료 (퇴고 후 발행) |
 | 20편 (Phase9 수정) | `blog/game-dev/draft-20-수정4.md` | Phase 9 Cycle 1 | ✅ 작성 완료 (퇴고 후 발행) |
 | 21편 (Phase9 추가) | `blog/game-dev/draft-21-추가4.md` | Phase 9 Cycle 2 | ✅ 작성 완료 (퇴고 후 발행) |
+| 22편 (Phase 10.5 HUD) | `blog/game-dev/draft-22-hud-ide.md` | Phase 10.5 Cycle 1 | ✅ 작성 완료 (퇴고 후 발행) |
+| 23편 (Phase 10.5 무기이펙트) | `blog/game-dev/draft-23-weapon-effect.md` | Phase 10.5 Cycle 2 | ✅ 작성 완료 (퇴고 후 발행) |
+| 24편 (Phase 10.5 몬스터이펙트) | `blog/game-dev/draft-24-monster-effect.md` | Phase 10.5 Cycle 3 | ✅ 작성 완료 (퇴고 후 발행) |
+| 25편 (Phase 11 UI 화면) | `blog/game-dev/draft-25-ui-screens.md` | Phase 11 Cycle 1 | ✅ 작성 완료 (퇴고 후 발행) |
 
 ### prompt-diary 시리즈
 
