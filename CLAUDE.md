@@ -5,17 +5,12 @@ Superpowers + Gstack 워크플로우를 게임 토이 프로젝트로 검증, Ve
 산출물: 브라우저 게임 코드 + `/blog/` 한국어 초안. AI 작성 → 사람 퇴고 후 발행.
 
 ## 세션 시작
-1. `docs/phase-status.md` 확인 (현재 Phase / 활성 Cycle / 다음 Step)
-2. 활성 Cycle 있음 → workflow 스킬 호출 (이어서 진행)
-3. 없음 → 다음 Cycle 무엇으로 할지 사용자에게 확인
+1. `docs/phase-status.md` 확인 (현재 Phase / 활성 Cycle)
+2. 다음 작업 무엇으로 할지 사용자에게 확인
 
 ## 스킬 라우팅
-- 개발 작업 → workflow
-- 단발 QA → gstack:qa
+- 개발 작업 → workflow 스킬
 - 이벤트 일기 (사이클 종료 후) → prompt-diary
-
-## 구현 모드 (workflow Step 2)
-독립 task ≥ 3 + 기계적 구현 → Haiku 전환 + worktree + 병렬 에이전트 → 완료 후 Sonnet 복귀 + review
 
 ## 메타 작업
 CLAUDE.md / 워크플로우 / 스킬 변경 등 메타 작업은 파이프라인 밖에서 직접 대화로 처리.
