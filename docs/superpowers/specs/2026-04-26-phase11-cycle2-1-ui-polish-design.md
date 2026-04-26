@@ -139,6 +139,26 @@ static FONTS = {
 
 ---
 
+## 구현 시 주의사항 (모호함 해소)
+
+### 1. GameOver — maxCombo / maxWave 미구현
+`runStats.maxCombo`와 `runStats.maxWave`는 현재 항상 `0`.
+→ 통계 행 표시하되 `0`으로 렌더링. 숨기지 않음.
+
+### 2. StageClear — stageNumber 하드코딩
+`stageStats.stageNumber`는 현재 항상 `1`.
+→ 버튼 텍스트: `"git push origin Stage2 →"` (하드코딩 그대로 사용).
+
+### 3. WeaponGet — 슬롯 번호 소스
+`show(reward)` 에서 `reward`는 `ownedWeapons[ownedWeapons.length - 1]`.
+→ 슬롯 번호 = `ownedWeapons.length`. `WeaponGet.show(weapon)` 내부에서 slot 필드 없으면 `"슬롯 ?"` 표시.
+
+### 4. hitbox 좌표 동기화 필수
+버튼 위치/크기 변경 시 반드시 같은 파일의 `getHitboxes()` 좌표도 동기화.
+→ 각 화면 재구현 시 `render()`와 `getHitboxes()` 좌표를 상수로 공유 (로컬 const 사용).
+
+---
+
 ## 구현 순서
 
 1. `index.html` CSS 변경 (1줄)
