@@ -14,6 +14,9 @@ Superpowers + Gstack 워크플로우를 게임 토이 프로젝트로 검증, Ve
 - 단발 QA → gstack:qa
 - 이벤트 일기 (사이클 종료 후) → prompt-diary
 
+## 구현 모드 (workflow Step 2)
+독립 task ≥ 3 + 기계적 구현 → Haiku 전환 + worktree + 병렬 에이전트 → 완료 후 Sonnet 복귀 + review
+
 ## 메타 작업
 CLAUDE.md / 워크플로우 / 스킬 변경 등 메타 작업은 파이프라인 밖에서 직접 대화로 처리.
 
