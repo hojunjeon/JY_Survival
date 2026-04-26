@@ -20,6 +20,8 @@ export class GameOver {
   render(ctx) {
     if (!this.visible) return;
 
+    ctx.save();
+
     ctx.fillStyle = '#0d0d0d';
     ctx.fillRect(0, 0, this.cw, this.ch);
 
@@ -133,6 +135,8 @@ export class GameOver {
     ctx.fillText('✗ GAME OVER', 8, this.ch - 8);
     ctx.textAlign = 'right';
     ctx.fillText(this._fmtTime(this.runStats.elapsed || 0), this.cw - 8, this.ch - 8);
+
+    ctx.restore();
   }
 
   getHitboxes() {
