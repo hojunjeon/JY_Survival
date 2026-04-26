@@ -90,7 +90,7 @@ describe('ParticleSystem', () => {
     expect(ringParticle).toBeDefined();
     expect(ringParticle.type).toBe('ring');
     expect(ringParticle.size).toBe(36);
-    expect(ringParticle.color).toBe('rgba(255,160,50,0.25)');
+    expect(ringParticle.color).toBe('rgba(255,160,50,0.15)');
     expect(ringParticle.maxLife).toBe(0.1);
   });
 
