@@ -85,24 +85,24 @@ describe('ParticleSystem', () => {
   });
 
   it('OrbitalTail 링 파티클은 마지막 파티클이고 type ring을 가진다', () => {
-    ps.addOrbitalTail(100, 100);
+    ps.addOrbitalTail(100, 100, 2);
     const ringParticle = ps.particles.find(p => p.type === 'ring');
     expect(ringParticle).toBeDefined();
     expect(ringParticle.type).toBe('ring');
     expect(ringParticle.size).toBe(36);
-    expect(ringParticle.color).toBe('rgba(255,160,50,0.15)');
+    expect(ringParticle.color).toBe('rgba(255,160,50,0.25)');
     expect(ringParticle.maxLife).toBe(0.1);
   });
 
   it('ring 타입 파티클은 render에서 원형으로 그려진다', () => {
-    ps.addOrbitalTail(100, 100);
+    ps.addOrbitalTail(100, 100, 2);
     const ringParticle = ps.particles.find(p => p.type === 'ring');
     expect(ringParticle).toBeDefined();
     expect(ringParticle.type).toBe('ring');
   });
 
   it('ring-expand 타입 파티클은 maxSize 속성을 가진다', () => {
-    ps.addWeaponHit(100, 100, 'c');
+    ps.addWeaponHit(100, 100, 'c', 2);
     const ringExpand = ps.particles.find(p => p.type === 'ring-expand');
     expect(ringExpand).toBeDefined();
     expect(ringExpand.type).toBe('ring-expand');
