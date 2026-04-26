@@ -359,6 +359,7 @@ function startGame() {
 
   const eventModal = new EventModal({ canvasWidth: canvas.width, canvasHeight: canvas.height });
   let paused = false;
+  let _q1Rewarded = false; // Q1 보상 플래그
 
   // gameSession 객체에 필요한 데이터 저장
   gameSession = {
@@ -744,8 +745,9 @@ function startGame() {
     const eventNotifications = eventSystem.update(dt);
     for (const n of eventNotifications) {
       if (n.type === 'event_triggered') {
-        eventModal.show('triggered', n.event);
+        gameState = 'event-toast';
         paused = true;
+        uiScreens.eventToast.show(n.event);
         // 기존 몹 전부 제거
         for (const e of enemies) game.removeEntity(e);
         enemies = [];
@@ -754,8 +756,6 @@ function startGame() {
         if (n.event === 'E2') waveSystem.setEventMode('env_error', Infinity);
       }
       if (n.type === 'event_cleared') {
-        eventModal.show('cleared', n.event);
-        paused = true;
         waveSystem.clearEventMode();
         // 이벤트 몹 전부 제거
         enemies = enemies.filter(e => {
@@ -765,7 +765,13 @@ function startGame() {
           }
           return true;
         });
-        if (n.event === 'E2') giveRewardWeapon();
+        if (n.event === 'E2') {
+          giveRewardWeapon();
+          gameState = 'weapon-get';
+          paused = true;
+          const reward = ownedWeapons[ownedWeapons.length - 1];
+          uiScreens.weaponGet.show(reward);
+        }
       }
       if (n.type === 'boss_triggered' && !boss) {
         // 보스 등장 — 적 전체 제거
@@ -776,10 +782,22 @@ function startGame() {
         game.addEntity(boss);
         bossDialogue = boss.getDialogue('appear');
         bossDialogueTimer = 3;
+
+        gameState = 'boss-intro';
+        paused = true;
+        uiScreens.bossIntro.show({ name: boss.name, phase: boss.phase });
       }
     }
 
-    // 5-1. 적 킬 이벤트 시스템 통보 (죽은 적 처리 직전)
+    // 5-1. Q1 완료 감지 (100마리 처치)
+    if (eventSystem.totalKills >= 100 && !_q1Rewarded) {
+      _q1Rewarded = true;
+      gameState = 'stat-upgrade';
+      paused = true;
+      uiScreens.statUpgrade.show();
+    }
+
+    // 5-2. 적 킬 이벤트 시스템 통보 (죽은 적 처리 직전)
     // (아래 9번에서 처리)
 
     // 6. 적 이동 + 특수 공격 투사체 수집 + 가비지 수집
@@ -840,6 +858,10 @@ function startGame() {
       if (phaseChanged) {
         bossDialogue = boss.getDialogue('phase2');
         bossDialogueTimer = 3;
+
+        gameState = 'boss-phase2';
+        paused = true;
+        uiScreens.bossPhase2.show({ name: boss.name, phase: boss.phase });
       }
 
       boss.update(dt, player.x, player.y);
