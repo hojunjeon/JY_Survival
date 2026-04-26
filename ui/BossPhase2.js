@@ -28,6 +28,8 @@ export class BossPhase2 {
   render(ctx) {
     if (!this.visible || !this.bossData) return;
 
+    ctx.save();
+
     // 오렌지 오버레이
     const elapsed = Date.now() - this.displayTime;
     const fadeRatio = Math.min(1, elapsed / 500);
@@ -131,6 +133,8 @@ export class BossPhase2 {
       ctx.textAlign = 'center';
       ctx.fillText(`계속: ${remaining}초`, this.cw / 2, boxY + boxH + 20);
     }
+
+    ctx.restore();
   }
 
   _renderWrappedText(ctx, text, x, y, maxW, lineHeight, center = false) {
