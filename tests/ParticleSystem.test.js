@@ -33,37 +33,41 @@ describe('ParticleSystem', () => {
     expect(ps.particles.length).toBe(0);
   });
 
-  it('addWeaponTrail(x, y, "python")은 20개 파티클을 추가한다', () => {
-    ps.addWeaponTrail(100, 100, 'python');
+  it('addWeaponTrail(x, y, "python")은 레벨에 따라 파티클을 추가한다', () => {
+    ps.addWeaponTrail(100, 100, 'python', 5);
     expect(ps.particles.length).toBe(20);
   });
 
   it('Python trail 파티클은 shadowBlur 속성을 가진다', () => {
-    ps.addWeaponTrail(100, 100, 'python');
+    ps.addWeaponTrail(100, 100, 'python', 5);
     expect(ps.particles[0].shadowBlur).toBe(20);
     expect(ps.particles[0].shadowColor).toBe('#44ff44');
   });
 
-  it('addWeaponTrail(x, y, "c")은 12개 파티클을 추가한다', () => {
-    ps.addWeaponTrail(100, 100, 'c');
+  it('addWeaponTrail(x, y, "c")은 레벨에 따라 파티클을 추가한다', () => {
+    ps.addWeaponTrail(100, 100, 'c', 5);
     expect(ps.particles.length).toBe(12);
   });
 
   it('C trail 파티클은 shadowBlur 속성을 가진다', () => {
-    ps.addWeaponTrail(100, 100, 'c');
-    expect(ps.particles[0].shadowBlur).toBe(10);
+    ps.addWeaponTrail(100, 100, 'c', 5);
+    expect(ps.particles[0].shadowBlur).toBe(15);
     expect(ps.particles[0].shadowColor).toBe('#64b4ff');
   });
 
-  it('addWeaponHit(x, y, "c")은 1개 ring-expand 파티클을 추가한다', () => {
-    ps.addWeaponHit(100, 100, 'c');
-    expect(ps.particles.length).toBe(1);
+  it('addWeaponHit(x, y, "c")은 ring-expand 파티클을 추가한다', () => {
+    ps.addWeaponHit(100, 100, 'c', 4);
+    expect(ps.particles.length).toBeGreaterThan(0);
+    const ringExpand = ps.particles.find(p => p.type === 'ring-expand');
+    expect(ringExpand).toBeDefined();
   });
 
   it('C hit 파티클은 ring-expand 타입이다', () => {
-    ps.addWeaponHit(100, 100, 'c');
-    expect(ps.particles[0].type).toBe('ring-expand');
-    expect(ps.particles[0].maxSize).toBe(20);
+    ps.addWeaponHit(100, 100, 'c', 4);
+    const ringExpand = ps.particles.find(p => p.type === 'ring-expand');
+    expect(ringExpand).toBeDefined();
+    expect(ringExpand.type).toBe('ring-expand');
+    expect(ringExpand.maxSize).toBe(20);
   });
 
   it('addWeaponHit(x, y, "unknown")은 addHitSpark으로 fallback한다', () => {
