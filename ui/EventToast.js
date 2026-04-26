@@ -19,6 +19,7 @@ export class EventToast {
 
   render(ctx) {
     if (!this.visible || !this.eventData) return;
+    ctx.save();
 
     // 반투명 오버레이
     ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
@@ -148,6 +149,8 @@ export class EventToast {
     ctx.font = 'bold 8px monospace';
     ctx.textAlign = 'center';
     ctx.fillText('도와주기 →', btnX + btnW + btnGap + btnW / 2, contentY + btnH / 2);
+
+    ctx.restore();
   }
 
   getHitboxes() {
