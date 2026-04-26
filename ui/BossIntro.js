@@ -28,6 +28,8 @@ export class BossIntro {
   render(ctx) {
     if (!this.visible || !this.bossData) return;
 
+    ctx.save();
+
     // 빨강 오버레이
     const elapsed = Date.now() - this.displayTime;
     const fadeRatio = Math.min(1, elapsed / 500); // 0.5초에 걸쳐 fade in
@@ -135,8 +137,11 @@ export class BossIntro {
       ctx.fillStyle = HUD.COLORS.comment;
       ctx.font = '8px monospace';
       ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
       ctx.fillText(`자동 시작: ${remaining}초`, this.cw / 2, boxY + boxH + 20);
     }
+
+    ctx.restore();
   }
 
   _renderWrappedText(ctx, text, x, y, maxW, lineHeight, center = false) {
