@@ -20,141 +20,138 @@ export class GameOver {
   render(ctx) {
     if (!this.visible) return;
 
-    // 검정 배경
     ctx.fillStyle = '#0d0d0d';
     ctx.fillRect(0, 0, this.cw, this.ch);
 
-    let contentY = 40;
+    const PAD = 20;
+    let y = 40;
 
-    // 스택 트레이스
-    ctx.fillStyle = HUD.COLORS.red;
-    ctx.font = 'bold 14px monospace';
-    ctx.textAlign = 'left';
-    ctx.fillText('PlayerDeadError: Player.hp <= 0', 20, contentY);
-
-    contentY += 24;
-
-    ctx.fillStyle = HUD.COLORS.comment;
-    ctx.font = '8px monospace';
-    const stackTrace = [
-      '  at Player.takeDamage (entities/Player.js:87)',
-      '  at mainGameLoop (main.js:412)',
-      '  at requestAnimationFrame (main.js:1200)',
-      '  at Engine.run (core/Game.js:45)',
-    ];
-    stackTrace.forEach((line) => {
-      ctx.fillText(line, 20, contentY);
-      contentY += 12;
-    });
-
-    contentY += 16;
-
-    // RUN SUMMARY
-    ctx.fillStyle = HUD.COLORS.text;
-    ctx.font = 'bold 13px monospace';
-    ctx.fillText('// ═══════════════════════════════════', 20, contentY);
-
-    contentY += 18;
-
-    ctx.fillStyle = HUD.COLORS.comment;
-    ctx.font = '9px monospace';
-    ctx.fillText('// RUN SUMMARY', 20, contentY);
-
-    contentY += 18;
-
-    // 통계 테이블
-    const stats = [
-      { label: '생존시간', value: `${this.runStats.elapsed || 0}s`, color: HUD.COLORS.timerVal },
-      { label: '처치수', value: `${this.runStats.kills || 0}`, color: HUD.COLORS.value },
-      { label: '최대콤보', value: `${this.runStats.maxCombo || 0}`, color: HUD.COLORS.keyword },
-      { label: '도달웨이브', value: `${this.runStats.maxWave || 1}`, color: HUD.COLORS.teal2 },
-    ];
-
-    stats.forEach((stat) => {
-      ctx.fillStyle = stat.color;
-      ctx.font = 'bold 9px monospace';
-      ctx.textAlign = 'left';
-      ctx.fillText(stat.label, 20, contentY);
-
-      ctx.fillStyle = HUD.COLORS.text;
-      ctx.textAlign = 'right';
-      ctx.fillText(stat.value, this.cw - 20, contentY);
-
-      contentY += 16;
-    });
-
-    contentY += 12;
-
-    ctx.fillStyle = HUD.COLORS.comment;
-    ctx.font = '9px monospace';
-    ctx.textAlign = 'left';
-    ctx.fillText('// ═══════════════════════════════════', 20, contentY);
-
-    contentY += 24;
-
-    // 버튼들
-    const btnW = 100;
-    const btnH = 24;
-    const btnGap = 16;
-    const totalBtnW = btnW * 2 + btnGap;
-    const btnX = (this.cw - totalBtnW) / 2;
-    const btnY = contentY;
-
-    // Exit 버튼
-    ctx.fillStyle = HUD.COLORS.border;
-    ctx.fillRect(btnX, btnY, btnW, btnH);
-
-    ctx.strokeStyle = HUD.COLORS.comment;
+    // 에러 헤더
+    ctx.fillStyle = 'rgba(243, 139, 168, 0.12)';
+    ctx.fillRect(PAD, y - 8, this.cw - PAD * 2, 36);
+    ctx.strokeStyle = 'rgba(243, 139, 168, 0.33)';
     ctx.lineWidth = 1;
-    ctx.strokeRect(btnX, btnY, btnW, btnH);
+    ctx.strokeRect(PAD, y - 8, this.cw - PAD * 2, 36);
+
+    ctx.fillStyle = HUD.COLORS.red;
+    ctx.font = 'bold 13px monospace';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'top';
+    ctx.fillText('✗ PlayerDied', PAD + 8, y);
 
     ctx.fillStyle = HUD.COLORS.comment;
-    ctx.font = 'bold 10px monospace';
+    ctx.font = '9px monospace';
+    ctx.fillText('exit code 1', PAD + 8, y + 16);
+
+    y += 48;
+
+    // stacktrace
+    ctx.font = '11px monospace';
+    ctx.fillStyle = HUD.COLORS.red;
+    ctx.fillText('Error: PlayerHP = 0', PAD, y);
+    y += 16;
+
+    ctx.fillStyle = HUD.COLORS.comment;
+    const trace = [
+      '  at Game.checkDeath',
+      '  at Enemy.onContact',
+      '  at GameLoop.update',
+    ];
+    trace.forEach((line) => {
+      ctx.fillText(line, PAD, y);
+      y += 14;
+    });
+
+    y += 12;
+
+    // run summary 박스
+    ctx.fillStyle = HUD.COLORS.sidebar;
+    ctx.fillRect(PAD, y, this.cw - PAD * 2, 80);
+    ctx.strokeStyle = HUD.COLORS.border;
+    ctx.lineWidth = 1;
+    ctx.strokeRect(PAD, y, this.cw - PAD * 2, 80);
+
+    let rowY = y + 10;
+
+    const rows = [
+      { label: '생존 시간', value: this._fmtTime(this.runStats.elapsed || 0), color: HUD.COLORS.timerVal },
+      { label: '버그 처치', value: `${this.runStats.kills || 0}마리`, color: HUD.COLORS.teal2 },
+      { label: '최대 콤보', value: `×${this.runStats.maxCombo || 0}`, color: HUD.COLORS.orange },
+    ];
+
+    rows.forEach((row) => {
+      ctx.fillStyle = HUD.COLORS.comment;
+      ctx.font = '11px monospace';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'top';
+      ctx.fillText(row.label, PAD + 8, rowY);
+
+      ctx.fillStyle = row.color;
+      ctx.textAlign = 'right';
+      ctx.fillText(row.value, this.cw - PAD - 8, rowY);
+
+      rowY += 18;
+    });
+
+    // 버튼 (하단 고정)
+    const BTN_Y = this.ch - 80;
+    const btnW = (this.cw - PAD * 2 - 12) / 2;
+    const btnH = 28;
+    const btn1X = PAD;
+    const btn2X = PAD + btnW + 12;
+
+    ctx.strokeStyle = HUD.COLORS.border;
+    ctx.lineWidth = 1;
+    ctx.strokeRect(btn1X, BTN_Y, btnW, btnH);
+    ctx.fillStyle = HUD.COLORS.comment;
+    ctx.font = '11px monospace';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText('[ exit ]', btnX + btnW / 2, btnY + btnH / 2);
+    ctx.fillText('exit', btn1X + btnW / 2, BTN_Y + btnH / 2);
 
-    // Restart 버튼
-    ctx.fillStyle = HUD.COLORS.teal2;
-    ctx.fillRect(btnX + btnW + btnGap, btnY, btnW, btnH);
-
+    ctx.fillStyle = HUD.COLORS.orange;
+    ctx.fillRect(btn2X, BTN_Y, btnW, btnH);
     ctx.fillStyle = HUD.COLORS.bg;
-    ctx.font = 'bold 10px monospace';
+    ctx.font = '11px monospace';
     ctx.textAlign = 'center';
-    ctx.fillText('[ restart ]', btnX + btnW + btnGap + btnW / 2, btnY + btnH / 2);
+    ctx.fillText('game.restart()', btn2X + btnW / 2, BTN_Y + btnH / 2);
 
     // 키보드 힌트
     ctx.fillStyle = HUD.COLORS.comment;
-    ctx.font = '8px monospace';
+    ctx.font = '9px monospace';
     ctx.textAlign = 'center';
-    ctx.fillText('R: restart | Q: exit', this.cw / 2, this.ch - 30);
+    ctx.textBaseline = 'top';
+    ctx.fillText('R: restart', this.cw / 2, this.ch - 30);
+
+    // 스테이터스 바
+    ctx.fillStyle = '#6c1a1a';
+    ctx.fillRect(0, this.ch - 16, this.cw, 16);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '9px monospace';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('✗ GAME OVER', 8, this.ch - 8);
+    ctx.textAlign = 'right';
+    ctx.fillText(this._fmtTime(this.runStats.elapsed || 0), this.cw - 8, this.ch - 8);
   }
 
   getHitboxes() {
     if (!this.visible) return [];
 
-    const btnW = 100;
-    const btnH = 24;
-    const btnGap = 16;
-    const totalBtnW = btnW * 2 + btnGap;
-    const btnX = (this.cw - totalBtnW) / 2;
-    const btnY = 240; // Approximate, depends on rendered height
+    const PAD = 20;
+    const BTN_Y = this.ch - 80;
+    const btnW = (this.cw - PAD * 2 - 12) / 2;
+    const btnH = 28;
 
     return [
-      {
-        x: btnX,
-        y: btnY,
-        w: btnW,
-        h: btnH,
-        action: 'exit',
-      },
-      {
-        x: btnX + btnW + btnGap,
-        y: btnY,
-        w: btnW,
-        h: btnH,
-        action: 'restart',
-      },
+      { x: PAD, y: BTN_Y, w: btnW, h: btnH, action: 'exit' },
+      { x: PAD + btnW + 12, y: BTN_Y, w: btnW, h: btnH, action: 'restart' },
     ];
+  }
+
+  _fmtTime(seconds) {
+    const m = Math.floor(seconds / 60);
+    const s = Math.floor(seconds % 60).toString().padStart(2, '0');
+    return `${m}:${s}`;
   }
 }
