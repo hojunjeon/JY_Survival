@@ -981,7 +981,7 @@ function startGame() {
               enemy.takeDamage(dmg);
               triggerScreenShake(2, 0.1);
               particleSystem.addHitSpark(enemy.x, enemy.y, ENEMY_TYPE_COLORS[enemy.type] || proj.color, 5);
-              particleSystem.addWeaponHit(enemy.x, enemy.y, proj.weaponType);
+              particleSystem.addWeaponHit(enemy.x, enemy.y, proj.weaponType, selectedWeapon?.level || 1);
               { const isCrit = dmg >= 20; floatingTextManager.add(isCrit ? `!!-${dmg}!!` : `-${dmg}`, enemy.x, enemy.y - 20, proj.color, { size: isCrit ? 22 : 14, duration: isCrit ? 1.3 : 1.0 }); }
               proj.hitEnemies.add(enemy);
             }
@@ -992,7 +992,7 @@ function startGame() {
             enemy.takeDamage(dmg);
             triggerScreenShake(2, 0.1);
             particleSystem.addHitSpark(enemy.x, enemy.y, ENEMY_TYPE_COLORS[enemy.type] || proj.color, 5);
-            particleSystem.addWeaponHit(enemy.x, enemy.y, proj.weaponType);
+            particleSystem.addWeaponHit(enemy.x, enemy.y, proj.weaponType, selectedWeapon?.level || 1);
             { const isCrit = dmg >= 20; floatingTextManager.add(isCrit ? `!!-${dmg}!!` : `-${dmg}`, enemy.x, enemy.y - 20, proj.color, { size: isCrit ? 22 : 14, duration: isCrit ? 1.3 : 1.0 }); }
 
             // Chain Lightning 체이닝
@@ -1049,7 +1049,7 @@ function startGame() {
               boss.takeDamage(proj.damage);
               triggerScreenShake(6, 0.3);
               particleSystem.addHitSpark(boss.x, boss.y, '#ff4444', 8);
-              particleSystem.addWeaponHit(boss.x, boss.y, proj.weaponType);
+              particleSystem.addWeaponHit(boss.x, boss.y, proj.weaponType, selectedWeapon?.level || 1);
               { const isCrit = proj.damage >= 20; floatingTextManager.add(isCrit ? `!!-${proj.damage}!!` : `-${proj.damage}`, boss.x, boss.y - 30, '#ff4444', { size: isCrit ? 22 : 18 }); }
               proj.hitEnemies.add(boss);
             }
@@ -1057,7 +1057,7 @@ function startGame() {
             boss.takeDamage(proj.damage);
             triggerScreenShake(6, 0.3);
             particleSystem.addHitSpark(boss.x, boss.y, '#ff4444', 8);
-            particleSystem.addWeaponHit(boss.x, boss.y, proj.weaponType);
+            particleSystem.addWeaponHit(boss.x, boss.y, proj.weaponType, selectedWeapon?.level || 1);
             { const isCrit = proj.damage >= 20; floatingTextManager.add(isCrit ? `!!-${proj.damage}!!` : `-${proj.damage}`, boss.x, boss.y - 30, '#ff4444', { size: isCrit ? 22 : 18 }); }
             proj.deactivate();
           }
