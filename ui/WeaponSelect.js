@@ -47,7 +47,7 @@ export class WeaponSelect {
     ctx.fillText('김지윤의 디버그 서바이벌', this.cw / 2, 100);
 
     ctx.fillStyle = HUD.COLORS.comment;
-    ctx.font = '13px monospace';
+    ctx.font = HUD.FONTS.md;
     ctx.fillText('Stage 1 — 무기를 선택하세요', this.cw / 2, 130);
 
     // 좌측 파일트리 (weapons/)
