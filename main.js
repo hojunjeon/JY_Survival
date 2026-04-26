@@ -335,6 +335,7 @@ function startGame() {
   player.controlsReversedTimer = 0;
 
   const hud = new HUD({ canvasWidth: canvas.width, canvasHeight: canvas.height });
+  uiScreens.hud = hud; // Fix Bug 1: Add hud to uiScreens object
   const floatingTextManager = new FloatingTextManager();
   const particleSystem = new ParticleSystem();
 
@@ -398,6 +399,7 @@ function startGame() {
       uiScreens.hud.showLevelUpNotif(weapon.name, weapon.level);
     }
   }
+  window.triggerWeaponLevelUp = triggerWeaponLevelUp; // Fix Bug 2: Expose to global scope for console testing
 
   const REWARD_WEAPON_POOL = [
     GitWeapon, SQLWeapon, JavaScriptWeapon, DjangoWeapon, LinuxBashWeapon,
