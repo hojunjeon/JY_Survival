@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>Phase 11 Cycle 2.2 — 버그픽스 + UI 디자인 보정 미리보기</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:#0f0f17; font-family:'JetBrains Mono',monospace; color:#cdd6f4; padding:20px; }
+
+h1 { font-size:11px; color:#6c7086; letter-spacing:2px; margin-bottom:6px; text-transform:uppercase; }
+h2 { font-size:9px; color:#45475a; letter-spacing:1px; margin:20px 0 10px; text-transform:uppercase; border-bottom:1px solid #313244; padding-bottom:6px; }
+
+.grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
+.grid-2 { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; margin-top:12px; }
+.grid-3 { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-top:12px; }
+
+/* 공통 화면 */
+.screen { background:#1e1e2e; border:1px solid #313244; border-radius:4px; overflow:hidden; }
+.title-bar { background:#181825; padding:5px 10px; font-size:9px; color:#6c7086; border-bottom:1px solid #313244; display:flex; align-items:center; gap:6px; }
+.title-bar .dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+.screen-body { padding:12px; }
+.status-bar { background:#007acc; height:16px; padding:0 8px; display:flex; align-items:center; font-size:8px; color:rgba(255,255,255,0.9); justify-content:space-between; flex-shrink:0; }
+.label { font-size:8px; color:#45475a; margin-bottom:8px; letter-spacing:1px; }
+
+/* 코드 syntax */
+.kw  { color:#cba6f7; }
+.fn  { color:#89dceb; }
+.str { color:#f38ba8; }
+.cm  { color:#45475a; }
+.val { color:#a6e3a1; }
+.tl  { color:#4ec9b0; }
+.or  { color:#f9e2af; }
+.bl  { color:#89b4fa; }
+
+/* ─── Fix A 배지 ─── */
+.fix-badge { display:inline-block; font-size:7px; background:rgba(78,201,176,0.15); border:1px solid #4ec9b0; color:#4ec9b0; padding:1px 5px; border-radius:2px; margin-left:6px; vertical-align:middle; }
+.bug-badge { display:inline-block; font-size:7px; background:rgba(243,139,168,0.15); border:1px solid #f38ba8; color:#f38ba8; padding:1px 5px; border-radius:2px; margin-left:6px; vertical-align:middle; }
+</style>
+</head>
+<body>
+
+<h1>Phase 11 · Cycle 2.2 — 버그픽스 + UI 디자인 보정 미리보기</h1>
+
+<!-- ════════════════════════════════════ BUG FIXES ════════════════════════════════════ -->
+<h2>🔧 버그 픽스 요약 (main.js)</h2>
+
+<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:20px">
+
+  <!-- Bug 1 -->
+  <div style="background:#181825;border:1px solid #313244;border-radius:4px;padding:12px">
+    <div style="font-size:8px;color:#f38ba8;margin-bottom:6px">BUG 1 — 마우스 좌표 불일치 <span class="fix-badge">FIXED</span></div>
+    <div style="font-size:8px;color:#45475a;margin-bottom:8px">canvas CSS 스케일 → clientX/Y 보정 누락</div>
+    <div style="background:#0d0d0d;padding:8px;font-size:8px;border:1px solid #313244">
+      <div class="cm">// Before — 좌표 불일치로 클릭 전혀 무효</div>
+      <div><span class="str">e.clientX</span> >= hb.x && ...</div>
+      <div style="margin-top:6px" class="cm">// After — CSS 스케일 보정</div>
+      <div><span class="kw">const</span> <span class="tl">rect</span> = canvas.getBoundingClientRect()</div>
+      <div><span class="kw">const</span> <span class="tl">cx</span> = (e.clientX - rect.left) * (canvas.width / rect.width)</div>
+      <div><span class="tl">cx</span> >= hb.x && ...</div>
+    </div>
+  </div>
+
+  <!-- Bug 2 -->
+  <div style="background:#181825;border:1px solid #313244;border-radius:4px;padding:12px">
+    <div style="font-size:8px;color:#f38ba8;margin-bottom:6px">BUG 2 — paused 변수 분리 <span class="fix-badge">FIXED</span></div>
+    <div style="font-size:8px;color:#45475a;margin-bottom:8px">클릭해도 gameSession.paused ≠ local paused → 영구 freeze</div>
+    <div style="background:#0d0d0d;padding:8px;font-size:8px;border:1px solid #313244">
+      <div class="cm">// Before — 다른 변수 써서 resume 안됨</div>
+      <div><span class="str">gameSession.paused</span> = false <span style="color:#f38ba8">← 무효</span></div>
+      <div style="margin-top:6px" class="cm">// After — closure setter 노출</div>
+      <div><span class="tl">gameSession</span>.setPaused = (v) => { <span class="tl">paused</span> = v }</div>
+      <div><span class="tl">gameSession</span>.setPaused(<span class="val">false</span>)</div>
+    </div>
+  </div>
+
+  <!-- Bug 3 -->
+  <div style="background:#181825;border:1px solid #313244;border-radius:4px;padding:12px">
+    <div style="font-size:8px;color:#f38ba8;margin-bottom:6px">BUG 3 — Python 무기 중복 <span class="fix-badge">FIXED</span></div>
+    <div style="font-size:8px;color:#45475a;margin-bottom:8px">weapons/C.js 존재하나 미연결, Python placeholder</div>
+    <div style="background:#0d0d0d;padding:8px;font-size:8px;border:1px solid #313244">
+      <div class="cm">// Before</div>
+      <div><span class="kw">new</span> <span class="fn">PythonWeapon</span>(), <span class="cm">// placeholder ❌</span></div>
+      <div style="margin-top:6px" class="cm">// After</div>
+      <div><span class="kw">import</span> { <span class="fn">CWeapon</span> } <span class="kw">from</span> <span class="str">'./weapons/C.js'</span></div>
+      <div><span class="kw">new</span> <span class="fn">PythonWeapon</span>(), <span class="kw">new</span> <span class="fn">JavaScriptWeapon</span>(), <span class="kw">new</span> <span class="fn">CWeapon</span>()</div>
+    </div>
+  </div>
+
+  <!-- Bug 4 -->
+  <div style="background:#181825;border:1px solid #313244;border-radius:4px;padding:12px">
+    <div style="font-size:8px;color:#f38ba8;margin-bottom:6px">BUG 4 — WeaponSelect hitbox x 불일치 <span class="fix-badge">FIXED</span></div>
+    <div style="font-size:8px;color:#45475a;margin-bottom:8px">버튼 렌더 x:530, hitbox x:430 → 100px 차이</div>
+    <div style="background:#0d0d0d;padding:8px;font-size:8px;border:1px solid #313244">
+      <div class="cm">// Before</div>
+      <div>{ x: <span class="str">430</span>, action: <span class="str">'confirm'</span> } <span style="color:#f38ba8">← 100px 오프셋</span></div>
+      <div style="margin-top:6px" class="cm">// After — render 위치와 일치</div>
+      <div>{ x: <span class="val">530</span>, action: <span class="str">'confirm'</span> } <span class="cm">// sidebarX(80)+450</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════ UI SCREENS ════════════════════════════════════ -->
+<h2>🎨 UI 화면 디자인 보정 (타이틀바 추가 + sidebar #181825)</h2>
+
+<div class="grid">
+
+  <!-- WeaponSelect -->
+  <div class="screen">
+    <div class="title-bar">
+      <span class="dot" style="background:#f55"></span>
+      <span class="dot" style="background:#fb0"></span>
+      <span class="dot" style="background:#5c5"></span>
+      <span>weapon-select.js</span>
+      <span class="fix-badge">BUG4 FIXED</span>
+    </div>
+    <div class="screen-body">
+      <div class="label">WEAPON SELECT</div>
+      <div style="font-size:8px;color:#f9e2af;margin-bottom:4px">▾ weapons/</div>
+      <div style="display:flex;flex-direction:column;gap:3px;margin-bottom:8px">
+        <div style="padding:3px 6px;border-left:2px solid #4ec9b0;font-size:9px;color:#4ec9b0;background:rgba(78,201,176,0.08)">⬡ Python.py</div>
+        <div style="padding:3px 6px;border-left:2px solid #313244;font-size:9px;color:#6c7086">⬡ JavaScript.js</div>
+        <div style="padding:3px 6px;border-left:2px solid #313244;font-size:9px;color:#6c7086">⬡ C_Cpp.c <span class="fix-badge">추가됨</span></div>
+      </div>
+      <div style="font-size:8px;line-height:1.8;background:#181825;border:1px solid #313244;padding:5px 8px">
+        <div><span class="kw">import</span> <span class="tl">Python</span> <span class="kw">from</span> <span class="str">'Python.py'</span></div>
+        <div class="cm">/** 360° 자동 투사체 */</div>
+        <div><span class="kw">const</span> <span class="tl">weapon</span> = <span class="kw">new</span> <span class="fn">Python</span>()</div>
+        <div class="cm">// 추천도: ★★★</div>
+      </div>
+      <div style="margin-top:8px;background:rgba(78,201,176,0.1);border:1px solid #4ec9b0;padding:5px 8px;display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:8px;color:#4ec9b0">선택됨: Python.py</span>
+        <span style="background:#4ec9b0;color:#1e1e2e;padding:3px 8px;font-size:8px;font-weight:700">시작 →</span>
+      </div>
+    </div>
+    <div class="status-bar"><span>⎇ main</span><span>Stage 1 시작</span></div>
+  </div>
+
+  <!-- EventToast -->
+  <div class="screen">
+    <div class="title-bar">
+      <span class="dot" style="background:#f55"></span>
+      <span class="dot" style="background:#fb0"></span>
+      <span class="dot" style="background:#5c5"></span>
+      <span>stage1.run() [PAUSED]</span>
+    </div>
+    <div class="screen-body">
+      <div class="label">EVENT TOAST</div>
+      <div style="font-size:8px;color:#f9e2af;text-align:center;border:1px solid rgba(249,226,175,0.27);padding:3px;margin-bottom:8px;background:rgba(249,226,175,0.06)">⚡ EVENT TRIGGER — E1</div>
+      <div style="background:#2a2139;border:1px solid rgba(249,226,175,0.27);padding:8px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+          <div style="width:28px;height:28px;background:#1a1a2e;border:1px solid rgba(249,226,175,0.4);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0">🧑‍💻</div>
+          <span style="color:#cdd6f4;font-size:9px;font-weight:700">박민준</span>
+          <span style="color:#45475a;font-size:8px;margin-left:auto">SSAFY 15기</span>
+        </div>
+        <div style="font-size:9px;color:#f5c2e7;font-style:italic;line-height:1.6;font-family:'Noto Sans KR',sans-serif">"야 이거 IndentationError가 자꾸 뜨는 거야?!"</div>
+        <div style="font-size:8px;margin-top:5px;border:1px solid #313244;padding:3px 6px;background:#181825">
+          <span class="cm">// </span><span class="tl">들여쓰기 지옥</span> ×15 → <span class="or">재화 +3</span>
+        </div>
+        <div style="display:flex;gap:6px;margin-top:7px">
+          <button style="flex:1;padding:3px;font-size:8px;background:transparent;border:1px solid #313244;color:#6c7086;cursor:pointer;font-family:inherit">무시하기</button>
+          <button style="flex:1;padding:3px;font-size:8px;background:#f9e2af;border:none;color:#1e1e2e;font-weight:700;cursor:pointer;font-family:inherit">도와주기 →</button>
+        </div>
+      </div>
+    </div>
+    <div class="status-bar"><span>⏸ PAUSED</span><span>Wave 2</span></div>
+  </div>
+
+  <!-- EventModalScreen -->
+  <div class="screen">
+    <div class="title-bar">
+      <span class="dot" style="background:#f55"></span>
+      <span class="dot" style="background:#fb0"></span>
+      <span class="dot" style="background:#5c5"></span>
+      <span>event.E1.js</span>
+    </div>
+    <div class="screen-body">
+      <div class="label">EVENT MODAL</div>
+      <div style="font-size:8px;margin-bottom:6px">
+        <div class="cm">// [EVENT E1] 들여쓰기 지옥</div>
+        <div><span class="kw">const</span> <span class="tl">e</span> = <span class="fn">Event</span>.trigger(<span class="str">'E1'</span>)</div>
+      </div>
+      <div style="background:#181825;border:1px solid #313244;padding:7px;margin-bottom:6px">
+        <div style="font-size:7px;color:#6c7086;margin-bottom:3px">MISSION</div>
+        <div style="display:flex;justify-content:space-between;font-size:9px;margin-bottom:4px">
+          <span class="str">IndentationError ×15</span>
+          <span class="val">8 / 15</span>
+        </div>
+        <div style="height:4px;background:#313244">
+          <div style="width:53%;height:100%;background:#4ec9b0"></div>
+        </div>
+      </div>
+      <div style="background:rgba(249,226,175,0.08);border:1px solid rgba(249,226,175,0.2);padding:6px 8px;margin-bottom:8px">
+        <div style="font-size:7px;color:#6c7086;margin-bottom:3px">REWARD</div>
+        <div style="font-size:9px"><span class="kw">return</span> { <span class="tl">enhance</span>: <span class="val">3</span> }</div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button style="flex:1;padding:3px;font-size:8px;background:transparent;border:1px solid #313244;color:#6c7086;cursor:pointer;font-family:inherit">일시정지 해제</button>
+        <button style="flex:1;padding:3px;font-size:8px;background:#f9e2af;border:none;color:#1e1e2e;font-weight:700;cursor:pointer;font-family:inherit">계속 플레이</button>
+      </div>
+    </div>
+    <div class="status-bar"><span>● PAUSED · E1</span><span>8/15</span></div>
+  </div>
+
+  <!-- StatUpgrade -->
+  <div class="screen">
+    <div class="title-bar">
+      <span class="dot" style="background:#f55"></span>
+      <span class="dot" style="background:#fb0"></span>
+      <span class="dot" style="background:#5c5"></span>
+      <span>upgrade.select()</span>
+    </div>
+    <div class="screen-body">
+      <div class="label">STAT UPGRADE</div>
+      <div class="cm" style="font-size:8px;margin-bottom:4px">// Q1 완료 — 스탯 업그레이드 선택</div>
+      <div style="font-size:10px;margin-bottom:7px"><span class="tl">player</span>.upgrade(<span style="color:#cdd6f4">?</span>)</div>
+      <!-- 선택됨 -->
+      <div style="border:1px solid #4ec9b0;padding:7px;margin-bottom:4px;background:rgba(78,201,176,0.08)">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="color:#4ec9b0;font-size:9px">moveSpeed</span>
+          <span style="font-size:12px;font-weight:700;color:#4ec9b0">+15%</span>
+        </div>
+        <div style="font-size:7px;color:#6c7086;margin-top:2px">이동 속도 증가</div>
+        <div style="font-size:7px;color:#4ec9b0;margin-top:2px">↵ press to select</div>
+      </div>
+      <div style="border:1px solid #313244;padding:7px;margin-bottom:4px;background:#181825">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="color:#f9e2af;font-size:9px">attackSpeed</span>
+          <span style="font-size:12px;font-weight:700;color:#f9e2af">+20%</span>
+        </div>
+        <div style="font-size:7px;color:#6c7086;margin-top:2px">공격 속도 증가</div>
+      </div>
+      <div style="border:1px solid #313244;padding:7px;background:#181825">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="color:#f38ba8;font-size:9px">damageMulti</span>
+          <span style="font-size:12px;font-weight:700;color:#f38ba8">+25%</span>
+        </div>
+        <div style="font-size:7px;color:#6c7086;margin-top:2px">피해량 증가</div>
+      </div>
+    </div>
+    <div class="status-bar"><span>✓ Q1 COMPLETE</span><span>버그 100마리!</span></div>
+  </div>
+
+</div>
+
+<div class="grid-2" style="margin-top:12px">
+
+  <!-- WeaponGet -->
+  <div class="screen">
+    <div class="title-bar">
+      <span class="dot" style="background:#f55"></span>
+      <span class="dot" style="background:#fb0"></span>
+      <span class="dot" style="background:#5c5"></span>
+      <span>weapon.acquired()</span>
+    </div>
+    <div class="screen-body" style="display:flex;flex-direction:column;align-items:center;padding:14px">
+      <div class="label" style="text-align:center;letter-spacing:2px">NEW WEAPON ACQUIRED</div>
+      <div style="width:100%;margin-top:8px;border:1px solid #f9e2af;background:rgba(249,226,175,0.05);padding:12px;text-align:center">
+        <div style="font-size:26px;filter:drop-shadow(0 0 10px rgba(249,226,175,0.6))">⚔️</div>
+        <div style="font-size:13px;font-weight:700;color:#f9e2af;margin:5px 0 2px">Git.exe</div>
+        <div style="font-size:8px;color:#6c7086">범위 스턴/롤백 CC기</div>
+        <div style="text-align:left;background:#181825;border:1px solid #313244;padding:6px 8px;font-size:8px;margin-top:8px;line-height:1.8">
+          <div class="cm">// git.attack()</div>
+          <div><span class="kw">await</span> <span class="tl">git</span>.<span class="fn">rollback</span>(enemies, <span class="str">'HEAD~3'</span>)</div>
+          <div class="cm">// 범위 내 버그 2초 스턴</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;width:100%;margin-top:10px">
+        <button style="flex:1;padding:5px;font-size:8px;background:transparent;border:1px solid #313244;color:#6c7086;cursor:pointer;font-family:inherit">버리기</button>
+        <button style="flex:2;padding:5px;font-size:8px;background:#f9e2af;border:none;color:#1e1e2e;font-weight:700;cursor:pointer;font-family:inherit">장착 (슬롯 2)</button>
+      </div>
+    </div>
+    <div class="status-bar"><span>✓ EVENT E2</span><span>무기 획득!</span></div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+
+    <!-- BossIntro -->
+    <div class="screen">
+      <div class="title-bar">
+        <span class="dot" style="background:#f55"></span>
+        <span class="dot" style="background:#fb0"></span>
+        <span class="dot" style="background:#5c5"></span>
+        <span>boss.spawn()</span>
+      </div>
+      <div class="screen-body" style="background:rgba(243,139,168,0.04);padding:8px">
+        <div style="background:rgba(243,139,168,0.15);border-bottom:1px solid rgba(243,139,168,0.2);padding:6px 0;margin:-8px -8px 8px">
+          <div style="display:flex;justify-content:space-between;font-size:8px;padding:0 8px;margin-bottom:4px">
+            <span style="color:#f38ba8;font-weight:700">BOSS — 장선형</span>
+            <span class="cm">Phase 1</span>
+          </div>
+          <div style="margin:0 8px;height:4px;background:#313244">
+            <div style="width:100%;height:100%;background:linear-gradient(90deg,#f38ba8,#fab387)"></div>
+          </div>
+        </div>
+        <div style="font-size:28px;text-align:center;padding:6px 0;filter:drop-shadow(0 0 8px rgba(243,139,168,0.6))">👿</div>
+        <div style="background:#2d1b1b;border:1px solid rgba(243,139,168,0.2);padding:6px;font-size:8px;font-style:italic;color:#f5c2e7;font-family:'Noto Sans KR',sans-serif;line-height:1.6">"지윤님... 이번엔 제가 꼭 이깁니다!"</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-top:7px">
+          <div style="background:#181825;border:1px solid #313244;padding:4px;text-align:center;font-size:7px">
+            <div class="cm">HP</div><div style="color:#f38ba8;font-weight:700">500</div>
+          </div>
+          <div style="background:#181825;border:1px solid #313244;padding:4px;text-align:center;font-size:7px">
+            <div class="cm">공격</div><div style="color:#fab387;font-weight:700">3방향</div>
+          </div>
+          <div style="background:#181825;border:1px solid #313244;padding:4px;text-align:center;font-size:7px">
+            <div class="cm">추적</div><div style="color:#f9e2af;font-weight:700">보통</div>
+          </div>
+        </div>
+      </div>
+      <div class="status-bar" style="background:#c0392b"><span>⚠ BOSS!</span><span>장선형 P1</span></div>
+    </div>
+
+    <!-- GameOver -->
+    <div class="screen">
+      <div class="title-bar">
+        <span class="dot" style="background:#f55"></span>
+        <span class="dot" style="background:#fb0"></span>
+        <span class="dot" style="background:#5c5"></span>
+        <span>FATAL: PlayerDied</span>
+      </div>
+      <div class="screen-body" style="padding:8px">
+        <div style="background:rgba(243,139,168,0.12);border:1px solid rgba(243,139,168,0.33);padding:5px 8px;margin-bottom:7px">
+          <div style="color:#f38ba8;font-weight:700;font-size:9px">✗ PlayerDied</div>
+          <div class="cm" style="font-size:8px">exit code 1</div>
+        </div>
+        <div style="font-size:8px;line-height:2">
+          <div class="str">Error: PlayerHP = 0</div>
+          <div class="cm" style="padding-left:8px">at Game.checkDeath</div>
+          <div class="cm" style="padding-left:8px">at Enemy.onContact</div>
+          <div class="cm" style="padding-left:8px">at GameLoop.update</div>
+        </div>
+        <div style="background:#181825;border:1px solid #313244;padding:7px;margin-top:7px">
+          <div style="display:flex;justify-content:space-between;font-size:9px;margin-bottom:3px">
+            <span class="cm">생존 시간</span><span class="bl">03:21</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:9px;margin-bottom:3px">
+            <span class="cm">버그 처치</span><span class="tl">82마리</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:9px">
+            <span class="cm">최대 콤보</span><span class="or">×14</span>
+          </div>
+        </div>
+        <div style="display:flex;gap:6px;margin-top:8px">
+          <button style="flex:1;padding:4px;font-size:8px;background:transparent;border:1px solid #313244;color:#6c7086;cursor:pointer;font-family:inherit">exit</button>
+          <button style="flex:2;padding:4px;font-size:8px;background:#f9e2af;border:none;color:#1e1e2e;font-weight:700;cursor:pointer;font-family:inherit">game.restart()</button>
+        </div>
+      </div>
+      <div class="status-bar" style="background:#6c1a1a"><span>✗ GAME OVER</span><span>03:21</span></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- StageClear -->
+<div style="margin-top:12px;max-width:380px">
+  <div class="screen">
+    <div class="title-bar">
+      <span class="dot" style="background:#f55"></span>
+      <span class="dot" style="background:#fb0"></span>
+      <span class="dot" style="background:#5c5"></span>
+      <span>git commit — Stage 1 완료</span>
+    </div>
+    <div class="screen-body">
+      <div style="font-size:8px;color:#4ec9b0;margin-bottom:7px">$ git commit -m "feat: Stage 1 완료"</div>
+      <div style="background:rgba(78,201,176,0.08);border:1px solid rgba(78,201,176,0.4);padding:7px;margin-bottom:8px">
+        <div style="font-size:7px;color:#6c7086;margin-bottom:2px">COMMIT</div>
+        <div style="font-size:9px;color:#4ec9b0;font-weight:700">feat: Stage 1 Python 기초 완료</div>
+        <div style="font-size:7px;color:#45475a">Author: 김지윤</div>
+      </div>
+      <div style="font-size:9px;line-height:2.2;margin-bottom:8px">
+        <div style="color:#4ec9b0">  Stage 1 완료</div>
+        <div style="color:#a6e3a1">  보스 "장선형" 처치 ✓</div>
+        <div style="color:#a6e3a1">  퀘스트 Q1 달성 ✓</div>
+        <div style="color:#f9e2af">  보상: Git.exe, 재화 ×5</div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);border:1px solid #313244;margin-bottom:10px">
+        <div style="padding:6px;text-align:center;border-right:1px solid #313244">
+          <div style="font-size:7px;color:#45475a">처치</div>
+          <div style="color:#4ec9b0;font-weight:700">154</div>
+        </div>
+        <div style="padding:6px;text-align:center;border-right:1px solid #313244">
+          <div style="font-size:7px;color:#45475a">시간</div>
+          <div style="color:#89b4fa;font-weight:700">04:12</div>
+        </div>
+        <div style="padding:6px;text-align:center">
+          <div style="font-size:7px;color:#45475a">재화</div>
+          <div style="color:#f9e2af;font-weight:700">+5</div>
+        </div>
+      </div>
+      <button style="width:100%;padding:8px;font-size:9px;background:#f9e2af;border:none;color:#1e1e2e;font-weight:700;cursor:pointer;font-family:inherit">git push origin Stage2 →</button>
+    </div>
+    <div class="status-bar"><span>✓ STAGE CLEAR</span><span>main ↑1</span></div>
+  </div>
+</div>
+
+<div style="margin-top:20px;padding:10px;background:#181825;border:1px solid #313244;font-size:8px;color:#45475a;max-width:760px">
+  <div style="color:#4ec9b0;margin-bottom:4px">변경 사항 요약</div>
+  <div>• 모든 화면 — traffic light 타이틀바 추가</div>
+  <div>• 모든 화면 — sidebar bg #252526 → #181825 (catppuccin 팔레트)</div>
+  <div>• main.js — CSS 스케일 좌표 변환 (Bug 1)</div>
+  <div>• main.js — paused closure setter (Bug 2)</div>
+  <div>• main.js — C무기 연결, Python 중복 제거 (Bug 3)</div>
+  <div>• WeaponSelect — hitbox x 430→530 (Bug 4)</div>
+</div>
+
+</body>
+</html>

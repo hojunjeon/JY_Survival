@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>Debug Survival - Start Screen</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,700;1,400&family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    /* Premium Terminal Design */
+    :root {
+      --bg: #1e1e1e;
+      --panel: #252526;
+      --border: #3e3e3e;
+      --teal: #4ec9b0;
+      --red: #f44747;
+      --orange: #ce9178;
+      --yellow: #dcdcaa;
+      --blue: #9cdcfe;
+      --green: #b5cea8;
+      --comment: #6a9955;
+      --status: #007acc;
+      --white: #d4d4d4;
+      --dim: #858585;
+      --glow-teal: rgba(78, 201, 176, 0.4);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: #000;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--white);
+      overflow: hidden;
+      /* Subtle CRT background */
+      background-image: radial-gradient(circle at center, #151515 0%, #000 100%);
+    }
+
+    /* Scanlines effect for aesthetic */
+    body::after {
+      content: " ";
+      display: block;
+      position: absolute;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      right: 0;
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+      z-index: 2;
+      background-size: 100% 2px, 3px 100%;
+      pointer-events: none;
+    }
+
+    .terminal-window {
+      width: 900px;
+      height: 600px;
+      background: var(--bg);
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      box-shadow: 0 20px 50px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.05) inset;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+      z-index: 10;
+      animation: float 6s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+      100% { transform: translateY(0px); }
+    }
+
+    /* Window Chrome (Title Bar) */
+    .chrome-header {
+      background: #323233;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .window-controls {
+      display: flex;
+      gap: 8px;
+    }
+
+    .control-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+    .dot-close { background: #ff5f56; }
+    .dot-min { background: #ffbd2e; }
+    .dot-max { background: #27c93f; }
+
+    .window-title {
+      flex: 1;
+      text-align: center;
+      font-size: 13px;
+      color: #999;
+      letter-spacing: 0.5px;
+    }
+
+    /* Content Area */
+    .terminal-content {
+      flex: 1;
+      padding: 30px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* ASCII Art Logo */
+    .ascii-logo {
+      font-size: 12px;
+      color: var(--teal);
+      line-height: 1.2;
+      margin-bottom: 20px;
+      text-shadow: 0 0 8px var(--glow-teal);
+      white-space: pre;
+      animation: pulseGlow 3s infinite;
+    }
+
+    @keyframes pulseGlow {
+      0%, 100% { text-shadow: 0 0 8px var(--glow-teal); }
+      50% { text-shadow: 0 0 16px rgba(78, 201, 176, 0.8), 0 0 24px var(--teal); }
+    }
+
+    .subtitle {
+      font-size: 16px;
+      color: var(--blue);
+      letter-spacing: 2px;
+      margin-bottom: 30px;
+      font-family: 'Noto Sans KR', sans-serif;
+    }
+
+    .subtitle .dim {
+      color: var(--dim);
+    }
+
+    /* Boot Sequence Logs */
+    .boot-sequence {
+      flex: 1;
+      font-size: 14px;
+      line-height: 2;
+    }
+
+    .log-line {
+      display: flex;
+      gap: 15px;
+      opacity: 0;
+      animation: fadeIn 0.1s forwards;
+    }
+
+    .log-num {
+      color: var(--dim);
+      user-select: none;
+    }
+
+    @keyframes fadeIn {
+      to { opacity: 1; }
+    }
+
+    /* Interactive Input Area */
+    .input-area {
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+      font-size: 18px;
+    }
+
+    .prompt-line {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .cursor {
+      display: inline-block;
+      width: 10px;
+      height: 20px;
+      background-color: var(--white);
+      animation: blink 1s step-end infinite;
+      box-shadow: 0 0 5px var(--white);
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+
+    .hint {
+      margin-top: 15px;
+      font-size: 14px;
+      color: var(--dim);
+      opacity: 0;
+      animation: fadeInHint 1s 3s forwards; /* Delay to appear after boot */
+    }
+
+    .hint-key {
+      color: var(--yellow);
+      border: 1px solid var(--border);
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: rgba(220, 220, 170, 0.1);
+      box-shadow: 0 0 8px rgba(220, 220, 170, 0.2);
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+    
+    .hint-key:hover {
+      background: rgba(220, 220, 170, 0.3);
+      box-shadow: 0 0 12px rgba(220, 220, 170, 0.5);
+    }
+
+    @keyframes fadeInHint {
+      to { opacity: 1; }
+    }
+
+    /* Status Bar */
+    .status-bar {
+      background: var(--status);
+      height: 28px;
+      padding: 0 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+      color: rgba(255,255,255,0.9);
+      flex-shrink: 0;
+    }
+
+    /* Text Colors */
+    .t-comment { color: var(--comment); }
+    .t-dim { color: var(--dim); }
+    .t-green { color: var(--green); text-shadow: 0 0 5px rgba(181, 206, 168, 0.4); }
+    .t-yellow { color: var(--yellow); text-shadow: 0 0 5px rgba(220, 220, 170, 0.4); }
+    .t-red { color: var(--red); text-shadow: 0 0 5px rgba(244, 71, 71, 0.4); }
+    .t-teal { color: var(--teal); }
+    .t-blue { color: var(--blue); }
+
+    /* Interactive Glitch Effect on Hover */
+    .terminal-window:hover .ascii-logo {
+      animation: glitch 0.3s cubic-bezier(.25, .46, .45, .94) both infinite;
+    }
+
+    @keyframes glitch {
+      0% { transform: translate(0) }
+      20% { transform: translate(-2px, 2px) }
+      40% { transform: translate(-2px, -2px) }
+      60% { transform: translate(2px, 2px) }
+      80% { transform: translate(2px, -2px) }
+      100% { transform: translate(0) }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="terminal-window">
+    <div class="chrome-header">
+      <div class="window-controls">
+        <div class="control-dot dot-close"></div>
+        <div class="control-dot dot-min"></div>
+        <div class="control-dot dot-max"></div>
+      </div>
+      <div class="window-title">debug-survival — zsh</div>
+      <div style="width: 44px;"></div> <!-- Spacer for balance -->
+    </div>
+
+    <div class="terminal-content">
+      <!-- Logo -->
+      <div class="ascii-logo">
+      ██╗██████╗ ███████╗
+      ██║██╔══██╗██╔════╝
+      ██║██║  ██║███████╗
+ ██   ██║██║  ██║╚════██║
+ ╚█████╔╝██████╔╝███████║
+  ╚════╝ ╚═════╝ ╚══════╝
+      </div>
+      
+      <div class="subtitle">
+        <span class="dim">//</span> Jiyoon Debug Survival
+      </div>
+
+      <!-- Boot Sequence -->
+      <div class="boot-sequence" id="boot-logs">
+        <!-- Logs will be inserted via JS -->
+      </div>
+
+      <!-- Input Area -->
+      <div class="input-area" style="opacity: 0; transition: opacity 0.5s;" id="input-section">
+        <div class="prompt-line">
+          <span class="t-teal">jiyoon@ssafy</span>
+          <span class="t-dim">:</span>
+          <span class="t-blue">~/stage1</span>
+          <span class="t-dim">$ </span>
+          <span id="typing-text"></span><span class="cursor"></span>
+        </div>
+        <div class="hint">
+          press <span class="hint-key" id="enter-btn">ENTER</span> to run
+        </div>
+      </div>
+    </div>
+
+    <div class="status-bar">
+      <span>⎇ main</span>
+      <span>김지윤 · HP 100</span>
+    </div>
+  </div>
+
+  <script>
+    const logs = [
+      { c: 't-comment', t: '# debug-survival v1.0.0 — SSAFY 15기 서울 6반' },
+      { c: 't-dim',     t: 'Initializing runtime...' },
+      { c: 't-green',   t: '[OK] Player loaded: 김지윤 (HP 100, SPD 1.0x)' },
+      { c: 't-green',   t: '[OK] Stage 1 assets ready' },
+      { c: 't-yellow',  t: '[WARN] Multiple bugs detected in vicinity' },
+      { c: 't-red',     t: '[CRIT] SyntaxError swarm incoming (×47)' },
+    ];
+
+    const logContainer = document.getElementById('boot-logs');
+    const inputSection = document.getElementById('input-section');
+    const typingText = document.getElementById('typing-text');
+    
+    // Simulate boot sequence
+    logs.forEach((log, index) => {
+      setTimeout(() => {
+        const line = document.createElement('div');
+        line.className = `log-line`;
+        
+        const num = String(index + 1).padStart(2, '0');
+        line.innerHTML = `<span class="log-num">${num}</span><span class="${log.c}">${log.t}</span>`;
+        
+        logContainer.appendChild(line);
+      }, index * 400); // 400ms delay between lines
+    });
+
+    // Simulate typing game.start()
+    const targetText = "game.start()";
+    let charIndex = 0;
+
+    setTimeout(() => {
+      inputSection.style.opacity = 1;
+      
+      const typeInterval = setInterval(() => {
+        if (charIndex < targetText.length) {
+          typingText.textContent += targetText.charAt(charIndex);
+          charIndex++;
+        } else {
+          clearInterval(typeInterval);
+          
+          // Add pulse effect to enter key
+          document.querySelector('.hint-key').style.animation = "pulseGlow 1.5s infinite alternate";
+        }
+      }, 100);
+
+    }, logs.length * 400 + 500);
+
+    // Make it interactive
+    const triggerStart = () => {
+        // Flash screen
+        const flash = document.createElement('div');
+        flash.style.position = 'absolute';
+        flash.style.top = 0; flash.style.left = 0; flash.style.right = 0; flash.style.bottom = 0;
+        flash.style.backgroundColor = 'white';
+        flash.style.opacity = '0.8';
+        flash.style.zIndex = 100;
+        flash.style.transition = 'opacity 0.5s ease-out';
+        flash.style.pointerEvents = 'none';
+        
+        document.body.appendChild(flash);
+        
+        setTimeout(() => flash.style.opacity = '0', 50);
+        setTimeout(() => flash.remove(), 550);
+
+        // Here we could redirect to weapon select or stage 1
+        // window.location.href = "weapon_select.html";
+    };
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') triggerStart();
+    });
+    
+    document.getElementById('enter-btn').addEventListener('click', triggerStart);
+  </script>
+</body>
+</html>

@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>JDS - Weapon Select</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,700;1,400&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    /* Premium Terminal / IDE Design */
+    :root {
+      --bg: #1e1e1e;
+      --sidebar: #252526;
+      --border: #3e3e3e;
+      --teal: #4ec9b0;
+      --red: #f44747;
+      --orange: #ce9178;
+      --yellow: #dcdcaa;
+      --blue: #9cdcfe;
+      --green: #b5cea8;
+      --comment: #6a9955;
+      --status: #007acc;
+      --white: #d4d4d4;
+      --dim: #858585;
+      --bg-hover: rgba(255, 255, 255, 0.05);
+      --teal-bg: rgba(78, 201, 176, 0.12);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #000;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--white);
+      overflow: hidden;
+      background-image: radial-gradient(circle at center, #151515 0%, #000 100%);
+    }
+
+    /* Scanlines effect */
+    body::after {
+      content: " ";
+      display: block;
+      position: absolute;
+      top: 0; left: 0; bottom: 0; right: 0;
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+      z-index: 2;
+      background-size: 100% 2px, 3px 100%;
+      pointer-events: none;
+    }
+
+    .ide-window {
+      width: 1000px;
+      height: 650px;
+      background: var(--bg);
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      box-shadow: 0 20px 50px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.05) inset;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+      z-index: 10;
+      animation: float 6s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+      100% { transform: translateY(0px); }
+    }
+
+    /* Window Chrome (Title Bar) */
+    .chrome-header {
+      background: #323233;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .window-controls { display: flex; gap: 8px; }
+    .control-dot { width: 12px; height: 12px; border-radius: 50%; }
+    .dot-close { background: #ff5f56; }
+    .dot-min { background: #ffbd2e; }
+    .dot-max { background: #27c93f; }
+
+    .window-title {
+      flex: 1;
+      text-align: center;
+      font-size: 13px;
+      color: #999;
+      letter-spacing: 0.5px;
+    }
+
+    /* Top Tabs */
+    .editor-tabs {
+      display: flex;
+      background: var(--sidebar);
+      border-bottom: 1px solid var(--border);
+      height: 38px;
+    }
+
+    .tab {
+      padding: 0 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--bg);
+      border-right: 1px solid var(--border);
+      border-top: 1px solid var(--teal);
+      color: var(--white);
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    /* Main Content Area */
+    .main-content {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+    }
+
+    /* Sidebar / Explorer */
+    .sidebar {
+      width: 240px;
+      background: var(--sidebar);
+      border-right: 1px solid var(--border);
+      padding-top: 15px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .explorer-title {
+      padding: 5px 20px;
+      color: var(--dim);
+      letter-spacing: 1.5px;
+      font-size: 11px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .folder {
+      padding: 4px 15px;
+      color: var(--dim);
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .file-item {
+      padding: 8px 15px 8px 35px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      color: var(--dim);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border-left: 3px solid transparent;
+    }
+
+    .file-item:hover { background: var(--bg-hover); color: var(--white); }
+    .file-item.active {
+      background: var(--teal-bg);
+      color: var(--teal);
+      border-left: 3px solid var(--teal);
+    }
+
+    .locked-item {
+      padding: 8px 15px 8px 35px;
+      color: var(--dim);
+      opacity: 0.4;
+      font-size: 13px;
+    }
+
+    /* Editor View */
+    .editor-view {
+      flex: 1;
+      position: relative;
+      background: var(--bg);
+      padding: 20px 30px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .code-line {
+      display: flex;
+      font-size: 15px;
+      line-height: 2.2;
+      animation: fadeIn 0.3s ease forwards;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateX(-10px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    .line-num {
+      width: 40px;
+      color: var(--dim);
+      user-select: none;
+      flex-shrink: 0;
+      text-align: right;
+      padding-right: 15px;
+    }
+
+    .line-content {
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Text Colors */
+    .t-comment { color: var(--comment); font-style: italic; }
+    .t-keyword { color: var(--blue); }
+    .t-string { color: var(--orange); }
+    .t-class { color: var(--yellow); }
+    .t-var { color: var(--teal); }
+    .t-operator { color: var(--white); }
+
+    /* Action Footer */
+    .action-footer {
+      position: absolute;
+      bottom: 40px;
+      left: 100px;
+      right: 40px;
+      background: rgba(78, 201, 176, 0.1);
+      border: 1px solid var(--teal);
+      padding: 15px 25px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-radius: 4px;
+      backdrop-filter: blur(5px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+
+    .selection-info {
+      font-size: 14px;
+      color: var(--teal);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .start-btn {
+      background: var(--teal);
+      color: var(--bg);
+      border: none;
+      padding: 10px 24px;
+      font-size: 14px;
+      font-weight: 700;
+      font-family: 'Noto Sans KR', sans-serif;
+      cursor: pointer;
+      border-radius: 2px;
+      transition: all 0.2s ease;
+      box-shadow: 0 0 15px rgba(78, 201, 176, 0.4);
+    }
+
+    .start-btn:hover {
+      background: #5ce3c6;
+      box-shadow: 0 0 25px rgba(78, 201, 176, 0.7);
+      transform: translateY(-2px);
+    }
+
+    /* Status Bar */
+    .status-bar {
+      background: var(--status);
+      height: 28px;
+      padding: 0 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+      color: rgba(255,255,255,0.9);
+      flex-shrink: 0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="ide-window">
+    <div class="chrome-header">
+      <div class="window-controls">
+        <div class="control-dot dot-close"></div>
+        <div class="control-dot dot-min"></div>
+        <div class="control-dot dot-max"></div>
+      </div>
+      <div class="window-title">weapon-select.js — JDS</div>
+      <div style="width: 44px;"></div>
+    </div>
+
+    <div class="editor-tabs">
+      <div class="tab">
+        <span style="color: var(--yellow)">⬡</span> weapon-select.js
+      </div>
+    </div>
+
+    <div class="main-content">
+      <!-- Sidebar Explorer -->
+      <div class="sidebar">
+        <div class="explorer-title">EXPLORER</div>
+        <div class="folder"><span class="t-class">▾</span> weapons/</div>
+        
+        <div class="file-item active" onclick="selectWeapon('python')">
+          <span style="color: var(--blue)">⬡</span> Python.py
+        </div>
+        <div class="file-item" onclick="selectWeapon('c')">
+          <span style="color: var(--yellow)">⬡</span> C_Cpp.c
+        </div>
+        <div class="file-item" onclick="selectWeapon('java')">
+          <span style="color: var(--orange)">⬡</span> Java.class
+        </div>
+
+        <div class="locked-item" style="margin-top: 15px;">
+          <span>▸</span> [locked × 5]
+        </div>
+      </div>
+
+      <!-- Editor Panel -->
+      <div class="editor-view">
+        <div id="code-container">
+          <!-- Code will be dynamically injected here -->
+        </div>
+
+        <div class="action-footer">
+          <div class="selection-info">
+            선택됨: <span style="color: var(--white); font-weight: 700;" id="selected-name">Python.py</span>
+          </div>
+          <button class="start-btn" onclick="startGame()">Stage 1 시작 →</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="status-bar">
+      <span>⎇ main</span>
+      <span id="status-text">Stage 1 시작 대기 중</span>
+    </div>
+  </div>
+
+  <script>
+    const weapons = {
+      python: {
+        file: 'Python.py',
+        desc: '360° 자동 투사체 (범위 넓음, 느림)',
+        ext: '파일 확장자: .py',
+        lvl: '★★★ 입문 추천',
+        color: 'var(--blue)'
+      },
+      c: {
+        file: 'C_Cpp.c',
+        desc: '전방 고속 단일 관통탄',
+        ext: '파일 확장자: .c',
+        lvl: '★★☆ 정밀형',
+        color: 'var(--yellow)'
+      },
+      java: {
+        file: 'Java.class',
+        desc: '주변 오비탈 오브젝트 자동 공격',
+        ext: '파일 확장자: .java',
+        lvl: '★★☆ 관리형',
+        color: 'var(--orange)'
+      }
+    };
+
+    function renderCode(weaponId) {
+      const w = weapons[weaponId];
+      const container = document.getElementById('code-container');
+      
+      const className = w.file.split('.')[0];
+      
+      const lines = [
+        `<span class="t-keyword">import</span> <span class="t-class">Weapon</span> <span class="t-keyword">from</span> <span class="t-string">'./${w.file}'</span><span class="t-operator">;</span>`,
+        ``,
+        `<span class="t-comment">/** </span>`,
+        `<span class="t-comment"> * <span style="font-family: 'Noto Sans KR', sans-serif;">${w.desc}</span></span>`,
+        `<span class="t-comment"> */</span>`,
+        `<span class="t-keyword">const</span> <span class="t-var">weapon</span> <span class="t-operator">=</span> <span class="t-keyword">new</span> <span class="t-class">${className}</span><span class="t-operator">();</span>`,
+        ``,
+        `<span class="t-comment">// <span style="font-family: 'Noto Sans KR', sans-serif;">${w.ext}</span></span>`,
+        `<span class="t-comment">// <span style="font-family: 'Noto Sans KR', sans-serif;">추천도: ${w.lvl}</span></span>`,
+        ``,
+        `<span class="t-var">weapon</span><span class="t-operator">.</span><span class="t-class">equip</span><span class="t-operator">();</span>`
+      ];
+
+      container.innerHTML = '';
+      
+      lines.forEach((content, index) => {
+        const lineDiv = document.createElement('div');
+        lineDiv.className = 'code-line';
+        lineDiv.style.animationDelay = `${index * 0.05}s`;
+        
+        lineDiv.innerHTML = `
+          <div class="line-num">${index + 1}</div>
+          <div class="line-content">${content}</div>
+        `;
+        container.appendChild(lineDiv);
+      });
+
+      document.getElementById('selected-name').textContent = w.file;
+      document.getElementById('selected-name').style.color = w.color;
+    }
+
+    function selectWeapon(id) {
+      // Update sidebar active state
+      document.querySelectorAll('.file-item').forEach(el => el.classList.remove('active'));
+      event.currentTarget.classList.add('active');
+      
+      // Update Editor
+      renderCode(id);
+    }
+
+    function startGame() {
+      const btn = document.querySelector('.start-btn');
+      btn.innerHTML = '로딩 중...';
+      btn.style.background = '#3e3e3e';
+      btn.style.color = '#888';
+      btn.style.boxShadow = 'none';
+      
+      document.getElementById('status-text').textContent = 'Initializing Stage 1...';
+
+      // Screen flash transition
+      setTimeout(() => {
+        const flash = document.createElement('div');
+        flash.style.position = 'absolute';
+        flash.style.inset = 0;
+        flash.style.backgroundColor = 'white';
+        flash.style.opacity = '0.8';
+        flash.style.zIndex = 100;
+        flash.style.transition = 'opacity 0.6s ease-out';
+        flash.style.pointerEvents = 'none';
+        
+        document.body.appendChild(flash);
+        
+        setTimeout(() => flash.style.opacity = '0', 50);
+        setTimeout(() => flash.remove(), 650);
+        
+        // Reset button for demo purposes
+        setTimeout(() => {
+          btn.innerHTML = 'Stage 1 시작 →';
+          btn.style.background = 'var(--teal)';
+          btn.style.color = 'var(--bg)';
+          btn.style.boxShadow = '0 0 15px rgba(78, 201, 176, 0.4)';
+          document.getElementById('status-text').textContent = 'Stage 1 시작 대기 중';
+        }, 800);
+        
+      }, 500);
+    }
+
+    // Init
+    renderCode('python');
+  </script>
+</body>
+</html>
