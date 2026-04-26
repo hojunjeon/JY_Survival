@@ -27,13 +27,28 @@ export class EventToast {
 
     // 토스트 팝업 박스
     const toastW = 380;
-    const toastH = 220;
+    const toastH = 230;
     const toastX = (this.cw - toastW) / 2;
     const toastY = (this.ch - toastH) / 2;
 
     // 배경
     ctx.fillStyle = '#2a2139';
     ctx.fillRect(toastX, toastY, toastW, toastH);
+
+    // 타이틀바
+    ctx.fillStyle = '#181825';
+    ctx.fillRect(toastX, toastY, toastW, 20);
+    [['#f55',0],['#fb0',1],['#5c5',2]].forEach(([c,i]) => {
+      ctx.fillStyle = c;
+      ctx.beginPath();
+      ctx.arc(toastX + 10 + i * 14, toastY + 10, 4, 0, Math.PI * 2);
+      ctx.fill();
+    });
+    ctx.fillStyle = HUD.COLORS.comment;
+    ctx.font = '8px monospace';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('stage1.run() [PAUSED]', toastX + 52, toastY + 10);
 
     // 테두리
     ctx.strokeStyle = HUD.COLORS.orange;
@@ -157,7 +172,7 @@ export class EventToast {
     if (!this.visible) return [];
 
     const toastW = 380;
-    const toastH = 220;
+    const toastH = 230;
     const toastX = (this.cw - toastW) / 2;
     const toastY = (this.ch - toastH) / 2;
 
@@ -166,7 +181,7 @@ export class EventToast {
     const btnGap = 8;
     const totalBtnW = btnW * 2 + btnGap;
     const btnX = toastX + (toastW - totalBtnW) / 2;
-    const contentY = toastY + 200;
+    const contentY = toastY + toastH - 34;
 
     return [
       {

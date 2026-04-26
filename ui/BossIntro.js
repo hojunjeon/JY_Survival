@@ -49,7 +49,22 @@ export class BossIntro {
     ctx.lineWidth = 2;
     ctx.strokeRect(boxX, boxY, boxW, boxH);
 
-    let contentY = boxY + 12;
+    // 타이틀바
+    ctx.fillStyle = '#181825';
+    ctx.fillRect(boxX, boxY, boxW, 20);
+    [['#f55',0],['#fb0',1],['#5c5',2]].forEach(([c,i]) => {
+      ctx.fillStyle = c;
+      ctx.beginPath();
+      ctx.arc(boxX + 10 + i * 14, boxY + 10, 4, 0, Math.PI * 2);
+      ctx.fill();
+    });
+    ctx.fillStyle = HUD.COLORS.comment;
+    ctx.font = '8px monospace';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('boss.spawn()', boxX + 52, boxY + 10);
+
+    let contentY = boxY + 32;
 
     // 보스 이름
     ctx.fillStyle = HUD.COLORS.red;
@@ -66,19 +81,26 @@ export class BossIntro {
     const barY = contentY;
     const barH = 6;
 
-    ctx.fillStyle = HUD.COLORS.border;
+    ctx.fillStyle = 'rgba(243,139,168,0.15)';
     ctx.fillRect(barX, barY, barW, barH);
 
-    ctx.fillStyle = HUD.COLORS.red;
+    // 그라데이션 HP 바
+    const gradient = ctx.createLinearGradient(barX, barY, barX + barW, barY);
+    gradient.addColorStop(0, '#f38ba8');
+    gradient.addColorStop(1, '#fab387');
+    ctx.fillStyle = gradient;
     ctx.fillRect(barX, barY, barW, barH);
 
     contentY += 16;
 
-    // 픽셀 스프라이트 (텍스트 기반)
-    ctx.font = '42px Arial';
+    // 보스 이모지 (섀도우 포함)
+    ctx.shadowColor = 'rgba(243,139,168,0.53)';
+    ctx.shadowBlur = 12;
+    ctx.font = '36px Arial';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(this.bossData.emoji || '👹', this.cw / 2, contentY + 30);
+    ctx.shadowColor = 'transparent';
 
     contentY += 70;
 
@@ -96,7 +118,7 @@ export class BossIntro {
     const gridX = boxX + 12;
     const colW = gridW / 3;
 
-    ctx.fillStyle = HUD.COLORS.sidebar;
+    ctx.fillStyle = '#181825';
     ctx.fillRect(gridX, contentY, gridW, 44);
     ctx.strokeStyle = HUD.COLORS.border;
     ctx.lineWidth = 1;
@@ -130,6 +152,12 @@ export class BossIntro {
       ctx.font = 'bold 11px monospace';
       ctx.fillText(stat.value, cx, contentY + 22);
     });
+
+    contentY += 44;
+
+    // 상태 바
+    ctx.fillStyle = '#c0392b';
+    ctx.fillRect(gridX, contentY, gridW, 8);
 
     // 자동 전환 힌트
     if (elapsed < 1500) {

@@ -15,6 +15,7 @@ import { ParticleSystem, ENEMY_TYPE_COLORS } from './systems/ParticleSystem.js';
 import { GitWeapon } from './weapons/Git.js';
 import { SQLWeapon } from './weapons/SQL.js';
 import { JavaScriptWeapon } from './weapons/JavaScript.js';
+import { JavaWeapon } from './weapons/Java.js';
 import { DjangoWeapon } from './weapons/Django.js';
 import { LinuxBashWeapon } from './weapons/LinuxBash.js';
 import { PythonWeapon } from './weapons/Python.js';
@@ -127,7 +128,7 @@ function handleIntroKey(e) {
     const AVAILABLE_WEAPONS = [
       new PythonWeapon(),
       new JavaScriptWeapon(),
-      new PythonWeapon(), // placeholder for third weapon
+      new JavaWeapon(), // third weapon (was duplicate Python)
     ];
     uiScreens.weaponSelect.show(AVAILABLE_WEAPONS);
     mainLoopId = requestAnimationFrame(mainLoop);
@@ -179,11 +180,18 @@ function renderWeaponSelect() {
 
 // ─── UI 입력 처리 ────────────────────────────────────────────────────────────
 document.addEventListener('mousedown', (e) => {
+  // Bug 1 Fix: Canvas coordinate transformation
+  const rect = canvas.getBoundingClientRect();
+  const scaleX = canvas.width / rect.width;
+  const scaleY = canvas.height / rect.height;
+  const cx = (e.clientX - rect.left) * scaleX;
+  const cy = (e.clientY - rect.top) * scaleY;
+
   if (gameState === 'weapon-select') {
     const hitboxes = uiScreens.weaponSelect.getHitboxes();
     for (const hb of hitboxes) {
-      if (e.clientX >= hb.x && e.clientX < hb.x + hb.w &&
-          e.clientY >= hb.y && e.clientY < hb.y + hb.h) {
+      if (cx >= hb.x && cx < hb.x + hb.w &&
+          cy >= hb.y && cy < hb.y + hb.h) {
         if (hb.action === 'confirm') {
           const selected = uiScreens.weaponSelect.getSelected();
           selectedWeapon = selected;
@@ -194,8 +202,8 @@ document.addEventListener('mousedown', (e) => {
   } else if (gameState === 'event-toast') {
     const hitboxes = uiScreens.eventToast.getHitboxes();
     for (const hb of hitboxes) {
-      if (e.clientX >= hb.x && e.clientX < hb.x + hb.w &&
-          e.clientY >= hb.y && e.clientY < hb.y + hb.h) {
+      if (cx >= hb.x && cx < hb.x + hb.w &&
+          cy >= hb.y && cy < hb.y + hb.h) {
         if (hb.action === 'skip') {
           gameState = 'playing';
           gameSession.paused = false;
@@ -208,8 +216,8 @@ document.addEventListener('mousedown', (e) => {
   } else if (gameState === 'event-modal') {
     const hitboxes = uiScreens.eventModalScreen.getHitboxes();
     for (const hb of hitboxes) {
-      if (e.clientX >= hb.x && e.clientX < hb.x + hb.w &&
-          e.clientY >= hb.y && e.clientY < hb.y + hb.h) {
+      if (cx >= hb.x && cx < hb.x + hb.w &&
+          cy >= hb.y && cy < hb.y + hb.h) {
         if (hb.action === 'continue' || hb.action === 'unpause') {
           gameState = 'playing';
           gameSession.paused = false;
@@ -219,8 +227,8 @@ document.addEventListener('mousedown', (e) => {
   } else if (gameState === 'stat-upgrade') {
     const hitboxes = uiScreens.statUpgrade.getHitboxes();
     for (const hb of hitboxes) {
-      if (e.clientX >= hb.x && e.clientX < hb.x + hb.w &&
-          e.clientY >= hb.y && e.clientY < hb.y + hb.h) {
+      if (cx >= hb.x && cx < hb.x + hb.w &&
+          cy >= hb.y && cy < hb.y + hb.h) {
         if (hb.action === 'select-stat') {
           uiScreens.statUpgrade.selectIndex(hb.statIndex);
           const selected = uiScreens.statUpgrade.getSelected();
@@ -246,8 +254,8 @@ document.addEventListener('mousedown', (e) => {
   } else if (gameState === 'weapon-get') {
     const hitboxes = uiScreens.weaponGet.getHitboxes();
     for (const hb of hitboxes) {
-      if (e.clientX >= hb.x && e.clientX < hb.x + hb.w &&
-          e.clientY >= hb.y && e.clientY < hb.y + hb.h) {
+      if (cx >= hb.x && cx < hb.x + hb.w &&
+          cy >= hb.y && cy < hb.y + hb.h) {
         gameState = 'playing';
         gameSession.paused = false;
       }
@@ -255,8 +263,8 @@ document.addEventListener('mousedown', (e) => {
   } else if (gameState === 'game-over') {
     const hitboxes = uiScreens.gameOver.getHitboxes();
     for (const hb of hitboxes) {
-      if (e.clientX >= hb.x && e.clientX < hb.x + hb.w &&
-          e.clientY >= hb.y && e.clientY < hb.y + hb.h) {
+      if (cx >= hb.x && cx < hb.x + hb.w &&
+          cy >= hb.y && cy < hb.y + hb.h) {
         if (hb.action === 'restart') {
           location.reload();
         } else if (hb.action === 'exit') {
@@ -268,8 +276,8 @@ document.addEventListener('mousedown', (e) => {
   } else if (gameState === 'stage-clear') {
     const hitboxes = uiScreens.stageClear.getHitboxes();
     for (const hb of hitboxes) {
-      if (e.clientX >= hb.x && e.clientX < hb.x + hb.w &&
-          e.clientY >= hb.y && e.clientY < hb.y + hb.h) {
+      if (cx >= hb.x && cx < hb.x + hb.w &&
+          cy >= hb.y && cy < hb.y + hb.h) {
         if (hb.action === 'next-stage') {
           gameState = 'weapon-select';
           uiScreens.weaponSelect.show([]);
@@ -365,7 +373,9 @@ function startGame() {
   // gameSession 객체에 필요한 데이터 저장
   gameSession = {
     player,
-    paused: false,
+    _paused: false,
+    get paused() { return this._paused; },
+    set paused(value) { paused = value; this._paused = value; }, // Update both local var and object
     currentEvent: null,
     ownedWeapons: [selectedWeapon],
     updateGame: null,
