@@ -26,8 +26,8 @@ export class EventToast {
     ctx.fillRect(0, 0, this.cw, this.ch);
 
     // 토스트 팝업 박스
-    const toastW = 380;
-    const toastH = 230;
+    const toastW = 460;
+    const toastH = 300;
     const toastX = (this.cw - toastW) / 2;
     const toastY = (this.ch - toastH) / 2;
 
@@ -57,7 +57,7 @@ export class EventToast {
     ctx.strokeRect(toastX, toastY, toastW, toastH);
     ctx.globalAlpha = 1;
 
-    let contentY = toastY + 12;
+    let contentY = toastY + 26;
 
     // 이벤트 타입 표시
     ctx.fillStyle = `rgba(249, 226, 175, 0.06)`;
@@ -137,33 +137,19 @@ export class EventToast {
 
     contentY += 20;
 
-    // 버튼들
-    const btnW = 80;
-    const btnH = 20;
-    const btnGap = 8;
-    const totalBtnW = btnW * 2 + btnGap;
-    const btnX = toastX + (toastW - totalBtnW) / 2;
+    // 도와주기 버튼 (단독 중앙)
+    const btnW = 160;
+    const btnH = 28;
+    const btnX = toastX + (toastW - btnW) / 2;
 
-    // 무시하기
-    ctx.fillStyle = 'transparent';
-    ctx.strokeStyle = HUD.COLORS.border;
-    ctx.lineWidth = 1;
-    ctx.strokeRect(btnX, contentY, btnW, btnH);
-
-    ctx.fillStyle = HUD.COLORS.comment;
-    ctx.font = 'bold 8px monospace';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('무시하기', btnX + btnW / 2, contentY + btnH / 2);
-
-    // 도와주기
     ctx.fillStyle = HUD.COLORS.orange;
-    ctx.fillRect(btnX + btnW + btnGap, contentY, btnW, btnH);
+    ctx.fillRect(btnX, contentY, btnW, btnH);
 
     ctx.fillStyle = HUD.COLORS.bg;
-    ctx.font = 'bold 8px monospace';
+    ctx.font = 'bold 9px monospace';
     ctx.textAlign = 'center';
-    ctx.fillText('도와주기 →', btnX + btnW + btnGap + btnW / 2, contentY + btnH / 2);
+    ctx.textBaseline = 'middle';
+    ctx.fillText('도와주기  [Enter]', btnX + btnW / 2, contentY + btnH / 2);
 
     ctx.restore();
   }
@@ -171,28 +157,20 @@ export class EventToast {
   getHitboxes() {
     if (!this.visible) return [];
 
-    const toastW = 380;
-    const toastH = 230;
+    const toastW = 460;
+    const toastH = 300;
     const toastX = (this.cw - toastW) / 2;
     const toastY = (this.ch - toastH) / 2;
 
-    const btnW = 80;
-    const btnH = 20;
-    const btnGap = 8;
-    const totalBtnW = btnW * 2 + btnGap;
-    const btnX = toastX + (toastW - totalBtnW) / 2;
-    const contentY = toastY + toastH - 34;
+    const btnW = 160;
+    const btnH = 28;
+    const btnX = toastX + (toastW - btnW) / 2;
+    // render()에서 contentY가 toastY+26+22+32+32+20 = toastY+132에 버튼을 그림
+    const contentY = toastY + 132;
 
     return [
       {
         x: btnX,
-        y: contentY,
-        w: btnW,
-        h: btnH,
-        action: 'skip',
-      },
-      {
-        x: btnX + btnW + btnGap,
         y: contentY,
         w: btnW,
         h: btnH,

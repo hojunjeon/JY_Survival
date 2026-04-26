@@ -65,6 +65,22 @@ export class HUD {
   render(ctx, { playerHp, playerMaxHp, killCount, q1Target, elapsed, e1State, e2State, bossState, e1Kills = 0, e2Kills = 0, e2Elapsed = 0 }) {
     ctx.save();
 
+    // IDE 패널 배경 (왼쪽 상단 stats 영역)
+    ctx.fillStyle = 'rgba(37, 37, 38, 0.82)'; // sidebar color
+    ctx.fillRect(0, 0, 228, 58);
+    ctx.strokeStyle = HUD.COLORS.border;
+    ctx.lineWidth = 1;
+    ctx.strokeRect(0, 0, 228, 58);
+
+    // 패널 탭 라벨
+    ctx.fillStyle = HUD.COLORS.statusBar;
+    ctx.fillRect(0, 0, 228, 14);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '8px monospace';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('PLAYER', 6, 7);
+
     this._renderHpBar(ctx, playerHp, playerMaxHp);
     this._renderKillCount(ctx, killCount, q1Target);
     this._renderTimer(ctx, elapsed);
@@ -78,7 +94,7 @@ export class HUD {
     const BAR_W = 200;
     const BAR_H = 18;
     const x = 10;
-    const y = 10;
+    const y = 17;
 
     // 배경
     ctx.fillStyle = HUD.COLORS.border;
@@ -208,26 +224,13 @@ export class HUD {
     ctx.textAlign = 'left';
     ctx.textBaseline = 'top';
 
-    // "elapsed" - timerKey 색상
-    ctx.fillStyle = HUD.COLORS.timerKey;
     const elapseWidth = ctx.measureText('elapsed').width;
-    ctx.fillText('elapsed', 0, 8);
-
-    // " = " - text 색상
-    ctx.fillStyle = HUD.COLORS.text;
     const equalsWidth = ctx.measureText(' = ').width;
-    ctx.fillText(' = ', elapseWidth, 8);
+    const valueWidth  = ctx.measureText(timeStr).width;
 
-    // "3:42" (따옴표 포함) - timerVal 색상
-    ctx.fillStyle = HUD.COLORS.timerVal;
-    const valueWidth = ctx.measureText(timeStr).width;
-    ctx.fillText(timeStr, elapseWidth + equalsWidth, 8);
-
-    // 중앙 정렬 위해 전체 너비 계산
     const totalWidth = elapseWidth + equalsWidth + valueWidth;
     const centerX = (this.cw - totalWidth) / 2;
 
-    // 전체를 다시 그리되 중앙 정렬
     ctx.fillStyle = HUD.COLORS.timerKey;
     ctx.fillText('elapsed', centerX, 8);
 
@@ -243,7 +246,7 @@ export class HUD {
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
 
-    let y = 8;
+    let y = 36;
     const badgeH = 24;
     const padding = 8;
 

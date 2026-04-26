@@ -321,6 +321,18 @@ document.addEventListener('keydown', (e) => {
       gameSession.paused = false;
       e.preventDefault();
     }
+  } else if (gameState === 'event-toast') {
+    if (e.key === 'Enter') {
+      gameState = 'event-modal';
+      uiScreens.eventModalScreen.show(gameSession.currentEvent);
+      e.preventDefault();
+    }
+  } else if (gameState === 'event-modal') {
+    if (e.key === 'Enter' || e.key === 'Escape') {
+      gameState = 'playing';
+      gameSession.paused = false;
+      e.preventDefault();
+    }
   }
 });
 
@@ -767,9 +779,15 @@ function startGame() {
     const eventNotifications = eventSystem.update(dt);
     for (const n of eventNotifications) {
       if (n.type === 'event_triggered') {
+        const EVENT_DATA = {
+          E1: { eventType: 'E1', name: '박민준', role: 'SSAFY 15기', emoji: '🧑‍💻', dialogue: '"야 이거 IndentationError가 자꾸 뜨는 거야?!"', bugType: '들여쓰기 지옥', bugCount: 15, reward: 3, progress: 0 },
+          E2: { eventType: 'E2', name: '이서연', role: 'SSAFY 15기', emoji: '😰', dialogue: '"파이참이 갑자기 환경변수를 못 읽어!!"', bugType: '파이참 위기', bugCount: 0, reward: 5, progress: 0 },
+        };
+        const eventObj = EVENT_DATA[n.event] || { eventType: n.event };
+        gameSession.currentEvent = eventObj;
         gameState = 'event-toast';
         paused = true;
-        uiScreens.eventToast.show(n.event);
+        uiScreens.eventToast.show(eventObj);
         // 기존 몹 전부 제거
         for (const e of enemies) game.removeEntity(e);
         enemies = [];
@@ -1528,11 +1546,11 @@ function startGame() {
       ctx.restore();
     }
 
-    // ParticleSystem 렌더 (월드 좌표)
-    particleSystem.render(ctx, camX, camY);
+    // ParticleSystem 렌더 (월드 좌표) — ctx.translate(-camX,-camY) 내부이므로 camera 인자 생략
+    particleSystem.render(ctx);
 
     // FloatingText 렌더 (월드 좌표)
-    floatingTextManager.render(ctx, camX, camY);
+    floatingTextManager.render(ctx);
 
     ctx.restore();
     // ── 화면 공간 (HUD) ───────────────────────────────────────────
@@ -1636,9 +1654,13 @@ function startGame() {
   garbageObjects = [];
 
   // gameSession에 update/render 함수 연결
+  let _lastUpdateTime = performance.now();
   gameSession.updateGame = () => {
+    const now = performance.now();
+    const dt = Math.max(0.0001, Math.min((now - _lastUpdateTime) / 1000, 0.05));
+    _lastUpdateTime = now;
     if (!paused) {
-      game.update(1 / 60);
+      game.update(dt);
     }
   };
 
@@ -1672,7 +1694,6 @@ function startGame() {
   };
 
   game.addEntity(player);
-  game.start();
 }
 
 // Phase 11 Cycle 1: 통합 상태 시스템으로 이관됨 (gameOverLoop, renderGameOver 등은 mainLoop에서 처리)

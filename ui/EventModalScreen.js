@@ -229,7 +229,8 @@ export class EventModalScreen {
     const btnW = (modalW - 36) / 2;
     const btnH = 20;
     const btnGap = 12;
-    const contentY = modalY + modalH - 32;
+    // render()에서 contentY가 modalY+32+16+24+70+58 = modalY+200에 버튼을 그림
+    const contentY = modalY + 200;
 
     return [
       {
