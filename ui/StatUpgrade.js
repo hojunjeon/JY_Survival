@@ -36,6 +36,8 @@ export class StatUpgrade {
   render(ctx) {
     if (!this.visible) return;
 
+    ctx.save();
+
     // 배경
     ctx.fillStyle = HUD.COLORS.bg;
     ctx.fillRect(0, 0, this.cw, this.ch);
@@ -157,6 +159,8 @@ export class StatUpgrade {
     const selected = this.getSelected();
     ctx.textAlign = 'right';
     ctx.fillText(`선택: ${selected.name}`, this.cw - 8, this.ch - 5);
+
+    ctx.restore();
   }
 
   getHitboxes() {
