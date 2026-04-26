@@ -33,7 +33,7 @@ export class PythonWeapon extends WeaponBase {
     if (particleSystem) {
       for (const proj of this.activeProjectiles) {
         if (proj.active) {
-          particleSystem.addWeaponTrail(proj.x, proj.y, 'python');
+          particleSystem.addWeaponTrail(proj.x, proj.y, 'python', this.level);
         }
       }
     }
