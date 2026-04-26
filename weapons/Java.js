@@ -57,7 +57,7 @@ export class JavaWeapon extends WeaponBase {
     if (particleSystem && playerX !== undefined && playerY !== undefined) {
       const orbPositions = this.getOrbPositions(playerX, playerY);
       for (const orbPos of orbPositions) {
-        particleSystem.addOrbitalTail(orbPos.x, orbPos.y);
+        particleSystem.addOrbitalTail(orbPos.x, orbPos.y, this.level);
       }
     }
   }
