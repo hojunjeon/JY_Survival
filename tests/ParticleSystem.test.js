@@ -51,7 +51,7 @@ describe('ParticleSystem', () => {
 
   it('C trail 파티클은 shadowBlur 속성을 가진다', () => {
     ps.addWeaponTrail(100, 100, 'c', 5);
-    expect(ps.particles[0].shadowBlur).toBe(15);
+    expect(ps.particles[0].shadowBlur).toBe(20); // Lv5: max glow effect
     expect(ps.particles[0].shadowColor).toBe('#64b4ff');
   });
 
