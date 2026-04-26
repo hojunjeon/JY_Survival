@@ -215,7 +215,7 @@ describe('Weapon Particle Integration', () => {
     w.fire(100, 100, 1, 0);
     w.update(0.016, ps);
     expect(ps.addWeaponTrail).toHaveBeenCalledWith(
-      expect.any(Number), expect.any(Number), 'python'
+      expect.any(Number), expect.any(Number), 'python', expect.any(Number)
     );
   });
 
@@ -225,7 +225,7 @@ describe('Weapon Particle Integration', () => {
     w.fire(100, 100, 1, 0);
     w.update(0.016, ps);
     expect(ps.addWeaponTrail).toHaveBeenCalledWith(
-      expect.any(Number), expect.any(Number), 'c'
+      expect.any(Number), expect.any(Number), 'c', expect.any(Number)
     );
   });
 });
