@@ -20,6 +20,8 @@ export class EventModalScreen {
   render(ctx) {
     if (!this.visible || !this.eventData) return;
 
+    ctx.save();
+
     // 반투명 오버레이
     ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
     ctx.fillRect(0, 0, this.cw, this.ch);
@@ -195,6 +197,8 @@ export class EventModalScreen {
     ctx.fillText(`● PAUSED · ${this.eventData.eventType || 'E1'}`, 8, this.ch - 5);
     ctx.textAlign = 'right';
     ctx.fillText(`${this.eventData.progress || 0}/${this.eventData.bugCount || 15}`, this.cw - 8, this.ch - 5);
+
+    ctx.restore();
   }
 
   getHitboxes() {
