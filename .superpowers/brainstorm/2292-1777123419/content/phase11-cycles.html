@@ -1,0 +1,76 @@
+<h2>Phase 11 — Cycle 방향 선택</h2>
+<p class="subtitle">현재 유사도 22/100 (vs 레퍼런스). 어느 축으로 개선할지 고르세요.</p>
+
+<div class="section">
+  <div class="label">방향 A — UI 화면 완성 (레퍼런스 따라잡기)</div>
+</div>
+
+<div class="options" data-multiselect>
+
+  <div class="option" data-choice="ui-screens" onclick="toggleSelect(this)">
+    <div class="letter">A1</div>
+    <div class="content">
+      <h3>미구현 화면 7개 추가</h3>
+      <p>WeaponSelect · EventToast · EventModal · StatUpgrade · WeaponGet · BossIntro/Phase2 · StageClear · GameOver</p>
+      <p style="margin-top:6px;color:#888;font-size:12px">레퍼런스 유사도 22 → 70+ 예상 / 순수 UI 작업</p>
+    </div>
+  </div>
+
+  <div class="option" data-choice="event-ui" onclick="toggleSelect(this)">
+    <div class="letter">A2</div>
+    <div class="content">
+      <h3>이벤트 UI 감성화</h3>
+      <p>경고창 텍스트 → 터미널 타자 연출 or 홀로그램 스타일</p>
+      <p style="margin-top:6px;color:#888;font-size:12px">Phase 11 수정 사이클 후보 / 기존 이벤트창 리뉴얼</p>
+    </div>
+  </div>
+
+  <div class="option" data-choice="weapon-levelup-fx" onclick="toggleSelect(this)">
+    <div class="letter">A3</div>
+    <div class="content">
+      <h3>무기 레벨업 이펙트 스케일업</h3>
+      <p>레벨에 따라 파티클 화려도 증가 (Phase 10.5 이펙트 확장)</p>
+      <p style="margin-top:6px;color:#888;font-size:12px">Phase 11 수정 사이클 후보 / 기존 ParticleSystem 확장</p>
+    </div>
+  </div>
+
+</div>
+
+<div class="section" style="margin-top:24px">
+  <div class="label">방향 B — 게임플레이 확장</div>
+</div>
+
+<div class="options" data-multiselect>
+
+  <div class="option" data-choice="weapon-synergy" onclick="toggleSelect(this)">
+    <div class="letter">B1</div>
+    <div class="content">
+      <h3>무기 시너지/진화 시스템</h3>
+      <p>특정 조합 시 융합 무기 생성 (Python+C = Cython 등)</p>
+      <p style="margin-top:6px;color:#888;font-size:12px">추가 사이클 후보 / 높은 구현 복잡도</p>
+    </div>
+  </div>
+
+  <div class="option" data-choice="stage-add" onclick="toggleSelect(this)">
+    <div class="letter">B2</div>
+    <div class="content">
+      <h3>스테이지 추가</h3>
+      <p>테마 맵 2종: 프론트엔드 정원(파스텔톤) · 백엔드 서버룸(다크 모드)</p>
+      <p style="margin-top:6px;color:#888;font-size:12px">추가 사이클 후보 / 대규모 작업</p>
+    </div>
+  </div>
+
+  <div class="option" data-choice="reward-system" onclick="toggleSelect(this)">
+    <div class="letter">B3</div>
+    <div class="content">
+      <h3>단계적 보상 시스템</h3>
+      <p>스테이지별 차별화 드롭 아이템 / 빌드 검증형 기믹</p>
+      <p style="margin-top:6px;color:#888;font-size:12px">추가 사이클 후보 / 중간 복잡도</p>
+    </div>
+  </div>
+
+</div>
+
+<div class="section" style="margin-top:16px;padding:12px;background:rgba(255,255,255,0.04);border-radius:4px">
+  <p style="font-size:13px;color:#888">복수 선택 가능. 선택 후 터미널에서 우선순위 알려줘도 됨.</p>
+</div>

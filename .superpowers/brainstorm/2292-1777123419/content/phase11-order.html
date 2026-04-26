@@ -1,0 +1,61 @@
+<h2>Phase 11 — Cycle 순서 방식</h2>
+<p class="subtitle">5개 Cycle을 어떤 순서로 진행할지 선택해줘</p>
+
+<div class="options">
+
+  <div class="option" data-choice="ui-first" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>UI 우선 → 게임플레이 확장</h3>
+      <p>
+        <strong style="color:#94e2d5">Cycle 1</strong> A1 미구현 화면 7개 →
+        <strong style="color:#94e2d5">Cycle 2</strong> A3 무기 레벨업 이펙트 →
+        <strong style="color:#94e2d5">Cycle 3</strong> B3 보상 시스템 →
+        <strong style="color:#94e2d5">Cycle 4</strong> B1 무기 시너지 →
+        <strong style="color:#94e2d5">Cycle 5</strong> B2 스테이지 추가
+      </p>
+      <div class="pros-cons" style="margin-top:8px">
+        <div class="pros"><h4>장점</h4><ul><li>화면 먼저 완성 → 이후 기능 개발 시 UI 있음</li><li>블로그 소재: 레퍼런스 재현기 스토리라인</li></ul></div>
+        <div class="cons"><h4>단점</h4><ul><li>A1이 가장 큰 작업 → 시작이 무거움</li></ul></div>
+      </div>
+      <p style="margin-top:8px;color:#cba6f7;font-size:12px">★ 추천 — 레퍼런스 따라잡기를 목표로 했으므로 UI 먼저가 자연스러움</p>
+    </div>
+  </div>
+
+  <div class="option" data-choice="gameplay-first" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>게임플레이 먼저 → UI 나중에</h3>
+      <p>
+        <strong style="color:#f9e2af">Cycle 1</strong> A3 이펙트 →
+        <strong style="color:#f9e2af">Cycle 2</strong> B3 보상 시스템 →
+        <strong style="color:#f9e2af">Cycle 3</strong> B1 무기 시너지 →
+        <strong style="color:#f9e2af">Cycle 4</strong> A1 UI 화면 →
+        <strong style="color:#f9e2af">Cycle 5</strong> B2 스테이지 추가
+      </p>
+      <div class="pros-cons" style="margin-top:8px">
+        <div class="pros"><h4>장점</h4><ul><li>작은 것부터 → 모멘텀 쌓기 쉬움</li><li>게임플레이 검증 후 UI 작업</li></ul></div>
+        <div class="cons"><h4>단점</h4><ul><li>UI 없는 상태로 기능 개발 → QA 어색함</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="dependency-order" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>의존도 순서 (논리적)</h3>
+      <p>
+        <strong style="color:#fab387">Cycle 1</strong> B3 보상 시스템 →
+        <strong style="color:#fab387">Cycle 2</strong> B1 무기 시너지 →
+        <strong style="color:#fab387">Cycle 3</strong> A3 이펙트 →
+        <strong style="color:#fab387">Cycle 4</strong> A1 UI 화면 →
+        <strong style="color:#fab387">Cycle 5</strong> B2 스테이지
+      </p>
+      <div class="pros-cons" style="margin-top:8px">
+        <div class="pros"><h4>장점</h4><ul><li>보상→시너지→이펙트→UI 순: 각 단계가 이전 것 위에 쌓임</li></ul></div>
+        <div class="cons"><h4>단점</h4><ul><li>UI가 제일 늦어 레퍼런스 비교가 마지막에나 가능</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+</div>
