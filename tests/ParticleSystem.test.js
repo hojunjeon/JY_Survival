@@ -35,7 +35,7 @@ describe('ParticleSystem', () => {
 
   it('addWeaponTrail(x, y, "python")은 레벨에 따라 파티클을 추가한다', () => {
     ps.addWeaponTrail(100, 100, 'python', 5);
-    expect(ps.particles.length).toBe(20);
+    expect(ps.particles.length).toBe(24);
   });
 
   it('Python trail 파티클은 shadowBlur 속성을 가진다', () => {
