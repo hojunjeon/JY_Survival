@@ -205,6 +205,19 @@ describe('JavaWeapon', () => {
   it('canFire()는 항상 false다 (오비탈 무기는 지속 방식)', () => {
     expect(weapon.canFire()).toBe(false);
   });
+
+  it('update(dt, particleSystem, playerX, playerY)를 호출하면 addOrbitalTail이 (x, y, level) 3개 인자로 호출된다', () => {
+    const ps = { addOrbitalTail: vi.fn() };
+    weapon.update(0.016, ps, 100, 100);
+    expect(ps.addOrbitalTail).toHaveBeenCalledWith(
+      expect.any(Number), expect.any(Number), expect.any(Number)
+    );
+    // level이 weapon.level과 일치하는지 확인
+    const calls = ps.addOrbitalTail.mock.calls;
+    calls.forEach(call => {
+      expect(call[2]).toBe(weapon.level);
+    });
+  });
 });
 
 // ─── Particle Integration Tests ──────────────────────────────────────────────
