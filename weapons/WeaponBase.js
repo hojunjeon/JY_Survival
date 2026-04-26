@@ -6,6 +6,8 @@ export class WeaponBase {
     this.cooldown = cooldown;
     this.projectileSpeed = projectileSpeed;
     this.piercing = piercing;
+    this.level = 1; // Weapon level: 1-5, affects particle effects
+    this.maxLevel = 5;
     this._timer = 0; // 0 = 발사 가능
   }
 
@@ -30,6 +32,14 @@ export class WeaponBase {
     if (!this.canFire()) return [];
     this._timer = this.cooldown;
     return this._createProjectiles(x, y, dirX, dirY);
+  }
+
+  levelUp() {
+    if (this.level < this.maxLevel) {
+      this.level++;
+      return true;
+    }
+    return false;
   }
 
   // 서브클래스에서 오버라이드
