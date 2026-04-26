@@ -25,8 +25,23 @@ export class GameOver {
     ctx.fillStyle = '#0d0d0d';
     ctx.fillRect(0, 0, this.cw, this.ch);
 
+    // 타이틀바
+    ctx.fillStyle = '#181825';
+    ctx.fillRect(0, 0, this.cw, 20);
+    [['#f55',0],['#fb0',1],['#5c5',2]].forEach(([c,i]) => {
+      ctx.fillStyle = c;
+      ctx.beginPath();
+      ctx.arc(10 + i * 14, 10, 4, 0, Math.PI * 2);
+      ctx.fill();
+    });
+    ctx.fillStyle = HUD.COLORS.comment;
+    ctx.font = '8px monospace';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('FATAL: PlayerDied', 52, 10);
+
     const PAD = 20;
-    let y = 40;
+    let y = 44;
 
     // 에러 헤더
     ctx.fillStyle = 'rgba(243, 139, 168, 0.12)';
@@ -67,7 +82,7 @@ export class GameOver {
     y += 12;
 
     // run summary 박스
-    ctx.fillStyle = HUD.COLORS.sidebar;
+    ctx.fillStyle = '#181825';
     ctx.fillRect(PAD, y, this.cw - PAD * 2, 80);
     ctx.strokeStyle = HUD.COLORS.border;
     ctx.lineWidth = 1;
