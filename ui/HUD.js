@@ -27,6 +27,30 @@ export class HUD {
   constructor({ canvasWidth, canvasHeight }) {
     this.cw = canvasWidth;
     this.ch = canvasHeight;
+    // Level-up notification state
+    this.levelUpNotif = {
+      active: false,
+      weaponName: '',
+      level: 0,
+      timer: 0,
+      duration: 1.5,
+    };
+  }
+
+  showLevelUpNotif(weaponName, level) {
+    this.levelUpNotif.active = true;
+    this.levelUpNotif.weaponName = weaponName;
+    this.levelUpNotif.level = level;
+    this.levelUpNotif.timer = this.levelUpNotif.duration;
+  }
+
+  updateLevelUpNotif(dt) {
+    if (this.levelUpNotif.active) {
+      this.levelUpNotif.timer -= dt;
+      if (this.levelUpNotif.timer <= 0) {
+        this.levelUpNotif.active = false;
+      }
+    }
   }
 
   render(ctx, { playerHp, playerMaxHp, killCount, q1Target, elapsed, e1State, e2State, bossState, e1Kills = 0, e2Kills = 0, e2Elapsed = 0 }) {
@@ -36,6 +60,7 @@ export class HUD {
     this._renderKillCount(ctx, killCount, q1Target);
     this._renderTimer(ctx, elapsed);
     this._renderEventStatus(ctx, e1State, e2State, bossState, e1Kills, e2Kills, e2Elapsed);
+    this._renderLevelUpNotif(ctx);
 
     ctx.restore();
   }
@@ -354,5 +379,32 @@ export class HUD {
 
       y += badgeH + 4;
     }
+  }
+
+  _renderLevelUpNotif(ctx) {
+    if (!this.levelUpNotif.active) return;
+
+    const alpha = this.levelUpNotif.timer / this.levelUpNotif.duration;
+    const text = `${this.levelUpNotif.weaponName}  Lv${this.levelUpNotif.level} ▲`;
+
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.font = 'bold 18px monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#f9e2af';
+
+    const x = this.cw / 2;
+    const y = 50;
+
+    // Shadow effect
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+    ctx.shadowBlur = 8;
+    ctx.shadowOffsetX = 2;
+    ctx.shadowOffsetY = 2;
+
+    ctx.fillText(text, x, y);
+
+    ctx.restore();
   }
 }
