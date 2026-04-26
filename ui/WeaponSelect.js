@@ -56,7 +56,7 @@ export class WeaponSelect {
     const itemHeight = 28;
 
     ctx.fillStyle = HUD.COLORS.orange;
-    ctx.font = '9px monospace';
+    ctx.font = HUD.FONTS.sm;
     ctx.textAlign = 'left';
     ctx.fillText('▾ weapons/', sidebarX, sidebarY);
 
@@ -75,7 +75,7 @@ export class WeaponSelect {
 
       // 아이콘 + 이름
       ctx.fillStyle = isSelected ? HUD.COLORS.teal2 : HUD.COLORS.comment;
-      ctx.font = '9px monospace';
+      ctx.font = HUD.FONTS.sm;
       ctx.fillText(`⬡ ${weapon.name}.${this._getFileExt(weapon.name)}`, sidebarX, y);
     });
 
@@ -84,7 +84,7 @@ export class WeaponSelect {
     const codeY = 180;
 
     ctx.fillStyle = HUD.COLORS.comment;
-    ctx.font = '9px monospace';
+    ctx.font = HUD.FONTS.sm;
     ctx.textAlign = 'left';
     ctx.fillText('// 선택 무기', codeX, codeY);
 
@@ -102,7 +102,7 @@ export class WeaponSelect {
       const commentColor = HUD.COLORS.comment;
       const varColor = HUD.COLORS.teal2;
 
-      ctx.font = '9px monospace';
+      ctx.font = HUD.FONTS.sm;
       codeLines.forEach((line, i) => {
         const y = codeY + 24 + i * 16;
 
@@ -144,7 +144,7 @@ export class WeaponSelect {
     ctx.strokeRect(sidebarX - 10, btnY - 10, 540, 40);
 
     ctx.fillStyle = HUD.COLORS.teal2;
-    ctx.font = '9px monospace';
+    ctx.font = HUD.FONTS.sm;
     ctx.textAlign = 'left';
     if (selected) {
       ctx.fillText(`선택됨: ${selected.name}.${this._getFileExt(selected.name)}`, sidebarX, btnY + 5);
@@ -154,7 +154,7 @@ export class WeaponSelect {
     ctx.fillStyle = HUD.COLORS.teal2;
     ctx.fillRect(sidebarX + 450, btnY - 8, 80, 32);
     ctx.fillStyle = HUD.COLORS.bg;
-    ctx.font = 'bold 9px monospace';
+    ctx.font = 'bold 11px monospace';
     ctx.textAlign = 'center';
     ctx.fillText('시작 →', sidebarX + 490, btnY + 8);
 
@@ -162,7 +162,7 @@ export class WeaponSelect {
     ctx.fillStyle = HUD.COLORS.statusBar;
     ctx.fillRect(0, this.ch - 16, this.cw, 16);
     ctx.fillStyle = '#ffffff';
-    ctx.font = '8px monospace';
+    ctx.font = HUD.FONTS.xs;
     ctx.textAlign = 'left';
     ctx.fillText('⎇ main', 8, this.ch - 5);
     ctx.textAlign = 'right';
@@ -170,7 +170,7 @@ export class WeaponSelect {
 
     // 키보드 힌트
     ctx.fillStyle = HUD.COLORS.comment;
-    ctx.font = '8px monospace';
+    ctx.font = HUD.FONTS.xs;
     ctx.textAlign = 'center';
     ctx.fillText('↑↓ 또는 WASD: 선택 | Enter: 시작', this.cw / 2, this.ch - 40);
   }
