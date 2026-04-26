@@ -72,14 +72,14 @@ describe('ParticleSystem', () => {
   });
 
   it('addOrbitalTail(x, y)은 잔상과 링 파티클을 추가한다', () => {
-    ps.addOrbitalTail(100, 100);
+    ps.addOrbitalTail(100, 100, 2);
     expect(ps.particles.length).toBeGreaterThanOrEqual(5);
     const hasRing = ps.particles.some(p => p.type === 'ring');
     expect(hasRing).toBe(true);
   });
 
   it('OrbitalTail 잔상 파티클은 shadowBlur 속성을 가진다', () => {
-    ps.addOrbitalTail(100, 100);
+    ps.addOrbitalTail(100, 100, 2);
     expect(ps.particles[0].shadowBlur).toBe(20);
     expect(ps.particles[0].shadowColor).toBe('#ffa032');
   });
