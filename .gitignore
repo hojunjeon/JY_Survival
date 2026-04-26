@@ -8,6 +8,9 @@ Thumbs.db
 # Node (if used later)
 node_modules/
 
+# Git worktrees
+.worktrees/
+
 # QA artifacts (screenshots, temp test scripts)
 qa-*.png
 qa-*.mjs
