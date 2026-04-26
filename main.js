@@ -392,6 +392,13 @@ function startGame() {
     screenShake.duration = Math.max(screenShake.duration, duration);
   }
 
+  function triggerWeaponLevelUp(weapon) {
+    if (!weapon) return;
+    if (weapon.levelUp()) {
+      uiScreens.hud.showLevelUpNotif(weapon.name, weapon.level);
+    }
+  }
+
   const REWARD_WEAPON_POOL = [
     GitWeapon, SQLWeapon, JavaScriptWeapon, DjangoWeapon, LinuxBashWeapon,
   ];
@@ -581,6 +588,9 @@ function startGame() {
 
     // FloatingText 업데이트
     floatingTextManager.update(dt);
+
+    // HUD 레벨업 알림 업데이트
+    uiScreens.hud.updateLevelUpNotif(dt);
 
     // ParticleSystem 업데이트
     particleSystem.update(dt);
