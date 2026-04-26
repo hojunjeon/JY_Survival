@@ -126,7 +126,7 @@ export class ParticleSystem {
         2: { count: 6, shadowBlur: 5 },
         3: { count: 8, shadowBlur: 10 },
         4: { count: 10, shadowBlur: 15 },
-        5: { count: 12, shadowBlur: 15 },
+        5: { count: 12, shadowBlur: 20 }, // Lv5: max glow effect
       };
       const config = levelConfig[Math.min(level, 5)] || levelConfig[1];
 
