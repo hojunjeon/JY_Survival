@@ -67,7 +67,7 @@ export class ParticleSystem {
     }
   }
 
-  addWeaponTrail(x, y, weaponType) {
+  addWeaponTrail(x, y, weaponType, level = 1) {
     if (weaponType === 'python') {
       // Python: 20개 점, 사인파 진동, 색상 #44ff44/#88ffaa 교대
       for (let i = 0; i < 20; i++) {
@@ -107,7 +107,7 @@ export class ParticleSystem {
     }
   }
 
-  addWeaponHit(x, y, weaponType) {
+  addWeaponHit(x, y, weaponType, level = 1) {
     if (weaponType === 'c') {
       // C 명중: 링 확장 파티클 (반경 0 → 20px, 0.3s)
       this.particles.push({
@@ -130,7 +130,7 @@ export class ParticleSystem {
     }
   }
 
-  addOrbitalTail(x, y) {
+  addOrbitalTail(x, y, level = 1) {
     // Java 오브: 8개 잔상 점, 색상 #ffa032, shadowBlur:20, 뒤로 갈수록 alpha 감소
     for (let i = 0; i < 8; i++) {
       const alpha = (8 - i) / 8; // 뒤로 갈수록 alpha 감소 (1 ~ 0)
