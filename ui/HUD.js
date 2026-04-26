@@ -24,6 +24,15 @@ export class HUD {
     panel:       '#2d2d2d',   // VSCode panel dark
   };
 
+  static FONTS = {
+    xs:  '9px monospace',
+    sm:  '11px monospace',
+    md:  '13px monospace',
+    lg:  '16px monospace',
+    xl:  'bold 20px monospace',
+    xxl: 'bold 28px monospace',
+  };
+
   constructor({ canvasWidth, canvasHeight }) {
     this.cw = canvasWidth;
     this.ch = canvasHeight;
