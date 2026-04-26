@@ -7,3 +7,8 @@ Thumbs.db
 
 # Node (if used later)
 node_modules/
+
+# QA artifacts (screenshots, temp test scripts)
+qa-*.png
+qa-*.mjs
+qa-*.js
