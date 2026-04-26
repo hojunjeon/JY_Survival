@@ -69,23 +69,55 @@ export class ParticleSystem {
 
   addWeaponTrail(x, y, weaponType, level = 1) {
     if (weaponType === 'python') {
-      // Python: 20개 점, 사인파 진동, 색상 #44ff44/#88ffaa 교대
-      for (let i = 0; i < 20; i++) {
-        const alpha = i / 20; // 0 ~ 1: 뒤로 갈수록 alpha 증가
-        const offsetX = Math.sin(alpha * Math.PI) * 4; // 사인파 진동
-        const color = i % 2 === 0 ? '#44ff44' : '#88ffaa'; // 교대
+      // Python: Level-based trail scaling (Lv1-5)
+      const levelConfig = {
+        1: { count: 5, shadowBlur: 0, hasWave: false, hasGradient: false, hasSplash: false },
+        2: { count: 8, shadowBlur: 5, hasWave: false, hasGradient: false, hasSplash: false },
+        3: { count: 12, shadowBlur: 10, hasWave: true, waveAmplitude: 3, hasGradient: false, hasSplash: false },
+        4: { count: 16, shadowBlur: 15, hasWave: true, waveAmplitude: 3, hasGradient: true, hasSplash: false },
+        5: { count: 20, shadowBlur: 20, hasWave: true, waveAmplitude: 3, hasGradient: true, hasSplash: true },
+      };
+      const config = levelConfig[Math.min(level, 5)] || levelConfig[1];
+
+      for (let i = 0; i < config.count; i++) {
+        const alpha = i / config.count;
+        const offsetX = config.hasWave ? Math.sin(alpha * Math.PI) * config.waveAmplitude : 0;
+        const color = config.hasGradient
+          ? (i % 2 === 0 ? '#44ff44' : '#88ffaa')
+          : '#44ff44';
+
         this.particles.push({
           x: x + offsetX,
           y,
           vx: 0,
           vy: 0,
-          life: 0.15 + (alpha * 0.1), // 뒤 점들이 더 오래 유지
+          life: 0.15 + (alpha * 0.1),
           maxLife: 0.25,
           color,
           size: 2 + (1 - alpha) * 1.5,
-          shadowBlur: 20,
+          shadowBlur: config.shadowBlur,
           shadowColor: '#44ff44',
         });
+      }
+
+      // Lv5: Add splash particles
+      if (config.hasSplash) {
+        for (let i = 0; i < 4; i++) {
+          const angle = (i / 4) * Math.PI * 2;
+          const splashDist = 8;
+          this.particles.push({
+            x: x + Math.cos(angle) * splashDist,
+            y: y + Math.sin(angle) * splashDist,
+            vx: Math.cos(angle) * 30,
+            vy: Math.sin(angle) * 30,
+            life: 0.2,
+            maxLife: 0.3,
+            color: '#88ffaa',
+            size: 2,
+            shadowBlur: 8,
+            shadowColor: '#44ff44',
+          });
+        }
       }
     } else if (weaponType === 'c') {
       // C: 12개 점, 직선, 색상 #64b4ff
