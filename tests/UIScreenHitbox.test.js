@@ -124,3 +124,51 @@ describe('StatUpgrade hitbox', () => {
     expect(hbs[2].y).toBeGreaterThan(hbs[1].y);
   });
 });
+
+describe('WeaponGet hitbox', () => {
+  it('visible=true 시 discard/equip hitbox 반환', () => {
+    const { WeaponGet } = require('../ui/WeaponGet.js');
+    const wg = new WeaponGet({ canvasWidth: 800, canvasHeight: 600 });
+    wg.show({ name: 'Git', description: 'Branch & merge' });
+    const hbs = wg.getHitboxes();
+    expect(hbs.length).toBeGreaterThanOrEqual(1);
+    const actions = hbs.map(h => h.action);
+    expect(actions.some(a => a === 'drop' || a === 'equip')).toBe(true);
+  });
+});
+
+describe('BossIntro.isAutoTransitionReady()', () => {
+  it('visible=false일 때 false 반환', () => {
+    const { BossIntro } = require('../ui/BossIntro.js');
+    const bi = new BossIntro({ canvasWidth: 800, canvasHeight: 600 });
+    expect(bi.isAutoTransitionReady()).toBe(false);
+  });
+
+  it('visible=true이고 2000ms 경과 전 false 반환', () => {
+    const { BossIntro } = require('../ui/BossIntro.js');
+    const bi = new BossIntro({ canvasWidth: 800, canvasHeight: 600 });
+    bi.show({ name: 'TestBoss', emoji: '👹', hp: 500, attack: '3방향', tracking: '보통' });
+    expect(bi.isAutoTransitionReady()).toBe(false);
+  });
+
+  it('visible=true이고 2000ms 경과 후 true 반환', (done) => {
+    const { BossIntro } = require('../ui/BossIntro.js');
+    const bi = new BossIntro({ canvasWidth: 800, canvasHeight: 600 });
+    bi.show({ name: 'TestBoss', emoji: '👹', hp: 500, attack: '3방향', tracking: '보통' });
+    setTimeout(() => {
+      expect(bi.isAutoTransitionReady()).toBe(true);
+      done();
+    }, 2100);
+  });
+});
+
+describe('StageClear hitbox', () => {
+  it('visible=true 시 next-stage hitbox 반환', () => {
+    const { StageClear } = require('../ui/StageClear.js');
+    const sc = new StageClear({ canvasWidth: 800, canvasHeight: 600 });
+    sc.show({ stageNumber: 1, kills: 100, elapsed: 200, enhance: 3, coins: 5 });
+    const hbs = sc.getHitboxes();
+    expect(hbs.length).toBeGreaterThanOrEqual(1);
+    expect(hbs.find(h => h.action === 'next-stage')).toBeDefined();
+  });
+});

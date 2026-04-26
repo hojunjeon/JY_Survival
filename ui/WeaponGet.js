@@ -29,108 +29,116 @@ export class WeaponGet {
     ctx.fillRect(0, 0, this.cw, this.ch);
 
     // 박스
-    const boxW = 400;
-    const boxH = 280;
-    const boxX = (this.cw - boxW) / 2;
-    const boxY = (this.ch - boxH) / 2;
+    const modalX = (this.cw - 400) / 2;
+    const modalY = (this.ch - 280) / 2;
+    const modalW = 400;
+    const modalH = 280;
 
     // 배경
     ctx.fillStyle = HUD.COLORS.bg;
-    ctx.fillRect(boxX, boxY, boxW, boxH);
+    ctx.fillRect(modalX, modalY, modalW, modalH);
+
+    // 타이틀바
+    ctx.fillStyle = '#181825';
+    ctx.fillRect(modalX, modalY, modalW, 20);
+    [['#f55',0],['#fb0',1],['#5c5',2]].forEach(([c,i]) => {
+      ctx.fillStyle = c;
+      ctx.beginPath();
+      ctx.arc(modalX + 10 + i * 14, modalY + 10, 4, 0, Math.PI * 2);
+      ctx.fill();
+    });
+    ctx.fillStyle = HUD.COLORS.comment;
+    ctx.font = '8px monospace';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('weapon.acquired()', modalX + 52, modalY + 10);
 
     // 테두리
     ctx.strokeStyle = HUD.COLORS.orange;
     ctx.lineWidth = 1;
-    ctx.strokeRect(boxX, boxY, boxW, boxH);
+    ctx.strokeRect(modalX, modalY, modalW, modalH);
 
-    let contentY = boxY + 12;
-
-    // 타이틀
-    ctx.fillStyle = HUD.COLORS.comment;
-    ctx.font = '9px monospace';
-    ctx.textAlign = 'left';
-    ctx.fillText('// [E2 보상] 새로운 무기 획득!', boxX + 12, contentY);
-
-    contentY += 20;
+    let contentY = modalY + 32;
 
     // 무기 박스
-    ctx.fillStyle = `rgba(249, 226, 175, 0.05)`;
-    ctx.fillRect(boxX + 12, contentY, boxW - 24, 80);
+    ctx.fillStyle = 'rgba(249, 226, 175, 0.05)';
+    ctx.fillRect(modalX + 12, contentY, modalW - 24, 80);
 
     ctx.strokeStyle = HUD.COLORS.orange;
-    ctx.globalAlpha = 0.6;
     ctx.lineWidth = 1;
-    ctx.strokeRect(boxX + 12, contentY, boxW - 24, 80);
-    ctx.globalAlpha = 1;
+    ctx.strokeRect(modalX + 12, contentY, modalW - 24, 80);
 
     // 무기 이름
     ctx.fillStyle = HUD.COLORS.orange;
     ctx.font = 'bold 14px monospace';
     ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
     const weaponName = this.weaponData.name || 'UnknownWeapon';
-    ctx.fillText(weaponName, (this.cw) / 2, contentY + 28);
+    ctx.fillText(weaponName, modalX + (modalW) / 2, contentY + 18);
 
     // 무기 설명
     ctx.fillStyle = HUD.COLORS.comment;
     ctx.font = '8px monospace';
     ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
     const weaponDesc = this.weaponData.description || '강력한 새로운 무기';
-    ctx.fillText(weaponDesc, this.cw / 2, contentY + 48);
+    ctx.fillText(weaponDesc, modalX + modalW / 2, contentY + 38);
 
     contentY += 88;
 
     // 코드 스니펫
-    ctx.fillStyle = HUD.COLORS.sidebar;
-    ctx.fillRect(boxX + 12, contentY, boxW - 24, 80);
+    ctx.fillStyle = '#181825';
+    ctx.fillRect(modalX + 12, contentY, modalW - 24, 80);
 
     ctx.strokeStyle = HUD.COLORS.border;
     ctx.lineWidth = 1;
-    ctx.strokeRect(boxX + 12, contentY, boxW - 24, 80);
+    ctx.strokeRect(modalX + 12, contentY, modalW - 24, 80);
 
     let codeY = contentY + 8;
 
     ctx.fillStyle = HUD.COLORS.keyword;
     ctx.font = '8px monospace';
     ctx.textAlign = 'left';
-    ctx.fillText('const', boxX + 16, codeY);
+    ctx.textBaseline = 'top';
+    ctx.fillText('const', modalX + 16, codeY);
 
     ctx.fillStyle = HUD.COLORS.teal2;
-    ctx.fillText(' newWeapon ', boxX + 16 + ctx.measureText('const').width, codeY);
+    ctx.fillText(' newWeapon ', modalX + 16 + ctx.measureText('const').width, codeY);
 
     ctx.fillStyle = HUD.COLORS.keyword;
-    ctx.fillText('= new ', boxX + 16 + ctx.measureText('const newWeapon ').width, codeY);
+    ctx.fillText('= new ', modalX + 16 + ctx.measureText('const newWeapon ').width, codeY);
 
     ctx.fillStyle = HUD.COLORS.text;
-    ctx.fillText(weaponName, boxX + 16 + ctx.measureText('const newWeapon = new ').width, codeY);
+    ctx.fillText(weaponName, modalX + 16 + ctx.measureText('const newWeapon = new ').width, codeY);
 
     codeY += 16;
 
     ctx.fillStyle = HUD.COLORS.comment;
     ctx.font = '8px monospace';
-    ctx.fillText(`// 슬롯 ${this.slotIndex + 1} 에 추가됨`, boxX + 16, codeY);
+    ctx.fillText(`// 슬롯 ${this.slotIndex + 1} 에 추가됨`, modalX + 16, codeY);
 
     codeY += 16;
 
     ctx.fillStyle = HUD.COLORS.keyword;
-    ctx.fillText('ownedWeapons', boxX + 16, codeY);
+    ctx.fillText('ownedWeapons', modalX + 16, codeY);
 
     ctx.fillStyle = HUD.COLORS.text;
-    ctx.fillText('.push(', boxX + 16 + ctx.measureText('ownedWeapons').width, codeY);
+    ctx.fillText('.push(', modalX + 16 + ctx.measureText('ownedWeapons').width, codeY);
 
     ctx.fillStyle = HUD.COLORS.teal2;
-    ctx.fillText('newWeapon', boxX + 16 + ctx.measureText('ownedWeapons.push(').width, codeY);
+    ctx.fillText('newWeapon', modalX + 16 + ctx.measureText('ownedWeapons.push(').width, codeY);
 
     ctx.fillStyle = HUD.COLORS.text;
-    ctx.fillText(')', boxX + 16 + ctx.measureText('ownedWeapons.push(newWeapon').width, codeY);
+    ctx.fillText(')', modalX + 16 + ctx.measureText('ownedWeapons.push(newWeapon').width, codeY);
 
     contentY += 88;
 
     // 버튼들
-    const btnW = (boxW - 36) / 2;
+    const btnW = (modalW - 36) / 2;
     const btnH = 20;
     const btnGap = 12;
-    const btn1X = boxX + 12;
-    const btn2X = boxX + 12 + btnW + btnGap;
+    const btn1X = modalX + 12;
+    const btn2X = modalX + 12 + btnW + btnGap;
 
     // 버리기
     ctx.fillStyle = 'transparent';
@@ -151,7 +159,17 @@ export class WeaponGet {
     ctx.fillStyle = HUD.COLORS.bg;
     ctx.font = 'bold 8px monospace';
     ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
     ctx.fillText(`장착 (슬롯 ${this.slotIndex + 1})`, btn2X + btnW / 2, contentY + btnH / 2);
+
+    // 상태 바
+    ctx.fillStyle = HUD.COLORS.statusBar;
+    ctx.fillRect(0, this.ch - 16, this.cw, 16);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = HUD.FONTS.xs;
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('✓ EVENT E2 | 무기 획득!', 8, this.ch - 8);
 
     ctx.restore();
   }
@@ -159,26 +177,26 @@ export class WeaponGet {
   getHitboxes() {
     if (!this.visible) return [];
 
-    const boxW = 400;
-    const boxH = 280;
-    const boxX = (this.cw - boxW) / 2;
-    const boxY = (this.ch - boxH) / 2;
+    const modalW = 400;
+    const modalH = 280;
+    const modalX = (this.cw - modalW) / 2;
+    const modalY = (this.ch - modalH) / 2;
 
-    const btnW = (boxW - 36) / 2;
+    const btnW = (modalW - 36) / 2;
     const btnH = 20;
     const btnGap = 12;
-    const contentY = boxY + boxH - 32;
+    const contentY = modalY + modalH - 32;
 
     return [
       {
-        x: boxX + 12,
+        x: modalX + 12,
         y: contentY,
         w: btnW,
         h: btnH,
         action: 'drop',
       },
       {
-        x: boxX + 12 + btnW + btnGap,
+        x: modalX + 12 + btnW + btnGap,
         y: contentY,
         w: btnW,
         h: btnH,
