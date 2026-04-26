@@ -31,6 +31,7 @@ Phase 10 완료 / Phase 10.5 완료 / Phase 11 대기
 
 - [x] Cycle 1 — 미구현 화면 7개 Canvas 오버레이 ✅ (spec: `2026-04-25-phase11-cycle1-ui-screens-design.md`) — 9개 UI 클래스 + gameState 통합 + 입력 처리 완료
 - [x] Cycle 2 — 무기 레벨업 이펙트 스케일업 ✅ (spec: `2026-04-25-phase11-cycle2-weapon-levelup-fx-design.md`) — 3무기(Python/C/Java) Lv1-5 이펙트 + HUD 알림 완료
+- [x] Cycle 2.2 — 버그 픽스 + UI 디자인 보정 ✅ (plan: `2026-04-26-phase11-cycle2-2-bugfix-ui-design.md`) — main.js 3버그 + 8개 UI 타이틀바/색상 조정 완료
 - [ ] Cycle 3 — 단계적 보상 시스템 (spec: `2026-04-25-phase11-cycle3-reward-system-design.md`)
 - [ ] Cycle 4 — 무기 시너지/진화 시스템 (spec: `2026-04-25-phase11-cycle4-weapon-synergy-design.md`)
 - [ ] Cycle 5 — 스테이지 추가 (spec: `2026-04-25-phase11-cycle5-stage-add-design.md`)
