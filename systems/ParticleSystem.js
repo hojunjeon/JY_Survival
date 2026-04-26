@@ -120,9 +120,18 @@ export class ParticleSystem {
         }
       }
     } else if (weaponType === 'c') {
-      // C: 12개 점, 직선, 색상 #64b4ff
-      for (let i = 0; i < 12; i++) {
-        const alpha = i / 12;
+      // C/C++: Level-based trail scaling (Lv1-5)
+      const levelConfig = {
+        1: { count: 4, shadowBlur: 0 },
+        2: { count: 6, shadowBlur: 5 },
+        3: { count: 8, shadowBlur: 10 },
+        4: { count: 10, shadowBlur: 15 },
+        5: { count: 12, shadowBlur: 15 },
+      };
+      const config = levelConfig[Math.min(level, 5)] || levelConfig[1];
+
+      for (let i = 0; i < config.count; i++) {
+        const alpha = i / config.count;
         this.particles.push({
           x,
           y,
@@ -132,7 +141,7 @@ export class ParticleSystem {
           maxLife: 0.25,
           color: '#64b4ff',
           size: 2 + (1 - alpha) * 1.5,
-          shadowBlur: 10,
+          shadowBlur: config.shadowBlur,
           shadowColor: '#64b4ff',
         });
       }
@@ -141,21 +150,71 @@ export class ParticleSystem {
 
   addWeaponHit(x, y, weaponType, level = 1) {
     if (weaponType === 'c') {
-      // C 명중: 링 확장 파티클 (반경 0 → 20px, 0.3s)
-      this.particles.push({
-        x,
-        y,
-        vx: 0,
-        vy: 0,
-        life: 0.3,
-        maxLife: 0.3,
-        color: '#64b4ff',
-        size: 1,
-        maxSize: 20,
-        type: 'ring-expand',
-        shadowBlur: 10,
-        shadowColor: '#64b4ff',
-      });
+      // C/C++ 명중: Level-based ring expansion (Lv1-5)
+      const levelConfig = {
+        1: { maxSize: 0, ringCount: 0 },
+        2: { maxSize: 10, ringCount: 1 },
+        3: { maxSize: 15, ringCount: 1, fadeTime: 0.3 },
+        4: { maxSize: 20, ringCount: 2 },
+        5: { maxSize: 25, ringCount: 2, sparks: 4 },
+      };
+      const config = levelConfig[Math.min(level, 5)] || levelConfig[1];
+
+      // Main ring(s)
+      if (config.ringCount >= 1) {
+        this.particles.push({
+          x,
+          y,
+          vx: 0,
+          vy: 0,
+          life: config.fadeTime || 0.3,
+          maxLife: config.fadeTime || 0.3,
+          color: '#64b4ff',
+          size: 1,
+          maxSize: config.maxSize,
+          type: 'ring-expand',
+          shadowBlur: 10,
+          shadowColor: '#64b4ff',
+        });
+      }
+
+      // Double ring for Lv4+
+      if (config.ringCount >= 2) {
+        this.particles.push({
+          x,
+          y,
+          vx: 0,
+          vy: 0,
+          life: 0.35,
+          maxLife: 0.35,
+          color: '#64b4ff',
+          size: 1,
+          maxSize: config.maxSize * 0.7,
+          type: 'ring-expand',
+          shadowBlur: 8,
+          shadowColor: '#64b4ff',
+        });
+      }
+
+      // Spark particles for Lv5
+      if (config.sparks) {
+        for (let i = 0; i < config.sparks; i++) {
+          const angle = (i / config.sparks) * Math.PI * 2;
+          const speed = 80;
+          this.particles.push({
+            x,
+            y,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed,
+            life: 0.25,
+            maxLife: 0.3,
+            color: '#64b4ff',
+            size: 2,
+            shadowBlur: 5,
+            shadowColor: '#64b4ff',
+          });
+        }
+      }
     } else {
       // 기타 weaponType: addHitSpark fallback
       this.addHitSpark(x, y, '#ffffff', 3);
