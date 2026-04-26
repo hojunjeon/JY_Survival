@@ -31,7 +31,7 @@ export class BossIntro {
     // 빨강 오버레이
     const elapsed = Date.now() - this.displayTime;
     const fadeRatio = Math.min(1, elapsed / 500); // 0.5초에 걸쳐 fade in
-    ctx.fillStyle = `rgba(243, 139, 168, ${fadeRatio * 0.6})`;
+    ctx.fillStyle = `rgba(243, 139, 168, ${fadeRatio * 0.12})`;
     ctx.fillRect(0, 0, this.cw, this.ch);
 
     // 모달 박스
@@ -89,34 +89,44 @@ export class BossIntro {
 
     contentY += 36;
 
-    // 스탯 표
-    ctx.fillStyle = HUD.COLORS.sidebar;
-    ctx.fillRect(boxX + 12, contentY, boxW - 24, 60);
+    // 스탯 표 (3열 그리드)
+    const gridW = boxW - 24;
+    const gridX = boxX + 12;
+    const colW = gridW / 3;
 
+    ctx.fillStyle = HUD.COLORS.sidebar;
+    ctx.fillRect(gridX, contentY, gridW, 44);
     ctx.strokeStyle = HUD.COLORS.border;
     ctx.lineWidth = 1;
-    ctx.strokeRect(boxX + 12, contentY, boxW - 24, 60);
-
-    let tableY = contentY + 8;
+    ctx.strokeRect(gridX, contentY, gridW, 44);
 
     const stats = [
-      { label: 'HP', value: this.bossData.hp || '???', color: HUD.COLORS.red },
-      { label: '공격', value: this.bossData.attack || '???', color: HUD.COLORS.orange },
-      { label: '추적', value: this.bossData.tracking || '?', color: HUD.COLORS.teal2 },
+      { label: 'HP', value: String(this.bossData.hp || '500'), color: HUD.COLORS.red },
+      { label: '공격', value: String(this.bossData.attack || '3방향'), color: HUD.COLORS.orange },
+      { label: '추적', value: String(this.bossData.tracking || '보통'), color: HUD.COLORS.yellow },
     ];
 
-    ctx.font = '8px monospace';
-    ctx.textAlign = 'left';
-    stats.forEach((stat, idx) => {
-      const x = boxX + 16 + idx * ((boxW - 24) / 3);
+    stats.forEach((stat, i) => {
+      const cx = gridX + i * colW + colW / 2;
+
+      if (i < stats.length - 1) {
+        ctx.strokeStyle = HUD.COLORS.border;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(gridX + (i + 1) * colW, contentY);
+        ctx.lineTo(gridX + (i + 1) * colW, contentY + 44);
+        ctx.stroke();
+      }
+
       ctx.fillStyle = HUD.COLORS.comment;
-      ctx.fillText(stat.label, x, tableY);
+      ctx.font = '9px monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'top';
+      ctx.fillText(stat.label, cx, contentY + 6);
 
       ctx.fillStyle = stat.color;
-      ctx.font = 'bold 9px monospace';
-      ctx.fillText(stat.value, x, tableY + 14);
-
-      ctx.font = '8px monospace';
+      ctx.font = 'bold 11px monospace';
+      ctx.fillText(stat.value, cx, contentY + 22);
     });
 
     // 자동 전환 힌트
