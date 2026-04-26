@@ -6,10 +6,12 @@ export class EventModalScreen {
     this.ch = canvasHeight;
     this.visible = false;
     this.eventData = null;
+    this.eventId = 'E1';
   }
 
   show(eventData) {
     this.eventData = eventData;
+    this.eventId = eventData.eventType || 'E1';
     this.visible = true;
   }
 
@@ -32,6 +34,21 @@ export class EventModalScreen {
     const modalX = (this.cw - modalW) / 2;
     const modalY = (this.ch - modalH) / 2;
 
+    // 타이틀바
+    ctx.fillStyle = '#181825';
+    ctx.fillRect(modalX, modalY, modalW, 20);
+    [['#f55',0],['#fb0',1],['#5c5',2]].forEach(([c,i]) => {
+      ctx.fillStyle = c;
+      ctx.beginPath();
+      ctx.arc(modalX + 10 + i * 14, modalY + 10, 4, 0, Math.PI * 2);
+      ctx.fill();
+    });
+    ctx.fillStyle = HUD.COLORS.comment;
+    ctx.font = '8px monospace';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(`event.${this.eventId || 'E1'}.js`, modalX + 52, modalY + 10);
+
     // 배경
     ctx.fillStyle = HUD.COLORS.bg;
     ctx.fillRect(modalX, modalY, modalW, modalH);
@@ -41,7 +58,7 @@ export class EventModalScreen {
     ctx.lineWidth = 1;
     ctx.strokeRect(modalX, modalY, modalW, modalH);
 
-    let contentY = modalY + 12;
+    let contentY = modalY + 32;
 
     // 타이틀 영역
     ctx.fillStyle = HUD.COLORS.comment;
@@ -152,7 +169,7 @@ export class EventModalScreen {
     ctx.fillStyle = HUD.COLORS.text;
     ctx.fillText(': ', modalX + 16 + ctx.measureText('return { enhance').width, rewardY);
 
-    ctx.fillStyle = HUD.COLORS.value;
+    ctx.fillStyle = '#a6e3a1';
     ctx.fillText(`${rewardValue}`, modalX + 16 + ctx.measureText('return { enhance: ').width, rewardY);
 
     ctx.fillStyle = HUD.COLORS.text;

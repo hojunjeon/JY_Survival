@@ -59,7 +59,22 @@ export class StatUpgrade {
     ctx.lineWidth = 1;
     ctx.strokeRect(modalX, modalY, modalW, modalH);
 
-    let contentY = modalY + 12;
+    // 모달 상단 타이틀바
+    ctx.fillStyle = '#181825';
+    ctx.fillRect(modalX, modalY, modalW, 20);
+    [['#f55',0],['#fb0',1],['#5c5',2]].forEach(([c,i]) => {
+      ctx.fillStyle = c;
+      ctx.beginPath();
+      ctx.arc(modalX + 10 + i * 14, modalY + 10, 4, 0, Math.PI * 2);
+      ctx.fill();
+    });
+    ctx.fillStyle = HUD.COLORS.comment;
+    ctx.font = '8px monospace';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('upgrade.select()', modalX + 52, modalY + 10);
+
+    let contentY = modalY + 32;
 
     // 타이틀
     ctx.fillStyle = HUD.COLORS.comment;
@@ -104,7 +119,7 @@ export class StatUpgrade {
         ctx.fillStyle = `rgba(78, 201, 176, 0.08)`;
         ctx.fillRect(optX, optY, optW, optH);
       } else {
-        ctx.fillStyle = HUD.COLORS.sidebar;
+        ctx.fillStyle = '#181825';
         ctx.fillRect(optX, optY, optW, optH);
       }
 
@@ -170,7 +185,7 @@ export class StatUpgrade {
     const modalX = (this.cw - modalW) / 2;
     const modalY = (this.ch - 320) / 2;
 
-    const contentY = modalY + 54;
+    const contentY = modalY + 86;
     const optH = 70;
     const optGap = 10;
     const optW = modalW - 24;
