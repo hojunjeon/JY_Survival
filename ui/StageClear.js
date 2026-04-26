@@ -20,6 +20,8 @@ export class StageClear {
   render(ctx) {
     if (!this.visible) return;
 
+    ctx.save();
+
     ctx.fillStyle = HUD.COLORS.bg;
     ctx.fillRect(0, 0, this.cw, this.ch);
 
@@ -140,6 +142,8 @@ export class StageClear {
     ctx.fillText('✓ STAGE CLEAR', 8, this.ch - 8);
     ctx.textAlign = 'right';
     ctx.fillText('main ↑1', this.cw - 8, this.ch - 8);
+
+    ctx.restore();
   }
 
   getHitboxes() {
