@@ -20,138 +20,144 @@ export class StageClear {
   render(ctx) {
     if (!this.visible) return;
 
-    // 배경
     ctx.fillStyle = HUD.COLORS.bg;
     ctx.fillRect(0, 0, this.cw, this.ch);
 
-    let contentY = 40;
+    const PAD = 20;
+    const stageNum = this.stageStats.stageNumber || 1;
+    const nextStage = stageNum + 1;
+    let y = 40;
 
-    // Git commit 형식 헤더
-    ctx.fillStyle = HUD.COLORS.comment;
-    ctx.font = 'bold 9px monospace';
+    // 터미널 헤더
+    ctx.fillStyle = HUD.COLORS.teal2;
+    ctx.font = '13px monospace';
     ctx.textAlign = 'left';
-    ctx.fillText('git log --oneline -1', 20, contentY);
+    ctx.textBaseline = 'top';
+    ctx.fillText(`$ git commit -m "feat: Stage ${stageNum} 완료"`, PAD, y);
 
-    contentY += 18;
+    y += 24;
+
+    // commit 박스
+    ctx.fillStyle = 'rgba(78, 201, 176, 0.08)';
+    ctx.fillRect(PAD, y, this.cw - PAD * 2, 50);
+    ctx.strokeStyle = 'rgba(78, 201, 176, 0.4)';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(PAD, y, this.cw - PAD * 2, 50);
+
+    ctx.fillStyle = HUD.COLORS.comment;
+    ctx.font = '9px monospace';
+    ctx.fillText('COMMIT', PAD + 8, y + 8);
 
     ctx.fillStyle = HUD.COLORS.teal2;
     ctx.font = 'bold 11px monospace';
-    const stageNum = this.stageStats.stageNumber || 1;
-    const nextStage = stageNum + 1;
-    ctx.fillText(`3a7f9e2 feat: Stage ${stageNum} clear 도달 (Boss 처치 ✓ + 퀘스트 3/3)`, 20, contentY);
+    ctx.fillText(`feat: Stage ${stageNum} Python 기초 완료`, PAD + 8, y + 22);
 
-    contentY += 22;
+    ctx.fillStyle = HUD.COLORS.comment;
+    ctx.font = '9px monospace';
+    ctx.fillText('Author: 김지윤', PAD + 8, y + 36);
+
+    y += 62;
 
     // 클리어 로그
+    ctx.font = '11px monospace';
+    ctx.textAlign = 'left';
+
+    ctx.fillStyle = HUD.COLORS.teal2;
+    ctx.fillText(`  Stage ${stageNum} 완료`, PAD, y);
+    y += 16;
+
     ctx.fillStyle = HUD.COLORS.value;
-    ctx.font = '9px monospace';
-    ctx.fillText('✓ Boss 처치', 20, contentY);
+    ctx.fillText('  보스 "장선형" 처치 ✓', PAD, y);
+    y += 16;
 
-    contentY += 14;
-
-    ctx.fillText('✓ Quest 3/3 완료', 20, contentY);
-
-    contentY += 14;
+    ctx.fillStyle = HUD.COLORS.value;
+    ctx.fillText('  퀘스트 Q1 달성 ✓', PAD, y);
+    y += 16;
 
     ctx.fillStyle = HUD.COLORS.orange;
-    ctx.fillText('+ 무기 획득 (E2 보상)', 20, contentY);
+    ctx.fillText('  보상: Git.exe, 재화 ×5', PAD, y);
 
-    contentY += 18;
+    y += 24;
 
-    // 통계 표
-    ctx.fillStyle = HUD.COLORS.sidebar;
-    ctx.fillRect(20, contentY, this.cw - 40, 100);
+    // 3열 통계 그리드
+    const gridW = this.cw - PAD * 2;
+    const colW = gridW / 3;
 
     ctx.strokeStyle = HUD.COLORS.border;
     ctx.lineWidth = 1;
-    ctx.strokeRect(20, contentY, this.cw - 40, 100);
+    ctx.strokeRect(PAD, y, gridW, 44);
 
-    let tableY = contentY + 8;
+    const cols = [
+      { label: '처치', value: String(this.stageStats.kills || 0), color: HUD.COLORS.teal2 },
+      { label: '시간', value: this._fmtTime(this.stageStats.elapsed || 0), color: HUD.COLORS.timerVal },
+      { label: '재화', value: `+${this.stageStats.enhance || 0}`, color: HUD.COLORS.orange },
+    ];
 
-    ctx.fillStyle = HUD.COLORS.comment;
-    ctx.font = '7px monospace';
-    ctx.textAlign = 'left';
-    ctx.fillText('STATISTICS', 28, tableY);
+    cols.forEach((col, i) => {
+      const cx = PAD + i * colW + colW / 2;
 
-    tableY += 14;
+      if (i < cols.length - 1) {
+        ctx.strokeStyle = HUD.COLORS.border;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(PAD + (i + 1) * colW, y);
+        ctx.lineTo(PAD + (i + 1) * colW, y + 44);
+        ctx.stroke();
+      }
 
-    // 표 헤더
-    ctx.fillStyle = HUD.COLORS.keyword;
-    ctx.font = '8px monospace';
-    const col1X = 28;
-    const col2X = this.cw / 2;
-    ctx.fillText('처치수', col1X, tableY);
-    ctx.textAlign = 'right';
-    ctx.fillText(`${this.stageStats.kills || 0}`, col2X - 8, tableY);
+      ctx.fillStyle = HUD.COLORS.comment;
+      ctx.font = '9px monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'top';
+      ctx.fillText(col.label, cx, y + 6);
 
-    tableY += 12;
+      ctx.fillStyle = col.color;
+      ctx.font = 'bold 13px monospace';
+      ctx.fillText(col.value, cx, y + 22);
+    });
 
-    ctx.fillStyle = HUD.COLORS.timerKey;
-    ctx.textAlign = 'left';
-    ctx.fillText('소요시간', col1X, tableY);
-    ctx.textAlign = 'right';
-    ctx.fillText(`${this.stageStats.elapsed || 0}s`, col2X - 8, tableY);
-
-    tableY += 12;
-
-    ctx.fillStyle = HUD.COLORS.teal2;
-    ctx.textAlign = 'left';
-    ctx.fillText('강화 재화', col1X, tableY);
-    ctx.textAlign = 'right';
-    ctx.fillText(`${this.stageStats.enhance || 0}`, col2X - 8, tableY);
-
-    tableY += 12;
+    // 다음 스테이지 버튼 (하단 고정)
+    const BTN_Y = this.ch - 80;
+    const btnW = this.cw - PAD * 2;
+    const btnH = 32;
 
     ctx.fillStyle = HUD.COLORS.orange;
-    ctx.textAlign = 'left';
-    ctx.fillText('보상 코인', col1X, tableY);
-    ctx.textAlign = 'right';
-    ctx.fillText(`${this.stageStats.coins || 0}`, col2X - 8, tableY);
-
-    contentY += 108;
-
-    // 다음 스테이지 버튼
-    const btnW = 240;
-    const btnH = 24;
-    const btnX = (this.cw - btnW) / 2;
-    const btnY = contentY;
-
-    ctx.fillStyle = HUD.COLORS.teal2;
-    ctx.fillRect(btnX, btnY, btnW, btnH);
+    ctx.fillRect(PAD, BTN_Y, btnW, btnH);
 
     ctx.fillStyle = HUD.COLORS.bg;
-    ctx.font = 'bold 10px monospace';
+    ctx.font = 'bold 13px monospace';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(`[ git push origin Stage${nextStage} → ]`, btnX + btnW / 2, btnY + btnH / 2);
+    ctx.fillText(`git push origin Stage${nextStage} →`, PAD + btnW / 2, BTN_Y + btnH / 2);
 
     // 스테이터스 바
     ctx.fillStyle = HUD.COLORS.statusBar;
     ctx.fillRect(0, this.ch - 16, this.cw, 16);
     ctx.fillStyle = '#ffffff';
-    ctx.font = '8px monospace';
+    ctx.font = '9px monospace';
     ctx.textAlign = 'left';
-    ctx.fillText(`✓ Stage ${stageNum} Cleared`, 8, this.ch - 5);
+    ctx.textBaseline = 'middle';
+    ctx.fillText('✓ STAGE CLEAR', 8, this.ch - 8);
     ctx.textAlign = 'right';
-    ctx.fillText(`${this.stageStats.kills || 0} kills`, this.cw - 8, this.ch - 5);
+    ctx.fillText('main ↑1', this.cw - 8, this.ch - 8);
   }
 
   getHitboxes() {
     if (!this.visible) return [];
 
-    const btnW = 240;
-    const btnH = 24;
-    const btnX = (this.cw - btnW) / 2;
-    const btnY = 200; // Approximate
+    const PAD = 20;
+    const BTN_Y = this.ch - 80;
+    const btnW = this.cw - PAD * 2;
+    const btnH = 32;
 
     return [
-      {
-        x: btnX,
-        y: btnY,
-        w: btnW,
-        h: btnH,
-        action: 'next-stage',
-      },
+      { x: PAD, y: BTN_Y, w: btnW, h: btnH, action: 'next-stage' },
     ];
+  }
+
+  _fmtTime(seconds) {
+    const m = Math.floor(seconds / 60);
+    const s = Math.floor(seconds % 60).toString().padStart(2, '0');
+    return `${m}:${s}`;
   }
 }
