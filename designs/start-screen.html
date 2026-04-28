@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>김지윤의 디버그 서바이벌 — Start Screen</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+:root {
+  --bg:      #1e1e1e;
+  --panel:   #252526;
+  --panel2:  #2d2d2d;
+  --border:  #3e3e3e;
+  --teal:    #4ec9b0;
+  --red:     #f44747;
+  --orange:  #ce9178;
+  --yellow:  #dcdcaa;
+  --blue:    #9cdcfe;
+  --purple:  #c586c0;
+  --comment: #6a9955;
+  --status:  #007acc;
+  --white:   #d4d4d4;
+  --dim:     #858585;
+}
+html, body {
+  height: 100%;
+  background: var(--bg);
+  font-family: 'JetBrains Mono','Consolas',monospace;
+  color: var(--white);
+  overflow: hidden;
+}
+
+/* ── VS Code Chrome ─────────────────────────────── */
+.vscode-titlebar {
+  background: #3c3c3c;
+  height: 30px;
+  display: flex; align-items: center;
+  padding: 0 16px; gap: 8px;
+  border-bottom: 1px solid #2a2a2a;
+  user-select: none;
+}
+.dots { display: flex; gap: 6px; }
+.dot { width: 12px; height: 12px; border-radius: 50%; }
+.dot-r { background: #ff5f57; }
+.dot-y { background: #febc2e; }
+.dot-g { background: #28c840; }
+.tb-title { flex:1; text-align:center; font-size:12px; color:rgba(255,255,255,0.55); }
+
+.tab-bar {
+  background: var(--panel2);
+  display: flex;
+  border-bottom: 1px solid #2a2a2a;
+  height: 34px;
+  overflow: hidden;
+  user-select: none;
+}
+.tab {
+  padding: 0 14px; display: flex; align-items: center; gap: 7px;
+  font-size: 12px; color: var(--dim);
+  border-right: 1px solid #2a2a2a; cursor: default; white-space: nowrap;
+}
+.tab.active { background: var(--bg); color: var(--white); border-top: 2px solid var(--status); padding-top: 2px; }
+.tdot { width: 7px; height: 7px; border-radius: 50%; }
+
+/* ── Main layout ─────────────────────────────────── */
+.screen-wrap {
+  position: relative;
+  height: calc(100vh - 30px - 34px - 22px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* scrolling code BG */
+#bgCanvas {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* ── Content ─────────────────────────────────────── */
+.content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+}
+
+/* Section label */
+.sec-label {
+  font-size: 10px; color: var(--comment);
+  letter-spacing: 2px; text-transform: uppercase;
+  margin-bottom: 18px;
+  display: flex; align-items: center; gap: 10px;
+  width: 100%;
+}
+.sec-label::before,
+.sec-label::after { content:''; flex:1; height:1px; background:var(--border); }
+
+/* Title canvas */
+#titleCanvas {
+  image-rendering: pixelated;
+  margin-bottom: 20px;
+}
+
+/* Game title text */
+.game-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--white);
+  margin-bottom: 4px;
+  letter-spacing: 1px;
+}
+.game-subtitle {
+  font-size: 11px;
+  color: var(--dim);
+  margin-bottom: 28px;
+}
+.game-subtitle .kw { color: var(--yellow); }
+.game-subtitle .str { color: var(--orange); }
+.game-subtitle .num { color: var(--blue); }
+
+/* Terminal prompt */
+.prompt-line {
+  font-size: 13px;
+  color: var(--teal);
+  margin-bottom: 32px;
+  display: flex; align-items: center; gap: 4px;
+}
+.prompt-gt { color: var(--comment); }
+.cursor {
+  display: inline-block;
+  width: 8px; height: 14px;
+  background: var(--teal);
+  animation: blink 1.1s step-end infinite;
+  vertical-align: middle;
+  margin-left: 2px;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+/* Buttons */
+.btn-row {
+  display: flex; gap: 10px;
+  margin-bottom: 36px;
+}
+.btn-p {
+  padding: 8px 22px;
+  background: var(--status);
+  color: #fff;
+  border: none;
+  font-family: inherit; font-size: 12px;
+  cursor: pointer;
+  transition: filter .15s;
+}
+.btn-p:hover { filter: brightness(1.18); }
+.btn-s {
+  padding: 8px 22px;
+  background: transparent;
+  color: var(--dim);
+  border: 1px solid var(--border);
+  font-family: inherit; font-size: 12px;
+  cursor: pointer;
+  transition: color .15s, border-color .15s;
+}
+.btn-s:hover { color: var(--white); border-color: var(--dim); }
+
+/* Weapon row */
+.weapon-sec-label {
+  font-size: 10px; color: var(--comment);
+  letter-spacing: 2px; text-transform: uppercase;
+  margin-bottom: 10px;
+  display: flex; align-items: center; gap: 10px;
+  width: 560px;
+}
+.weapon-sec-label::after { content:''; flex:1; height:1px; background:var(--border); }
+
+.weapon-row {
+  display: flex; gap: 6px;
+  flex-wrap: wrap;
+  justify-content: center;
+  width: 560px;
+}
+.wcard {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-left: 3px solid;
+  padding: 7px 10px;
+  min-width: 62px;
+  text-align: center;
+  cursor: default;
+  transition: background .15s;
+}
+.wcard:hover { background: var(--panel2); }
+.wcard canvas { display:block; image-rendering:pixelated; margin: 0 auto 5px; }
+.wcard-name { font-size: 9px; }
+.wcard-fn   { font-size: 8px; color: var(--dim); margin-top: 2px; }
+
+/* ── Status bar ──────────────────────────────────── */
+.status-bar {
+  background: var(--status);
+  height: 22px;
+  display: flex; align-items: center; gap: 10px;
+  padding: 0 12px;
+  user-select: none;
+}
+.si { font-size: 10px; color: rgba(255,255,255,0.9); display: flex; align-items: center; gap: 3px; }
+.ss { color: rgba(255,255,255,0.3); }
+</style>
+</head>
+<body>
+
+<!-- VS Code Titlebar -->
+<div class="vscode-titlebar">
+  <div class="dots">
+    <div class="dot dot-r"></div>
+    <div class="dot dot-y"></div>
+    <div class="dot dot-g"></div>
+  </div>
+  <div class="tb-title">김지윤의 디버그 서바이벌 — Visual Studio Code</div>
+</div>
+
+<!-- Tab bar -->
+<div class="tab-bar">
+  <div class="tab active"><div class="tdot" style="background:#6a9955"></div>README.md</div>
+  <div class="tab"><div class="tdot" style="background:#4ec9b0"></div>game.js</div>
+  <div class="tab"><div class="tdot" style="background:#f44747"></div>monsters.ts</div>
+  <div class="tab"><div class="tdot" style="background:#dcdcaa"></div>weapons.ts ●</div>
+</div>
+
+<!-- Main screen -->
+<div class="screen-wrap">
+  <canvas id="bgCanvas"></canvas>
+
+  <div class="content">
+    <div class="sec-label">// Welcome</div>
+
+    <!-- Pixel title canvas -->
+    <canvas id="titleCanvas" width="560" height="72"></canvas>
+
+    <div class="game-title">김지윤의 디버그 서바이벌</div>
+    <div class="game-subtitle">
+      <span class="kw">version</span>: <span class="str">"1.0.0"</span>&nbsp;&nbsp;
+      <span class="kw">stage</span>: <span class="num">1</span>&nbsp;&nbsp;
+      <span class="kw">author</span>: <span class="str">"김지윤"</span>
+    </div>
+
+    <!-- Terminal prompt -->
+    <div class="prompt-line">
+      <span class="prompt-gt">&gt;</span>
+      <span id="typedText"></span>
+      <span class="cursor"></span>
+    </div>
+
+    <!-- Buttons -->
+    <div class="btn-row">
+      <button class="btn-p" onclick="handleStart()">// Start Game</button>
+      <button class="btn-s" onclick="handleWeapon()">// Select Weapon</button>
+    </div>
+
+    <!-- Weapon row -->
+    <div class="weapon-sec-label">// Available Weapons</div>
+    <div class="weapon-row" id="weaponRow"></div>
+  </div>
+</div>
+
+<!-- Status bar -->
+<div class="status-bar">
+  <div class="si">⚡ 준비 완료 — PRESS ENTER</div>
+  <div class="ss">|</div><div class="si">⎇ main</div>
+  <div class="ss">|</div><div class="si">Stage 1: 파이썬 기초</div>
+  <div class="ss" style="flex:1"></div>
+  <div class="si">UTF-8</div>
+  <div class="si">Markdown</div>
+  <div class="si">Ln 1</div>
+</div>
+
+<script>
+const C = {
+  bg:'#1e1e1e', panel:'#252526', panel2:'#2d2d2d', border:'#3e3e3e',
+  teal:'#4ec9b0', red:'#f44747', orange:'#ce9178', yellow:'#dcdcaa',
+  blue:'#9cdcfe', purple:'#c586c0', comment:'#6a9955', status:'#007acc',
+  white:'#d4d4d4', dim:'#858585'
+};
+const _ = null;
+
+// ── 픽셀 타이틀 ─────────────────────────────────────────────────────────────
+// 타이틀 레터링: "DEBUG SURVIVAL" (각 글자 5×7 픽셀, 3px scale)
+const LETTERS = {
+  D:[[1,1,1,0],[1,0,0,1],[1,0,0,1],[1,0,0,1],[1,1,1,0]],
+  E:[[1,1,1,1],[1,0,0,0],[1,1,1,0],[1,0,0,0],[1,1,1,1]],
+  B:[[1,1,1,0],[1,0,0,1],[1,1,1,0],[1,0,0,1],[1,1,1,0]],
+  U:[[1,0,0,1],[1,0,0,1],[1,0,0,1],[1,0,0,1],[1,1,1,1]],
+  G:[[0,1,1,1],[1,0,0,0],[1,0,1,1],[1,0,0,1],[0,1,1,1]],
+  S:[[0,1,1,1],[1,0,0,0],[0,1,1,0],[0,0,0,1],[1,1,1,0]],
+  R:[[1,1,1,0],[1,0,0,1],[1,1,1,0],[1,0,1,0],[1,0,0,1]],
+  V:[[1,0,0,1],[1,0,0,1],[1,0,0,1],[0,1,1,0],[0,0,1,0]],
+  // doesn't need I since we skip it
+  I:[[1,1,1],[0,1,0],[0,1,0],[0,1,0],[1,1,1]],
+  A:[[0,1,1,0],[1,0,0,1],[1,1,1,1],[1,0,0,1],[1,0,0,1]],
+  L:[[1,0,0],[1,0,0],[1,0,0],[1,0,0],[1,1,1]],
+  ' ':[[0,0],[0,0],[0,0],[0,0],[0,0]],
+};
+
+function drawPixelText(ctx, text, x, y, sc, color) {
+  let cx = x;
+  for (const ch of text) {
+    const g = LETTERS[ch];
+    if (!g) { cx += 3*sc; continue; }
+    for (let row=0; row<g.length; row++) {
+      for (let col=0; col<g[row].length; col++) {
+        if (g[row][col]) {
+          ctx.fillStyle = color;
+          ctx.fillRect(cx + col*sc, y + row*sc, sc, sc);
+        }
+      }
+    }
+    cx += (g[0].length + 1) * sc;
+  }
+}
+
+const tc = document.getElementById('titleCanvas');
+const tctx = tc.getContext('2d');
+tctx.imageSmoothingEnabled = false;
+
+function renderTitle(t) {
+  tctx.clearRect(0, 0, tc.width, tc.height);
+
+  // "DEBUG" — teal
+  const sc = 4;
+  const word1 = 'DEBUG';
+  const word2 = 'SURVIVAL';
+  // measure widths
+  let w1=0; for(const ch of word1){ const g=LETTERS[ch]; w1+=(g[0].length+1)*sc; }
+  let w2=0; for(const ch of word2){ const g=LETTERS[ch]; w2+=(g[0].length+1)*sc; }
+  const totalW = w1 + 2*sc + w2;
+  let startX = (tc.width - totalW) / 2;
+
+  // subtle glow
+  tctx.save();
+  tctx.shadowColor = C.teal;
+  tctx.shadowBlur = 8 + 4*Math.sin(t*0.04);
+  drawPixelText(tctx, word1, startX, 8, sc, C.teal);
+  tctx.restore();
+
+  // space
+  startX += w1 + 2*sc;
+
+  // SURVIVAL — yellow with slight glow pulse
+  tctx.save();
+  tctx.shadowColor = C.yellow;
+  tctx.shadowBlur = 6 + 3*Math.sin(t*0.04 + 1.5);
+  drawPixelText(tctx, word2, startX, 8, sc, C.yellow);
+  tctx.restore();
+
+  // underline
+  const lineY = 8 + 5*sc + 4;
+  tctx.globalAlpha = 0.35 + 0.15*Math.sin(t*0.05);
+  tctx.fillStyle = C.border;
+  tctx.fillRect((tc.width - totalW)/2 - 8, lineY, totalW + 16, 1);
+  tctx.globalAlpha = 1;
+}
+
+// ── 배경 코드 스크롤 ───────────────────────────────────────────────────────
+const bgCanvas = document.getElementById('bgCanvas');
+const bgCtx = bgCanvas.getContext('2d');
+
+const CODE_LINES = [
+  'def survival_game(): player.start(); wave.begin()',
+  'SELECT * FROM bugs WHERE alive = true ORDER BY threat',
+  'git commit -m "feat: add debug survival mode"',
+  'for monster in wave.enemies: player.shoot(monster)',
+  'try: player.level_up() except DeadException: game.over()',
+  'const player = new Player({ hp: 100, weapon: "python" })',
+  'void Wave::spawn() { Monster* m = new SyntaxError(); }',
+  'rm -rf /bugs/ && echo "STAGE CLEARED — LEVEL UP"',
+  'while (player.alive) { wave.update(); render(); }',
+  'interface Monster { hp: number; attack(): void; }',
+  'import { Player, Wave } from "./survival"',
+  'console.log("DEBUG:", player.stats)',
+];
+
+function resizeBg() {
+  bgCanvas.width = bgCanvas.offsetWidth;
+  bgCanvas.height = bgCanvas.offsetHeight;
+}
+resizeBg();
+window.addEventListener('resize', resizeBg);
+
+function drawBg(frame) {
+  const W = bgCanvas.width, H = bgCanvas.height;
+  bgCtx.clearRect(0, 0, W, H);
+  bgCtx.font = '11px JetBrains Mono,monospace';
+  bgCtx.fillStyle = C.blue;
+  CODE_LINES.forEach((line, i) => {
+    const y = ((i * 38 + frame * 0.35) % (H + 38)) - 38;
+    bgCtx.globalAlpha = 0.028;
+    bgCtx.fillText(line, 60, y);
+  });
+  bgCtx.globalAlpha = 1;
+
+  // radial vignette
+  const grd = bgCtx.createRadialGradient(W/2, H/2, H*0.2, W/2, H/2, H*0.75);
+  grd.addColorStop(0, 'transparent');
+  grd.addColorStop(1, 'rgba(30,30,30,0.65)');
+  bgCtx.fillStyle = grd;
+  bgCtx.fillRect(0, 0, W, H);
+}
+
+// ── 무기 카드 ──────────────────────────────────────────────────────────────
+const WEAPONS = [
+  { name:'Python',  fn:'python.attack()', color:C.teal,   icon:'🐍' },
+  { name:'C/C++',   fn:'c.bullet()',      color:C.white,  icon:'⚡' },
+  { name:'Java',    fn:'Java.gc()',       color:C.orange, icon:'☕' },
+  { name:'Git',     fn:'git.revert()',    color:C.purple, icon:'⎇' },
+  { name:'SQL',     fn:'SQL.query()',     color:C.blue,   icon:'⊞' },
+  { name:'JS',      fn:'JS.spray()',      color:C.yellow, icon:'JS' },
+  { name:'Django',  fn:'django.view()',   color:C.teal,   icon:'🌐' },
+  { name:'Linux',   fn:'$ rm -rf /',     color:C.white,  icon:'$>' },
+];
+
+const weaponRow = document.getElementById('weaponRow');
+WEAPONS.forEach(w => {
+  const card = document.createElement('div');
+  card.className = 'wcard';
+  card.style.borderLeftColor = w.color;
+
+  const cvs = document.createElement('canvas');
+  cvs.width = 36; cvs.height = 28;
+  const ctx = cvs.getContext('2d');
+  ctx.fillStyle = C.panel2;
+  ctx.fillRect(0, 0, 36, 28);
+  ctx.font = 'bold 14px JetBrains Mono,monospace';
+  ctx.fillStyle = w.color;
+  ctx.textAlign = 'center';
+  ctx.fillText(w.icon, 18, 20);
+  ctx.textAlign = 'left';
+
+  const nm = document.createElement('div');
+  nm.className = 'wcard-name';
+  nm.style.color = w.color;
+  nm.textContent = w.name;
+
+  const fn = document.createElement('div');
+  fn.className = 'wcard-fn';
+  fn.textContent = w.fn;
+
+  card.append(cvs, nm, fn);
+  weaponRow.appendChild(card);
+});
+
+// ── 타이핑 애니메이션 ───────────────────────────────────────────────────────
+const PROMPT_TEXT = 'python game.js --stage 1';
+let typedLen = 0;
+const typedEl = document.getElementById('typedText');
+
+function typeNext() {
+  if (typedLen < PROMPT_TEXT.length) {
+    typedLen++;
+    typedEl.textContent = PROMPT_TEXT.slice(0, typedLen);
+    setTimeout(typeNext, 60 + Math.random() * 40);
+  }
+}
+setTimeout(typeNext, 700);
+
+// ── 키보드 단축키 ──────────────────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter') handleStart();
+  if (e.key === 'w' || e.key === 'W') handleWeapon();
+});
+
+function handleStart() {
+  // 실제 게임 진입 — 데모에서는 flash 효과만
+  document.body.style.transition = 'opacity .3s';
+  document.body.style.opacity = '0';
+  setTimeout(() => {
+    document.body.style.opacity = '1';
+    document.body.style.transition = '';
+    alert('// game.start() — 게임 시작!\n\n(실제 구현에서 게임 씬으로 전환됩니다)');
+  }, 320);
+}
+
+function handleWeapon() {
+  alert('// weaponSelect.open()\n\n(무기 선택 화면으로 전환됩니다)');
+}
+
+// ── 메인 루프 ─────────────────────────────────────────────────────────────
+let frame = 0;
+function loop() {
+  frame++;
+  drawBg(frame);
+  renderTitle(frame);
+  requestAnimationFrame(loop);
+}
+loop();
+</script>
+</body>
+</html>

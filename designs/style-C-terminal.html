@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>Style C — VS Code Dark Terminal [v2]</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+:root {
+  --bg:      #1e1e1e;
+  --panel:   #252526;
+  --panel2:  #2d2d2d;
+  --border:  #3e3e3e;
+  --teal:    #4ec9b0;
+  --red:     #f44747;
+  --orange:  #ce9178;
+  --yellow:  #dcdcaa;
+  --blue:    #9cdcfe;
+  --purple:  #c586c0;
+  --comment: #6a9955;
+  --status:  #007acc;
+  --white:   #d4d4d4;
+  --dim:     #858585;
+}
+body {
+  background: var(--bg);
+  font-family: 'JetBrains Mono','Consolas',monospace;
+  color: var(--white);
+  overflow-x: hidden;
+}
+
+/* VS Code Chrome */
+.vscode-titlebar {
+  background: #3c3c3c;
+  height: 30px;
+  display: flex; align-items: center;
+  padding: 0 16px; gap: 8px;
+  border-bottom: 1px solid #2a2a2a;
+}
+.dots { display: flex; gap: 6px; }
+.dot { width: 12px; height: 12px; border-radius: 50%; }
+.dot-r { background: #ff5f57; }
+.dot-y { background: #febc2e; }
+.dot-g { background: #28c840; }
+.tb-title { flex:1; text-align:center; font-size:12px; color:rgba(255,255,255,0.55); }
+
+.tab-bar {
+  background: var(--panel2);
+  display: flex;
+  border-bottom: 1px solid #2a2a2a;
+  height: 34px;
+  overflow: hidden;
+}
+.tab {
+  padding: 0 14px; display: flex; align-items: center; gap: 7px;
+  font-size: 12px; color: var(--dim);
+  border-right: 1px solid #2a2a2a; cursor: default; white-space: nowrap;
+}
+.tab.active { background: var(--bg); color: var(--white); border-top: 2px solid var(--status); padding-top: 2px; }
+.tdot { width: 7px; height: 7px; border-radius: 50%; }
+
+/* Layout */
+.main { display: flex; gap: 24px; padding: 24px; flex-wrap: wrap; align-items: flex-start; }
+.col-l { flex: 0 0 auto; }
+.col-r { flex: 1; min-width: 300px; }
+
+.section { margin-bottom: 30px; }
+.sec-label {
+  font-size: 10px; color: var(--comment);
+  letter-spacing: 2px; text-transform: uppercase;
+  margin-bottom: 12px; display: flex; align-items: center; gap: 8px;
+}
+.sec-label::after { content:''; flex:1; height:1px; background:var(--border); }
+
+/* Game canvas */
+.game-wrap { position:relative; display:inline-block; border:1px solid var(--border); box-shadow: 0 0 24px rgba(0,0,0,0.6); }
+#gameCanvas { display:block; }
+
+.hud-top {
+  position:absolute; top:0; left:0; right:0;
+  background: rgba(30,30,30,0.96); border-bottom: 1px solid var(--border);
+  padding: 4px 12px; height:26px;
+  display:flex; align-items:center; gap:10px; pointer-events:none;
+}
+.hud-file { font-size:11px; color:var(--white); display:flex; align-items:center; gap:5px; }
+.hud-hdot { width:7px; height:7px; border-radius:50%; background:var(--teal); }
+.hud-spacer { flex:1; }
+.hud-hp { display:flex; align-items:center; gap:5px; font-size:10px; }
+.hp-bar { width:60px; height:3px; background:var(--border); }
+.hp-fill { height:100%; background:var(--teal); width:72%; }
+.hp-val { color:var(--teal); }
+
+.status-bar {
+  position:absolute; bottom:0; left:0; right:0;
+  background: var(--status); height:22px;
+  display:flex; align-items:center; gap:10px;
+  padding: 0 12px; pointer-events:none;
+}
+.si { font-size:10px; color:rgba(255,255,255,0.9); display:flex; align-items:center; gap:3px; }
+.ss { color:rgba(255,255,255,0.3); }
+
+/* Monster cards */
+.monster-grid { display:flex; gap:10px; flex-wrap:wrap; }
+.mc {
+  background:var(--panel); border:1px solid var(--border);
+  border-left:3px solid; padding:10px; width:128px;
+}
+.mc canvas { display:block; image-rendering:pixelated; margin-bottom:7px; }
+.mc-name { font-size:10px; margin-bottom:2px; }
+.mc-type { font-size:9px; color:var(--dim); margin-bottom:5px; }
+.mc-skill {
+  font-size:9px; color:var(--comment);
+  border-top:1px solid var(--border); padding-top:5px; line-height:1.7;
+}
+.mc-skill .sk { color:var(--yellow); }
+
+/* Weapon FX */
+.fx-grid { display:flex; gap:8px; flex-wrap:wrap; }
+.fx-card { background:var(--panel); border:1px solid var(--border); padding:9px; }
+.fx-name { font-size:10px; color:var(--yellow); margin-bottom:6px; }
+.fx-canvas { display:block; border:1px solid var(--border); image-rendering:pixelated; }
+.fx-desc { font-size:9px; color:var(--dim); margin-top:5px; line-height:1.7; }
+.fx-desc em { font-style:normal; }
+
+/* Event modal */
+.modal-wrap { max-width:310px; }
+.modal {
+  background:var(--panel); border:1px solid var(--border);
+  border-left:3px solid var(--teal); box-shadow:0 8px 28px rgba(0,0,0,0.5);
+}
+.mh {
+  background:var(--panel2); padding:8px 14px;
+  display:flex; align-items:center; justify-content:space-between;
+  border-bottom:1px solid var(--border);
+}
+.mh-t { font-size:11px; color:var(--teal); }
+.mh-b {
+  font-size:9px; color:var(--status); background:rgba(0,122,204,0.12);
+  border:1px solid rgba(0,122,204,0.35); padding:2px 6px;
+}
+.mb { padding:12px 14px; }
+.ml { font-size:11px; margin-bottom:3px; line-height:1.8; }
+.kw { color:var(--yellow); } .str { color:var(--orange); }
+.num { color:var(--blue); }  .cm  { color:var(--comment); }
+.err { color:var(--red); }
+.npc-row {
+  display:flex; gap:8px; align-items:flex-start;
+  background:var(--panel2); border:1px solid var(--border);
+  padding:8px; margin-top:9px;
+}
+.npc-name { font-size:10px; color:var(--teal); }
+.npc-txt { font-size:10px; color:var(--dim); line-height:1.8; font-style:italic; margin-top:2px; }
+.ma {
+  display:flex; gap:6px; padding:9px 14px;
+  border-top:1px solid var(--border); background:var(--panel2);
+}
+.btn-p { flex:1; padding:5px 10px; background:var(--status); color:#fff; border:none; font-family:inherit; font-size:11px; cursor:pointer; }
+.btn-s { flex:1; padding:5px 10px; background:transparent; color:var(--dim); border:1px solid var(--border); font-family:inherit; font-size:11px; cursor:pointer; }
+</style>
+</head>
+<body>
+
+<div class="vscode-titlebar">
+  <div class="dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+  <div class="tb-title">김지윤의 디버그 서바이벌 — Visual Studio Code</div>
+</div>
+<div class="tab-bar">
+  <div class="tab active"><div class="tdot" style="background:#4ec9b0"></div>game.js</div>
+  <div class="tab"><div class="tdot" style="background:#f44747"></div>monsters.ts</div>
+  <div class="tab"><div class="tdot" style="background:#dcdcaa"></div>weapons.ts ●</div>
+  <div class="tab"><div class="tdot" style="background:#9cdcfe"></div>Player.ts</div>
+</div>
+
+<div class="main">
+  <div class="col-l">
+    <div class="section">
+      <div class="sec-label">// Game Screen</div>
+      <div class="game-wrap">
+        <canvas id="gameCanvas" width="600" height="400"></canvas>
+        <div class="hud-top">
+          <div class="hud-file"><div class="hud-hdot"></div>game.js</div>
+          <div style="color:var(--dim);font-size:10px">|</div>
+          <div class="hud-hp">
+            <span style="font-size:10px;color:var(--dim)">HP</span>
+            <div class="hp-bar"><div class="hp-fill"></div></div>
+            <span class="hp-val">72</span>
+          </div>
+          <div style="color:var(--dim);font-size:10px">|</div>
+          <div style="font-size:10px;color:var(--yellow)">⚔ 72 kills</div>
+          <div class="hud-spacer"></div>
+          <div style="font-size:10px;color:var(--dim)">⏱ 2:34</div>
+          <div style="font-size:10px;color:var(--white);margin-left:8px">python.py ●</div>
+          <div style="font-size:10px;color:var(--dim);opacity:.5;margin-left:8px">java.class</div>
+        </div>
+        <div class="status-bar">
+          <div class="si">⚡ Stage 1 — 파이썬 기초</div>
+          <div class="ss">|</div><div class="si">⎇ main</div>
+          <div class="ss">|</div><div class="si">Q1: 72/100</div>
+          <div class="ss" style="flex:1"></div>
+          <div class="si">UTF-8</div>
+          <div class="si">JavaScript</div>
+          <div class="si">Ln 241</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="sec-label">// Event Modal</div>
+      <div class="modal-wrap">
+        <div class="modal">
+          <div class="mh">
+            <div class="mh-t">⚠ EVENT: indentation_hell</div>
+            <div class="mh-b">● ACTIVE</div>
+          </div>
+          <div class="mb">
+            <div class="ml"><span class="kw">event</span>.<span class="yellow">trigger</span>(<span class="str">"indentation_hell"</span>)</div>
+            <div class="ml"><span class="kw">objective</span>: <span class="str">"kill 15x IndentationError"</span></div>
+            <div class="ml"><span class="kw">progress</span>: <span class="err">0</span> <span class="cm">// 0/15</span></div>
+            <div class="ml"><span class="kw">reward</span>: <span class="num">강화 재화 ×3</span></div>
+            <div class="npc-row">
+              <canvas id="npcCanvas" width="48" height="48" style="image-rendering:pixelated;flex-shrink:0"></canvas>
+              <div>
+                <div class="npc-name">박진우:</div>
+                <div class="npc-txt">"지윤님!! 제 파이썬이<br>이상해요!!"</div>
+              </div>
+            </div>
+          </div>
+          <div class="ma">
+            <button class="btn-p">// Accept</button>
+            <button class="btn-s">// Later</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-r">
+    <div class="section">
+      <div class="sec-label">// Monster Sprites — 특수 스킬</div>
+      <div class="monster-grid" id="monsterGrid"></div>
+    </div>
+    <div class="section">
+      <div class="sec-label">// Weapon Effects — 8종</div>
+      <div class="fx-grid">
+        <div class="fx-card"><div class="fx-name">python.attack()</div><canvas class="fx-canvas" id="fx-python" width="138" height="96"></canvas><div class="fx-desc">S자 뱀 경로 관통<br><em style="color:var(--teal)">snake.pierce()</em></div></div>
+        <div class="fx-card"><div class="fx-name">c.bullet()</div><canvas class="fx-canvas" id="fx-c" width="138" height="96"></canvas><div class="fx-desc">고속 관통 빔<br><em style="color:var(--white)">*ptr = NULL</em></div></div>
+        <div class="fx-card"><div class="fx-name">Java.gc()</div><canvas class="fx-canvas" id="fx-java" width="138" height="96"></canvas><div class="fx-desc">오비탈 오브젝트<br><em style="color:var(--orange)">new Object()</em></div></div>
+        <div class="fx-card"><div class="fx-name">git.revert()</div><canvas class="fx-canvas" id="fx-git" width="138" height="96"></canvas><div class="fx-desc">보라 타임스톱<br><em style="color:var(--purple)">HEAD~1</em></div></div>
+        <div class="fx-card"><div class="fx-name">SQL.query()</div><canvas class="fx-canvas" id="fx-sql" width="138" height="96"></canvas><div class="fx-desc">격자 광역 쿼리<br><em style="color:var(--blue)">SELECT *</em></div></div>
+        <div class="fx-card"><div class="fx-name">JS.spray()</div><canvas class="fx-canvas" id="fx-js" width="138" height="96"></canvas><div class="fx-desc">랜덤 투사체<br><em style="color:var(--yellow)">undefined NaN</em></div></div>
+        <div class="fx-card"><div class="fx-name">django.view()</div><canvas class="fx-canvas" id="fx-django" width="138" height="96"></canvas><div class="fx-desc">부채꼴 광역<br><em style="color:var(--teal)">HTTP 200 OK</em></div></div>
+        <div class="fx-card"><div class="fx-name">$ rm -rf /</div><canvas class="fx-canvas" id="fx-linux" width="138" height="96"></canvas><div class="fx-desc">전체화면 궁극기<br><em style="color:var(--white)">sudo rm -rf /</em></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const _ = null;
+const C = {
+  bg:'#1e1e1e', panel:'#252526', panel2:'#2d2d2d', border:'#3e3e3e',
+  teal:'#4ec9b0', red:'#f44747', orange:'#ce9178', yellow:'#dcdcaa',
+  blue:'#9cdcfe', purple:'#c586c0', comment:'#6a9955', status:'#007acc',
+  white:'#d4d4d4', dim:'#858585'
+};
+
+// ── 스프라이트 ────────────────────────────────────────────────────────────────
+const SPRITES = {
+
+  // SyntaxError — 빨간 느낌표 캐릭터
+  syntax_error: (()=>{
+    const R='#f44747',D='#cc2200',W='#ffffff',S='#220000';
+    return [
+      [_,_,_,_,R,R,R,R,R,R,_,_,_,_,_,_],
+      [_,_,_,R,D,D,D,D,D,D,R,_,_,_,_,_],
+      [_,_,R,D,W,W,W,W,W,W,D,R,_,_,_,_],
+      [_,_,R,D,W,S,S,S,S,W,D,R,_,_,_,_],
+      [_,_,R,D,W,S,R,R,S,W,D,R,_,_,_,_],
+      [_,_,R,D,W,S,R,R,S,W,D,R,_,_,_,_],
+      [_,_,R,D,W,S,S,S,S,W,D,R,_,_,_,_],
+      [_,_,R,D,W,W,W,W,W,W,D,R,_,_,_,_],
+      [_,_,R,D,W,S,R,R,S,W,D,R,_,_,_,_],
+      [_,_,R,D,W,W,W,W,W,W,D,R,_,_,_,_],
+      [_,_,_,R,D,D,D,D,D,D,R,_,_,_,_,_],
+      [_,_,_,_,R,R,R,R,R,R,_,_,_,_,_,_],
+    ];
+  })(),
+
+  // NullPointerException — 반투명 유령 (파란 변수색)
+  null_ptr: (()=>{
+    const B='#9cdcfe',Bd='#5aaaee',Bg='#c8eaff',E='#0a1020';
+    return [
+      [_,_,_,_,B,B,B,B,B,B,_,_,_,_,_,_],
+      [_,_,_,B,Bg,Bg,Bg,Bg,Bg,Bg,B,_,_,_,_,_],
+      [_,_,B,Bg,Bg,B,Bg,Bg,B,Bg,Bg,B,_,_,_,_],
+      [_,_,B,Bg,B,E,B,B,E,B,Bg,B,_,_,_,_],
+      [_,_,B,Bg,Bg,B,Bg,Bg,B,Bg,Bg,B,_,_,_,_],
+      [_,_,B,Bg,Bg,Bg,Bg,Bg,Bg,Bg,Bg,B,_,_,_,_],
+      [_,_,B,Bg,Bg,Bg,Bg,Bg,Bg,Bg,Bg,B,_,_,_,_],
+      [_,_,B,Bg,Bg,Bd,Bg,Bg,Bd,Bg,Bg,B,_,_,_,_],
+      [_,_,B,B,B,B,B,B,B,B,B,B,_,_,_,_],
+      [_,_,B,_,B,_,_,B,_,_,B,_,B,_,_,_],
+      [_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
+      [_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
+    ];
+  })(),
+
+  // SegFault — 깨진 {} 조각 탱커
+  seg_fault: (()=>{
+    const O='#ce9178',D='#9a5c3c',L='#e8b090',C2='#ff9050',K='#1a0800';
+    return [
+      [_,_,O,O,O,_,_,_,_,O,O,O,_,_,_,_],
+      [_,O,D,D,O,O,_,O,O,D,D,O,_,_,_,_],
+      [O,D,L,L,D,O,_,O,D,L,L,D,O,_,_,_],
+      [O,D,L,C2,D,_,_,_,D,C2,L,D,O,_,_],
+      [O,D,D,D,O,_,K,_,O,D,D,D,O,_,_,_],
+      [_,O,O,O,_,O,D,O,_,O,O,O,_,_,_,_],
+      [_,_,_,_,O,D,L,D,O,_,_,_,_,_,_,_],
+      [_,O,O,O,O,D,L,D,O,O,O,O,_,_,_,_],
+      [O,D,L,L,D,D,L,D,D,L,L,D,O,_,_,_],
+      [O,D,L,L,D,L,C2,L,D,L,L,D,O,_,_,_],
+      [_,O,O,D,D,O,O,O,D,D,O,O,_,_,_,_],
+      [_,_,_,O,O,_,_,O,O,_,_,_,_,_,_,_],
+    ];
+  })(),
+
+  // HealBug — 초록 + 십자 도망형
+  heal_bug: (()=>{
+    const T='#4ec9b0',D='#2a9a82',L='#8aeadc',W='#ffffff';
+    return [
+      [_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
+      [_,_,_,_,T,T,T,T,T,T,_,_,_,_,_,_],
+      [_,_,_,T,L,L,L,L,L,L,T,_,_,_,_,_],
+      [_,_,T,L,D,W,W,W,W,D,L,T,_,_,_,_],
+      [_,_,T,L,W,T,T,T,T,W,L,T,_,_,_,_],
+      [_,_,T,L,W,T,W,W,T,W,L,T,_,_,_,_],
+      [_,_,T,L,W,W,T,T,W,W,L,T,_,_,_,_],
+      [_,_,T,L,D,T,T,T,T,D,L,T,_,_,_,_],
+      [_,_,_,T,L,L,L,L,L,L,T,_,_,_,_,_],
+      [_,_,_,_,T,T,W,T,W,T,T,_,_,_,_,_],
+      [_,_,_,_,_,T,_,_,_,T,_,_,_,_,_,_],
+      [_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
+    ];
+  })(),
+
+  // EnvError — 노란 경고 표시
+  env_error: (()=>{
+    const Y='#dcdcaa',D='#a8a840',L='#ffffc0',W='#ffffff',K='#1a1800';
+    return [
+      [_,_,_,_,_,_,Y,Y,_,_,_,_,_,_,_,_],
+      [_,_,_,_,_,Y,L,L,Y,_,_,_,_,_,_,_],
+      [_,_,_,_,Y,L,D,D,L,Y,_,_,_,_,_,_],
+      [_,_,_,Y,L,D,W,W,D,L,Y,_,_,_,_,_],
+      [_,_,_,Y,L,D,D,D,D,L,Y,_,_,_,_,_],
+      [_,_,_,Y,L,D,W,W,D,L,Y,_,_,_,_,_],
+      [_,_,_,Y,L,D,D,D,D,L,Y,_,_,_,_,_],
+      [_,_,_,Y,L,D,W,W,D,L,Y,_,_,_,_,_],
+      [_,_,_,Y,L,L,L,L,L,L,Y,_,_,_,_,_],
+      [_,_,Y,D,D,D,D,D,D,D,D,Y,_,_,_,_],
+      [_,_,_,Y,Y,Y,Y,Y,Y,Y,Y,_,_,_,_,_],
+      [_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
+    ];
+  })(),
+};
+
+// 플레이어 스프라이트
+const SK='#f5c5a3',BH='#3d2314',BE='#1a1a1a',PU='#4a90d9',PD='#2c5f8a',PP='#1e3f5a';
+const JINU=[
+  [_,_,_,BH,BH,BH,BH,BH,BH,_,_,_,_,_,_,_],
+  [_,_,BH,BH,BH,BH,BH,BH,BH,BH,_,_,_,_,_,_],
+  [_,_,BH,SK,SK,SK,SK,SK,SK,BH,_,_,_,_,_,_],
+  [_,_,BH,SK,BE,SK,SK,BE,SK,BH,_,_,_,_,_,_],
+  [_,_,BH,SK,SK,SK,SK,SK,SK,BH,_,_,_,_,_,_],
+  [_,_,BH,SK,'#e8a87c',SK,SK,SK,SK,BH,_,_,_,_,_,_],
+  [_,_,_,BH,SK,BH,BH,_,_,_,_,_,_,_,_,_],
+  [_,SK,PU,PU,PU,PU,PU,PU,PU,SK,_,_,_,_,_,_],
+  [_,SK,PU,PD,PU,PU,PU,PD,PU,SK,_,_,_,_,_,_],
+  [_,SK,PU,PU,PU,PU,PU,PU,PU,SK,_,_,_,_,_,_],
+  [_,_,PU,PU,PU,PU,PU,PU,PU,_,_,_,_,_,_,_],
+  [_,_,PP,PP,PU,PU,PU,PP,PP,_,_,_,_,_,_,_],
+  [_,_,PP,PP,PP,PP,PP,PP,PP,_,_,_,_,_,_,_],
+  [_,_,PP,PP,_,PP,PP,_,PP,_,_,_,_,_,_,_],
+];
+
+function drawSprite(ctx, spr, x, y, sc, tint, alpha) {
+  const a = alpha ?? 1;
+  for (let r=0; r<spr.length; r++) {
+    const row = spr[r]; if (!row) continue;
+    for (let c=0; c<row.length; c++) {
+      if (!row[c]) continue;
+      ctx.globalAlpha = a;
+      ctx.fillStyle = row[c];
+      ctx.fillRect(x+c*sc, y+r*sc, sc, sc);
+    }
+  }
+  if (tint) {
+    ctx.globalAlpha = a * 0.3;
+    ctx.fillStyle = tint;
+    for (let r=0; r<spr.length; r++) {
+      const row = spr[r]; if (!row) continue;
+      for (let c=0; c<row.length; c++) {
+        if (!row[c]) continue;
+        ctx.fillRect(x+c*sc, y+r*sc, sc, sc);
+      }
+    }
+  }
+  ctx.globalAlpha = 1;
+}
+
+// NPC 캔버스
+const npcCtx = document.getElementById('npcCanvas').getContext('2d');
+npcCtx.imageSmoothingEnabled = false;
+npcCtx.fillStyle = '#2a2a2a'; npcCtx.fillRect(0,0,48,48);
+drawSprite(npcCtx, JINU, 4, 3, 3);
+
+// ── 몬스터 카드 ───────────────────────────────────────────────────────────────
+const MONSTER_META = [
+  { key:'syntax_error', name:'SyntaxError',         type:'// 기본형 · 다수 등장',  color:C.red,
+    skill:'passive: <span class="sk">기본 공격형</span><br>에러 밑줄 파편' },
+  { key:'null_ptr',     name:'NullPointerException', type:'// 고속 · 히트앤런',    color:C.blue,
+    skill:'special: <span class="sk">Null Escape</span><br>피격 30% 무효화' },
+  { key:'seg_fault',    name:'SegFault',             type:'// 탱커 · 느림',         color:C.orange,
+    skill:'special: <span class="sk">Stack Overflow</span><br>사망 시 파편 데미지' },
+  { key:'heal_bug',     name:'회복 버그',             type:'// 도망형 · HP 드롭',   color:C.teal,
+    skill:'passive: <span class="sk">Memory Recovery</span><br>도주 중 버그 회복' },
+  { key:'env_error',    name:'EnvError',             type:'// 이벤트 전용',         color:C.yellow,
+    skill:'special: <span class="sk">PATH NOT FOUND</span><br>이동속도 감소 장판' },
+];
+
+const mGrid = document.getElementById('monsterGrid');
+MONSTER_META.forEach(m => {
+  const card = document.createElement('div'); card.className='mc'; card.style.borderLeftColor=m.color;
+  const cvs = document.createElement('canvas'); cvs.width=64; cvs.height=64;
+  const ctx = cvs.getContext('2d'); ctx.imageSmoothingEnabled=false;
+  ctx.fillStyle='#252526'; ctx.fillRect(0,0,64,64);
+  const spr = SPRITES[m.key];
+  const sc = m.key==='seg_fault'?3:2;
+  const sw=(spr[0]?.length??16)*sc, sh=spr.length*sc;
+  drawSprite(ctx, spr, (64-sw)/2, (64-sh)/2, sc, m.color);
+  const nm=document.createElement('div'); nm.className='mc-name'; nm.style.color=m.color; nm.textContent=m.name;
+  const ty=document.createElement('div'); ty.className='mc-type'; ty.textContent=m.type;
+  const sk=document.createElement('div'); sk.className='mc-skill'; sk.innerHTML=m.skill;
+  card.append(cvs,nm,ty,sk); mGrid.appendChild(card);
+});
+
+// ── 게임 캔버스 ─────────────────────────────────────────────────────────────
+const gc=document.getElementById('gameCanvas'), gctx=gc.getContext('2d');
+gctx.imageSmoothingEnabled=false;
+const GW=600,GH=400,HTOP=26,HBOT=22;
+
+const CODE_BG=[
+  'def attack(self, target): self.projectile.fire(target)',
+  'SELECT * FROM enemies WHERE alive = true ORDER BY hp',
+  'git commit -m "fix: null pointer exception in Wave"',
+  'for bug in wave.enemies: bug.take_damage(self.dmg)',
+  'try: kill(bug) except NullPtrErr: bug.escape()',
+  'const player = new Player({ hp: 100, weapons: [] })',
+  'void Player::shoot() { Projectile* p = new Projectile(); }',
+  'rm -rf /proc/bugs/ && echo "STAGE CLEARED"',
+  'while (player.alive) { wave.spawn(); player.update(); }',
+  'interface Bug { hp: number; special(): void; move(): void; }',
+];
+
+let particles=[], projectiles=[], frame=0;
+const PX=185, PY=215;
+
+const enemies=[
+  {x:435,y:105,type:'syntax_error',hp:.7,wobble:0,  color:C.red   },
+  {x:500,y:215,type:'null_ptr',    hp:.4,wobble:1.5, color:C.blue  },
+  {x:375,y:315,type:'seg_fault',   hp:.9,wobble:3,   color:C.orange},
+  {x:520,y:335,type:'heal_bug',    hp:.5,wobble:.8,  color:C.teal  },
+  {x:460,y:180,type:'env_error',   hp:.6,wobble:2.2, color:C.yellow},
+];
+
+function spawnProj(){
+  const a=Math.random()*Math.PI*2, spd=4+Math.random()*2;
+  projectiles.push({x:PX,y:PY,vx:Math.cos(a)*spd,vy:Math.sin(a)*spd,life:1,trail:[]});
+}
+
+function spawnHit(x,y,color,wordList){
+  for(let i=0;i<6;i++){
+    const a=Math.random()*Math.PI*2,s=1.5+Math.random()*2.5;
+    particles.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:1,color,text:null});
+  }
+  const words=wordList??['null','undefined','error','NaN','void'];
+  particles.push({x,y,vx:(Math.random()-.5)*2,vy:-2-Math.random()*1.5,life:1,color,
+    text:words[Math.floor(Math.random()*words.length)]});
+}
+
+function drawBG(){
+  gctx.fillStyle=C.bg; gctx.fillRect(0,0,GW,GH);
+  CODE_BG.forEach((line,i)=>{
+    const y=((i*36+frame*.4)%(GH+36))-36+HTOP;
+    gctx.globalAlpha=.032; gctx.fillStyle='#9cdcfe';
+    gctx.font='11px JetBrains Mono,monospace';
+    gctx.fillText(line,52,y); gctx.globalAlpha=1;
+  });
+  // line gutter
+  gctx.fillStyle='#252526'; gctx.fillRect(0,HTOP,44,GH-HTOP-HBOT);
+  gctx.fillStyle='#383838'; gctx.fillRect(44,HTOP,1,GH-HTOP-HBOT);
+  gctx.font='10px JetBrains Mono,monospace'; gctx.textAlign='right';
+  for(let i=0;i<13;i++){
+    gctx.fillStyle='#4a4a4a';
+    gctx.fillText(String(i+1),40,HTOP+i*28+18);
+  }
+  gctx.textAlign='left';
+  // player glow
+  const g=gctx.createRadialGradient(PX,PY,0,PX,PY,72);
+  g.addColorStop(0,'rgba(78,201,176,0.08)'); g.addColorStop(1,'transparent');
+  gctx.fillStyle=g; gctx.fillRect(0,0,GW,GH);
+}
+
+function drawPlayer(){
+  const sx=PX-8,sy=PY-7;
+  gctx.strokeStyle='rgba(78,201,176,0.28)'; gctx.lineWidth=1;
+  gctx.strokeRect(sx-2,sy-2,20,22);
+  drawSprite(gctx,JINU,sx,sy,1);
+}
+
+function drawEnemy(e){
+  const spr=SPRITES[e.type];
+  const sc=e.type==='seg_fault'?3:2;
+  const sw=(spr[0]?.length??16)*sc, sh=spr.length*sc;
+  const bob=Math.sin(frame*.03+e.wobble)*2;
+  const ex=e.x-sw/2, ey=e.y-sh/2+bob;
+
+  // NullPtr: 깜빡임
+  const alpha=e.type==='null_ptr'?(0.55+0.45*Math.sin(frame*.08+e.wobble)):1;
+
+  // EnvError: 장판
+  if(e.type==='env_error'){
+    gctx.globalAlpha=.1+.05*Math.sin(frame*.06);
+    gctx.fillStyle=C.yellow;
+    gctx.fillRect(e.x-32,e.y-22,64,44);
+    gctx.globalAlpha=1;
+    gctx.strokeStyle=C.yellow+'55'; gctx.lineWidth=1;
+    gctx.setLineDash([3,3]);
+    gctx.strokeRect(e.x-32,e.y-22,64,44);
+    gctx.setLineDash([]);
+    // 장판 텍스트
+    gctx.globalAlpha=.45+.25*Math.sin(frame*.08);
+    gctx.fillStyle=C.yellow; gctx.font='7px JetBrains Mono,monospace';
+    gctx.fillText('PATH NOT FOUND',e.x-38,e.y+34);
+    gctx.globalAlpha=1;
+  }
+
+  // SegFault: 균열선
+  if(e.type==='seg_fault'){
+    const cr=Math.sin(frame*.05+e.wobble)*4;
+    gctx.strokeStyle=C.orange+'55'; gctx.lineWidth=1;
+    gctx.beginPath(); gctx.moveTo(ex+4,ey+4); gctx.lineTo(ex+sw-4+cr,ey+sh-4); gctx.stroke();
+    gctx.beginPath(); gctx.moveTo(ex+sw-4,ey+4); gctx.lineTo(ex+4+cr,ey+sh-4); gctx.stroke();
+  }
+
+  drawSprite(gctx,spr,ex,ey,sc,e.color,alpha);
+
+  // HP 바
+  const bw=Math.max(sw,38);
+  gctx.fillStyle='#2a2a2a'; gctx.fillRect(e.x-bw/2,ey-8,bw,3);
+  gctx.fillStyle=e.color;   gctx.fillRect(e.x-bw/2,ey-8,bw*e.hp,3);
+
+  // 타입 레이블
+  gctx.globalAlpha=alpha*.75; gctx.fillStyle=e.color;
+  gctx.font='8px JetBrains Mono,monospace';
+  gctx.fillText(e.type.replace(/_/g,' '),e.x-bw/2,ey-11);
+  gctx.globalAlpha=1;
+}
+
+function gameLoop(){
+  frame++;
+  drawBG();
+
+  if(frame%24===0) spawnProj();
+
+  projectiles=projectiles.filter(p=>p.life>0);
+  projectiles.forEach(p=>{
+    p.trail.push({x:p.x,y:p.y});
+    if(p.trail.length>12) p.trail.shift();
+    p.x+=p.vx; p.y+=p.vy; p.life-=.013;
+    if(p.x<44||p.x>GW||p.y<HTOP||p.y>GH-HBOT){p.life=0;return;}
+    enemies.forEach(e=>{
+      if(Math.hypot(e.x-p.x,e.y-p.y)<20){
+        // NullPtr 30% 무효화
+        if(e.type==='null_ptr'&&Math.random()<.3){
+          particles.push({x:e.x,y:e.y-12,vx:0,vy:-.9,life:1,color:C.blue,text:'null escape'});
+          p.life=0; return;
+        }
+        spawnHit(p.x,p.y,e.color);
+        p.life=0; e.hp=Math.max(.08,e.hp-.03);
+      }
+    });
+    // 트레일
+    p.trail.forEach((tr,i)=>{
+      gctx.globalAlpha=(i/p.trail.length)*.3;
+      gctx.fillStyle=C.teal;
+      const sz=(i/p.trail.length)*3;
+      gctx.fillRect(tr.x-sz/2,tr.y-sz/2,sz,sz);
+    });
+    gctx.globalAlpha=1;
+    gctx.fillStyle=C.teal; gctx.fillRect(p.x-3,p.y-3,6,6);
+    gctx.fillStyle='#c8f0e8'; gctx.fillRect(p.x-1,p.y-1,2,2);
+  });
+
+  particles=particles.filter(p=>p.life>0);
+  particles.forEach(p=>{
+    p.x+=p.vx; p.y+=p.vy; p.vy+=.06; p.life-=.04;
+    gctx.globalAlpha=p.life;
+    if(p.text){
+      gctx.fillStyle=p.color;
+      gctx.font=`${Math.round(7*p.life+5)}px JetBrains Mono,monospace`;
+      gctx.fillText(p.text,p.x,p.y);
+    } else {
+      gctx.fillStyle=p.color;
+      gctx.fillRect(p.x-2,p.y-2,4,4);
+    }
+    gctx.globalAlpha=1;
+  });
+
+  enemies.forEach(drawEnemy);
+  drawPlayer();
+
+  // 데미지 텍스트
+  const ft=frame%60;
+  if(ft<28){
+    const a=ft<18?1:(28-ft)/10;
+    gctx.globalAlpha=a;
+    gctx.fillStyle=C.red; gctx.font='bold 12px JetBrains Mono,monospace';
+    gctx.fillText('-42',415,95-ft*.55);
+    const t2=(frame+22)%60;
+    if(t2<28){ const a2=t2<18?1:(28-t2)/10; gctx.globalAlpha=a2; gctx.fillStyle=C.yellow; gctx.font='10px JetBrains Mono,monospace'; gctx.fillText('+80xp',355,200-t2*.45); }
+    gctx.globalAlpha=1;
+  }
+
+  requestAnimationFrame(gameLoop);
+}
+gameLoop();
+
+// ── 무기 이펙트 ─────────────────────────────────────────────────────────────
+function makeFX(id, fn){
+  const c=document.getElementById(id); if(!c) return;
+  const ctx=c.getContext('2d'); ctx.imageSmoothingEnabled=false;
+  const W=c.width, H=c.height;
+  let ft=0;
+  (function loop(){ ft++; ctx.fillStyle=C.bg; ctx.fillRect(0,0,W,H); fn(ctx,ft,W,H); requestAnimationFrame(loop); })();
+}
+
+// Python — S자 뱀 이동 관통탄
+makeFX('fx-python',(ctx,t,W,H)=>{
+  if(!ctx._trail) ctx._trail=[];
+  const spd=1.8, amp=26, omega=0.1;
+  const x=((t*spd)%(W+20))-10;
+  const y=H/2+Math.sin(t*omega)*amp;
+  if(ctx._lastX!==undefined && x<ctx._lastX-50) ctx._trail=[];
+  ctx._lastX=x;
+  ctx._trail.push({x,y});
+  if(ctx._trail.length>55) ctx._trail.shift();
+  for(let i=0;i<ctx._trail.length;i++){
+    const p=ctx._trail[i], ratio=i/ctx._trail.length;
+    ctx.globalAlpha=ratio*0.7;
+    const s=2+ratio*3;
+    ctx.fillStyle=C.teal;
+    ctx.fillRect(p.x-s/2,p.y-s/2,s,s);
+  }
+  ctx.globalAlpha=1;
+  ctx.fillStyle=C.teal; ctx.fillRect(x-4,y-4,8,8);
+  ctx.fillStyle='#c8f0e8'; ctx.fillRect(x-2,y-2,4,4);
+  ctx.globalAlpha=.55; ctx.fillStyle=C.teal;
+  ctx.font='8px JetBrains Mono,monospace'; ctx.textAlign='left';
+  ctx.fillText('snake.pierce()',4,H-6);
+  ctx.globalAlpha=1;
+});
+
+// C/C++ — 고속 관통 빔
+makeFX('fx-c',(ctx,t,W,H)=>{
+  const phase=t%45, prog=phase/45;
+  if(phase<22){
+    const p2=phase/22;
+    ctx.globalAlpha=1-p2*.5; ctx.fillStyle='#ffffff';
+    ctx.fillRect(0,H/2-2,W*p2,4);
+    ctx.fillStyle='#aaddff'; ctx.fillRect(0,H/2-1,W*p2*.8,2);
+    ctx.globalAlpha=(1-p2)*.5; ctx.strokeStyle='#ffffff'; ctx.lineWidth=1;
+    ctx.beginPath();ctx.arc(W*p2,H/2,8*p2,0,Math.PI*2);ctx.stroke();
+  }
+  ctx.globalAlpha=.65+.25*Math.sin(t*.18);
+  ctx.fillStyle='#c8eaff'; ctx.font='9px JetBrains Mono,monospace';
+  ctx.fillText('SEGFAULT',8,H/2-8);
+  ctx.fillStyle=C.dim; ctx.font='8px JetBrains Mono,monospace';
+  ctx.fillText('*ptr = NULL',8,H/2+16);
+  ctx.globalAlpha=1;
+});
+
+// Java — 오비탈 + GC
+makeFX('fx-java',(ctx,t,W,H)=>{
+  const cx=W/2,cy=H/2;
+  for(let i=0;i<3;i++){
+    const a=(i/3)*Math.PI*2+t*.042;
+    const x=cx+Math.cos(a)*26, y=cy+Math.sin(a)*18;
+    for(let k=1;k<=4;k++){const ta=a-.042*k;ctx.globalAlpha=.08*k;ctx.fillStyle=C.orange;ctx.fillRect(cx+Math.cos(ta)*26-3,cy+Math.sin(ta)*18-3,6,6);}
+    ctx.globalAlpha=1;ctx.fillStyle=C.orange;ctx.fillRect(x-4,y-4,8,8);ctx.fillStyle=C.yellow;ctx.fillRect(x-2,y-2,4,4);
+  }
+  ctx.globalAlpha=.4+.4*Math.sin(t*.06);
+  ctx.fillStyle=C.orange; ctx.font='8px JetBrains Mono,monospace';
+  ctx.fillText('GC.collect()',6,H-14); ctx.fillText('new Object()',6,H-4);
+  ctx.globalAlpha=1;
+  ctx.fillStyle=C.panel2;ctx.fillRect(cx-3,cy-3,6,6);ctx.fillStyle=C.orange;ctx.fillRect(cx-2,cy-2,4,4);
+});
+
+// Git — 보라 타임스톱 링 + revert 텍스트
+makeFX('fx-git',(ctx,t,W,H)=>{
+  const cx=W/2,cy=H/2;
+  for(let i=0;i<3;i++){
+    const ph=(t+i*35)%105, r=(ph/105)*44+4, a=Math.max(0,1-ph/105);
+    ctx.globalAlpha=a*.6; ctx.strokeStyle=C.purple; ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.stroke();
+  }
+  const tb=t%55, ba=tb<27?tb/27:(55-tb)/28;
+  ctx.globalAlpha=ba; ctx.fillStyle=C.purple;
+  ctx.font='bold 9px JetBrains Mono,monospace'; ctx.textAlign='center';
+  ctx.fillText('git revert HEAD~1',cx,cy-3);
+  ctx.fillStyle=C.dim; ctx.font='8px JetBrains Mono,monospace';
+  ctx.fillText('ROLLBACK',cx,cy+12);
+  ctx.textAlign='left'; ctx.globalAlpha=1;
+  ctx.fillStyle=C.panel2;ctx.fillRect(cx-3,cy-3,6,6);ctx.fillStyle=C.purple;ctx.fillRect(cx-2,cy-2,4,4);
+});
+
+// SQL — 격자 광역 스캔
+makeFX('fx-sql',(ctx,t,W,H)=>{
+  const cols=5,rows=4, prog=(t%65)/65;
+  for(let r=0;r<rows;r++) for(let c=0;c<cols;c++){
+    const cp=(c+r*cols)/(cols*rows);
+    if(prog>cp){
+      const a=Math.min(1,(prog-cp)*8);
+      ctx.globalAlpha=a*.22; ctx.fillStyle=C.blue;
+      ctx.fillRect(c*(W/cols)+1,r*(H/rows)+1,W/cols-2,H/rows-2);
+      ctx.globalAlpha=a*.7; ctx.strokeStyle=C.blue; ctx.lineWidth=.5;
+      ctx.strokeRect(c*(W/cols),r*(H/rows),W/cols,H/rows);
+    }
+  }
+  ctx.globalAlpha=.75+.2*Math.sin(t*.07);
+  ctx.fillStyle=C.blue; ctx.font='8px JetBrains Mono,monospace';
+  ctx.fillText('SELECT * FROM',4,H-22);
+  ctx.fillStyle=C.yellow; ctx.fillText('WHERE alive=1',4,H-10);
+  ctx.globalAlpha=1;
+});
+
+// JavaScript — undefined/NaN 난사
+makeFX('fx-js',(ctx,t,W,H)=>{
+  if(!ctx._f) ctx._f=[];
+  if(t%7===0){
+    const ws=['undefined','NaN','null','??','!=','===false','Infinity','typeof'];
+    const a=Math.random()*Math.PI*2, sp=1+Math.random()*2.5;
+    ctx._f.push({x:W/2+(Math.random()-.5)*16,y:H/2,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp-.4,life:1,w:ws[Math.floor(Math.random()*ws.length)]});
+  }
+  ctx._f.forEach(f=>{f.x+=f.vx;f.y+=f.vy;f.vy+=.04;f.life-=.022;ctx.globalAlpha=f.life;ctx.fillStyle=C.yellow;ctx.font=`${Math.round(7*f.life+4)}px JetBrains Mono,monospace`;ctx.fillText(f.w,f.x-15,f.y);});
+  ctx._f=ctx._f.filter(f=>f.life>0);
+  ctx.globalAlpha=1;
+  ctx.fillStyle=C.panel2;ctx.fillRect(W/2-3,H/2-3,6,6);ctx.fillStyle=C.yellow;ctx.fillRect(W/2-2,H/2-2,4,4);
+});
+
+// Django — 부채꼴 + HTTP 200
+makeFX('fx-django',(ctx,t,W,H)=>{
+  const cx=8,cy=H/2, prog=(t%58)/58, maxA=Math.PI*.55;
+  for(let i=0;i<9;i++){
+    const a=-maxA/2+(i/8)*maxA, r=prog*(W-16);
+    if(r<4) continue;
+    ctx.globalAlpha=(1-prog)*.45; ctx.strokeStyle=C.teal; ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+Math.cos(a)*r,cy+Math.sin(a)*r);ctx.stroke();
+  }
+  ctx.globalAlpha=(1-prog)*.5; ctx.strokeStyle=C.teal; ctx.lineWidth=2;
+  ctx.beginPath();ctx.arc(cx,cy,prog*(W-16),-maxA/2,maxA/2);ctx.stroke();
+  ctx.globalAlpha=.45+.4*Math.sin(t*.07);
+  ctx.fillStyle=C.teal; ctx.font='8px JetBrains Mono,monospace';
+  ctx.fillText('HTTP 200 OK',22,H-14); ctx.fillText('Response: sent',22,H-4);
+  ctx.globalAlpha=1;
+});
+
+// Linux/Bash — 전체 화면 궁극기
+makeFX('fx-linux',(ctx,t,W,H)=>{
+  if(!ctx._f) ctx._f=[];
+  if(t%80===0){
+    const ws=['null','error','void','0x00','kill','rm','sudo','--force','SIGKILL','/proc'];
+    for(let i=0;i<16;i++){
+      const a=Math.random()*Math.PI*2, sp=1.5+Math.random()*3.5;
+      ctx._f.push({x:W/2,y:H/2,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,life:1,
+        w:ws[Math.floor(Math.random()*ws.length)],
+        col:[C.teal,C.red,C.yellow,C.blue,C.white][Math.floor(Math.random()*5)]});
+    }
+  }
+  const fp=t%80;
+  if(fp<10){ctx.globalAlpha=(1-fp/10)*.55;ctx.fillStyle='#d4d4d4';ctx.fillRect(0,0,W,H);ctx.globalAlpha=1;}
+  ctx._f.forEach(f=>{f.x+=f.vx;f.y+=f.vy;f.vy+=.06;f.life-=.022;ctx.globalAlpha=f.life;ctx.fillStyle=f.col;ctx.font=`${Math.round(7*f.life+3)}px JetBrains Mono,monospace`;ctx.fillText(f.w,f.x-10,f.y);});
+  ctx._f=ctx._f.filter(f=>f.life>0);
+  ctx.globalAlpha=.4+.35*Math.sin(t*.06);
+  ctx.fillStyle=C.white; ctx.font='8px JetBrains Mono,monospace';
+  ctx.fillText('$ sudo rm -rf /bugs',4,H-14);
+  ctx.fillStyle=C.teal; ctx.fillText('> CLEARED',4,H-4);
+  ctx.globalAlpha=1;
+});
+</script>
+</body>
+</html>

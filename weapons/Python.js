@@ -1,44 +1,51 @@
 import { WeaponBase } from './WeaponBase.js';
 import { Projectile } from '../entities/Projectile.js';
 
+const SNAKE_OMEGA = 3.0; // rad/s — S자 주기 (~2.1초)
+
 export class PythonWeapon extends WeaponBase {
   constructor() {
-    super({ damage: 18, cooldown: 0.6, projectileSpeed: 240, piercing: false });
+    super({ damage: 18, cooldown: 0.6, projectileSpeed: 240, piercing: true });
     this.name = 'Python';
     this.activeProjectiles = [];
   }
 
   _createProjectiles(x, y, dirX, dirY) {
-    const vx = dirX * this.projectileSpeed;
-    const vy = dirY * this.projectileSpeed;
-    const proj = new Projectile(x, y, vx, vy, this.damage, {
+    const proj = new Projectile(x, y, dirX * this.projectileSpeed, dirY * this.projectileSpeed, this.damage, {
       color: '#44ff44',
-      chainHops: 2,
-      chainRadius: 130,
-      hitEnemyIds: new Set(),
+      piercing: true,
       weaponType: 'python',
     });
     proj.width = 6;
     proj.height = 6;
-    // 발사체를 activeProjectiles에 추가
+    // S자 뱀 이동 상태
+    proj._baseFwd  = { x: dirX, y: dirY };
+    proj._snakePerp = { x: -dirY, y: dirX }; // 전진 방향의 수직
+    proj._snakeT   = 0;
     this.activeProjectiles.push(proj);
     return [proj];
   }
 
   update(dt, particleSystem) {
-    // 부모 update(쿨다운) 실행
     super.update(dt);
 
-    // ParticleSystem이 전달되면 활성 발사체마다 trail 이펙트 추가
-    if (particleSystem) {
-      for (const proj of this.activeProjectiles) {
-        if (proj.active) {
-          particleSystem.addWeaponTrail(proj.x, proj.y, 'python', this.level);
-        }
+    // 레벨에 따라 진폭 확대 (Lv1=44px → Lv5=80px)
+    const amp = 35 + this.level * 9;
+
+    for (const proj of this.activeProjectiles) {
+      if (!proj.active) continue;
+
+      // 매 프레임 속도 = 전진 + 수직 진동 (사인 미분 → 코사인)
+      const perpFactor = amp * SNAKE_OMEGA * Math.cos(SNAKE_OMEGA * proj._snakeT);
+      proj.vx = proj._baseFwd.x * this.projectileSpeed + perpFactor * proj._snakePerp.x;
+      proj.vy = proj._baseFwd.y * this.projectileSpeed + perpFactor * proj._snakePerp.y;
+      proj._snakeT += dt;
+
+      if (particleSystem) {
+        particleSystem.addWeaponTrail(proj.x, proj.y, 'python', this.level);
       }
     }
 
-    // 비활성 발사체 정리
     this.activeProjectiles = this.activeProjectiles.filter(p => p.active);
   }
 }

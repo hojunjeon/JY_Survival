@@ -21,9 +21,13 @@ describe('PythonWeapon', () => {
     expect(projectiles.length).toBeGreaterThan(0);
   });
 
-  it('투사체는 chain 속성을 가진다', () => {
+  it('투사체는 S자 뱀 이동 상태(_snakeT, _baseFwd, _snakePerp)를 가진다', () => {
     const projectiles = weapon.fire(0, 0, 1, 0);
-    projectiles.forEach(p => expect(p.chainHops).toBeGreaterThan(0));
+    projectiles.forEach(p => {
+      expect(p._snakeT).toBeDefined();
+      expect(p._baseFwd).toBeDefined();
+      expect(p._snakePerp).toBeDefined();
+    });
   });
 
   it('투사체 속도는 projectileSpeed 설정값을 따른다', () => {
@@ -43,9 +47,9 @@ describe('PythonWeapon', () => {
     expect(weapon.cooldown).toBeGreaterThan(0);
   });
 
-  it('투사체는 관통하지 않는다', () => {
+  it('투사체는 S자 뱀 이동을 위해 관통한다', () => {
     const projectiles = weapon.fire(0, 0, 1, 0);
-    projectiles.forEach(p => expect(p.piercing).toBe(false));
+    projectiles.forEach(p => expect(p.piercing).toBe(true));
   });
 
   it('fire() 시 activeProjectiles에 투사체가 추가된다', () => {

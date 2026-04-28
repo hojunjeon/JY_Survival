@@ -1,0 +1,1079 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>JY Survival — UI Flow Demo</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#1e1e1e;--panel:#252526;--panel2:#2d2d2d;--border:#3e3e3e;
+  --teal:#4ec9b0;--red:#f44747;--orange:#ce9178;--yellow:#dcdcaa;
+  --blue:#9cdcfe;--purple:#c586c0;--comment:#6a9955;--status:#007acc;
+  --white:#d4d4d4;--dim:#858585;
+}
+html,body{background:#0a0a0a;font-family:'JetBrains Mono','Consolas',monospace;color:var(--white);}
+
+/* Demo Nav */
+.demo-nav{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:7px 20px;background:#0d0d0d;border-bottom:1px solid #1e1e1e;
+  position:sticky;top:0;z-index:100;
+}
+.demo-nav-label{font-size:10px;color:#3a3a3a;letter-spacing:1px;}
+.demo-center{display:flex;align-items:center;gap:12px;}
+.demo-btn{
+  background:#181818;border:1px solid #2e2e2e;color:#666;
+  padding:4px 14px;font-family:inherit;font-size:11px;cursor:pointer;transition:all .12s;
+}
+.demo-btn:hover{background:#222;color:#bbb;border-color:#444;}
+.demo-info{font-size:11px;color:#555;text-align:center;min-width:260px;}
+.demo-info .sn{color:var(--teal);}
+
+/* VS Code wrap */
+.vscode-wrap{width:700px;margin:12px auto;box-shadow:0 12px 60px rgba(0,0,0,.9);}
+
+/* Titlebar */
+.titlebar{
+  background:#3c3c3c;height:30px;display:flex;align-items:center;
+  padding:0 16px;gap:8px;border-bottom:1px solid #2a2a2a;user-select:none;
+}
+.dots{display:flex;gap:6px;}
+.dot{width:12px;height:12px;border-radius:50%;}
+.dot-r{background:#ff5f57;}.dot-y{background:#febc2e;}.dot-g{background:#28c840;}
+.tb-title{flex:1;text-align:center;font-size:12px;color:rgba(255,255,255,.5);}
+
+/* Tab bar */
+.tab-bar{background:var(--panel2);display:flex;border-bottom:1px solid #2a2a2a;height:34px;user-select:none;}
+.tab{padding:0 14px;display:flex;align-items:center;gap:7px;font-size:12px;color:var(--dim);border-right:1px solid #2a2a2a;white-space:nowrap;}
+.tab.active{background:var(--bg);color:var(--white);border-top:2px solid var(--status);padding-top:2px;}
+.tdot{width:7px;height:7px;border-radius:50%;}
+
+/* Screen area */
+.screen-area{position:relative;width:700px;height:460px;overflow:hidden;background:var(--bg);}
+.screen{display:none;position:absolute;inset:0;}
+.screen.active{display:block;}
+
+/* Status bar */
+.statusbar{background:var(--status);height:22px;display:flex;align-items:center;gap:8px;padding:0 10px;user-select:none;}
+.si{font-size:10px;color:rgba(255,255,255,.9);}
+.ss{color:rgba(255,255,255,.3);}
+
+/* Shared tokens */
+.kw{color:var(--yellow);}.str{color:var(--orange);}.num{color:var(--blue);}
+.cm{color:var(--comment);}.fn{color:var(--yellow);}.cl{color:var(--teal);}
+.err{color:var(--red);}
+.btn-p{padding:6px 16px;background:var(--status);color:#fff;border:none;font-family:inherit;font-size:11px;cursor:pointer;}
+.btn-p:hover{filter:brightness(1.2);}
+.btn-s{padding:6px 16px;background:transparent;color:var(--dim);border:1px solid var(--border);font-family:inherit;font-size:11px;cursor:pointer;}
+.btn-s:hover{color:var(--white);border-color:var(--dim);}
+.sec-lbl{font-size:10px;color:var(--comment);letter-spacing:2px;text-transform:uppercase;display:flex;align-items:center;gap:8px;}
+.sec-lbl::after{content:'';flex:1;height:1px;background:var(--border);}
+
+/* ── Game BG (overlay screens) ── */
+.game-bg{position:absolute;inset:0;background:var(--bg);overflow:hidden;}
+.game-bg .gutter{position:absolute;left:0;top:0;width:44px;height:100%;background:var(--panel2);border-right:1px solid #383838;}
+.game-bg canvas{position:absolute;inset:0;}
+.dim-layer{position:absolute;inset:0;background:rgba(10,10,10,.78);}
+
+/* ── 02 Weapon Select ── */
+.ws-wrap{display:flex;height:100%;}
+.ws-sidebar{width:175px;background:var(--panel2);border-right:1px solid var(--border);flex-shrink:0;display:flex;flex-direction:column;}
+.ws-sb-title{font-size:10px;color:var(--dim);padding:8px 12px;letter-spacing:1px;text-transform:uppercase;border-bottom:1px solid var(--border);}
+.ws-tree{padding:6px 0;}
+.ws-dir{padding:5px 10px 5px 14px;font-size:11px;color:var(--dim);display:flex;align-items:center;gap:5px;}
+.ws-file{padding:5px 10px 5px 26px;font-size:11px;display:flex;align-items:center;gap:7px;cursor:default;}
+.ws-file.sel{background:rgba(78,201,176,.1);}
+.ws-file .wname{color:var(--dim);}
+.ws-file.sel .wname{color:var(--white);}
+.ws-fdot{width:6px;height:6px;border-radius:50%;}
+.ws-editor{flex:1;display:flex;flex-direction:column;}
+.ws-code-wrap{flex:1;display:flex;overflow:hidden;}
+.ws-gutter{width:44px;background:var(--panel2);border-right:1px solid #383838;padding-top:0;}
+.ws-ln{font-size:10px;color:#3e3e3e;text-align:right;padding-right:8px;line-height:22px;padding-top:8px;}
+.ws-code{flex:1;padding:8px 16px;line-height:22px;font-size:11px;overflow:hidden;}
+.ws-bottom{background:var(--panel2);border-top:1px solid var(--border);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-shrink:0;}
+.ws-stats{display:flex;gap:16px;}
+.ws-s{font-size:10px;}.ws-s .lbl{color:var(--dim);}.ws-s .val{color:var(--teal);margin-left:4px;}
+.ws-nav{display:flex;gap:6px;align-items:center;}
+.ws-nav span{font-size:10px;color:var(--dim);}
+
+/* ── 04 Event Toast ── */
+.toast{
+  position:absolute;bottom:50px;right:16px;width:272px;
+  background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--teal);
+  box-shadow:0 8px 28px rgba(0,0,0,.7);
+}
+.toast-head{background:var(--panel2);padding:7px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.toast-title{font-size:10px;color:var(--teal);}
+.toast-badge{font-size:9px;color:var(--status);background:rgba(0,122,204,.12);border:1px solid rgba(0,122,204,.3);padding:2px 6px;}
+.toast-body{padding:10px 12px;}
+.toast-npc{display:flex;gap:8px;margin-bottom:8px;}
+.toast-name{font-size:10px;color:var(--teal);}
+.toast-txt{font-size:10px;color:var(--dim);line-height:1.7;font-style:italic;margin-top:2px;}
+.toast-event{font-size:10px;margin-bottom:6px;}
+.toast-acts{display:flex;gap:6px;padding:8px 12px;border-top:1px solid var(--border);background:var(--panel2);}
+
+/* ── 05 Event Modal ── */
+.modal-center{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;}
+.modal{width:316px;background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--teal);box-shadow:0 12px 40px rgba(0,0,0,.8);}
+.modal-head{background:var(--panel2);padding:8px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);}
+.modal-title{font-size:11px;color:var(--teal);}
+.modal-badge{font-size:9px;color:var(--status);background:rgba(0,122,204,.12);border:1px solid rgba(0,122,204,.3);padding:2px 6px;}
+.modal-body{padding:12px 14px;}
+.modal-line{font-size:11px;line-height:1.9;}
+.prog-bar{height:3px;background:var(--border);margin:4px 0 8px;}
+.prog-fill{height:100%;background:var(--teal);}
+.modal-npc{display:flex;gap:8px;background:var(--panel2);border:1px solid var(--border);padding:8px;margin-top:8px;}
+.modal-npc-name{font-size:10px;color:var(--teal);}
+.modal-npc-txt{font-size:10px;color:var(--dim);line-height:1.7;font-style:italic;margin-top:2px;}
+.modal-acts{display:flex;gap:6px;padding:8px 14px;border-top:1px solid var(--border);background:var(--panel2);}
+
+/* ── 06 Stat Upgrade ── */
+.stat-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;}
+.stat-header{text-align:center;}
+.stat-header h2{font-size:13px;color:var(--yellow);margin-bottom:4px;}
+.stat-header p{font-size:10px;color:var(--comment);}
+.stat-cards{display:flex;gap:10px;}
+.stat-card{
+  width:156px;background:var(--panel);border:1px solid var(--border);border-top:3px solid;
+  padding:14px;cursor:pointer;transition:background .15s;
+}
+.stat-card:hover{background:var(--panel2);}
+.sc-label{font-size:9px;color:var(--dim);margin-bottom:8px;text-transform:uppercase;letter-spacing:1px;}
+.sc-val{font-size:24px;font-weight:700;margin-bottom:2px;}
+.sc-from{font-size:9px;color:var(--dim);margin-bottom:10px;}
+.sc-desc{font-size:9px;color:var(--dim);line-height:1.6;border-top:1px solid var(--border);padding-top:8px;}
+
+/* ── 07 Weapon Get ── */
+.wg-center{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;}
+.wg-card{width:336px;background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--purple);box-shadow:0 12px 40px rgba(0,0,0,.8);}
+.wg-head{background:var(--panel2);padding:8px 14px;border-bottom:1px solid var(--border);}
+.wg-htop{font-size:9px;color:var(--dim);margin-bottom:2px;}
+.wg-title{font-size:12px;color:var(--purple);}
+.wg-body{padding:14px;}
+.wg-code{background:var(--panel2);border:1px solid var(--border);padding:10px 12px;margin-bottom:12px;font-size:10px;line-height:1.9;}
+.wg-stats{display:flex;gap:14px;margin-bottom:10px;}
+.wg-st{font-size:10px;}.wg-st .lbl{color:var(--dim);}.wg-st .val{color:var(--white);margin-left:4px;}
+.wg-desc{font-size:10px;color:var(--dim);line-height:1.7;}
+.wg-acts{display:flex;gap:6px;padding:9px 14px;border-top:1px solid var(--border);background:var(--panel2);}
+
+/* ── 08 Boss Intro ── */
+.boss-center{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;}
+.boss-card{width:380px;background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--red);box-shadow:0 12px 40px rgba(0,0,0,.8);}
+.boss-head{background:#241010;padding:10px 14px;border-bottom:1px solid #3a1a1a;display:flex;align-items:center;justify-content:space-between;}
+.boss-htitle{font-size:12px;color:var(--red);font-weight:700;}
+.boss-hp-row{display:flex;align-items:center;gap:8px;}
+.boss-hp-lbl{font-size:10px;color:var(--dim);}
+.boss-hp-bar{width:80px;height:4px;background:var(--border);}
+.boss-hp-fill{height:100%;background:var(--red);}
+.boss-hp-val{font-size:10px;color:var(--red);}
+.boss-body{padding:14px;display:flex;gap:14px;}
+.boss-info{flex:1;}
+.boss-name{font-size:13px;color:var(--white);font-weight:700;margin-bottom:6px;}
+.boss-dialogue{font-size:10px;color:var(--dim);font-style:italic;line-height:1.7;margin-bottom:10px;padding:8px;background:var(--panel2);border-left:2px solid var(--red);}
+.boss-stats{font-size:10px;line-height:2;}
+.boss-stats .lbl{color:var(--dim);}.boss-stats .val{color:var(--white);margin-left:8px;}
+.boss-footer{padding:8px 14px;border-top:1px solid var(--border);background:var(--panel2);font-size:10px;color:var(--dim);text-align:center;}
+
+/* ── 09 Boss Phase 2 ── */
+.ph2-center{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;}
+.ph2-card{width:360px;background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--orange);box-shadow:0 12px 40px rgba(0,0,0,.8);}
+.ph2-head{background:#231500;padding:10px 14px;border-bottom:1px solid #352200;}
+.ph2-htitle{font-size:12px;color:var(--orange);font-weight:700;}
+.ph2-body{padding:14px;}
+.ph2-tag{display:inline-block;font-size:9px;color:var(--orange);background:rgba(206,145,120,.12);border:1px solid rgba(206,145,120,.3);padding:2px 8px;margin-bottom:10px;}
+.ph2-dialogue{font-size:10px;color:var(--dim);font-style:italic;line-height:1.7;margin-bottom:12px;padding:8px;background:var(--panel2);border-left:2px solid var(--orange);}
+.ph2-changes{font-size:10px;line-height:2.1;}
+.ph2-changes .chg{color:var(--orange);}
+.ph2-footer{padding:8px 14px;border-top:1px solid var(--border);background:var(--panel2);font-size:10px;color:var(--dim);text-align:center;}
+
+/* ── 10 Game Over ── */
+.go-center{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;}
+.go-trace{width:380px;background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--red);padding:14px;font-size:10px;line-height:1.9;}
+.go-trace .trace-path{color:var(--dim);}
+.go-trace .trace-err{color:var(--red);font-size:12px;font-weight:700;}
+.go-stats{width:380px;background:var(--panel);border:1px solid var(--border);padding:14px;}
+.go-stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.go-st .lbl{font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:1px;}
+.go-st .val{font-size:16px;color:var(--white);margin-top:2px;}
+.go-acts{display:flex;gap:8px;width:380px;}
+
+/* ── 11 Stage Clear ── */
+.sc-center{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;}
+.sc-card{width:400px;background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--teal);box-shadow:0 12px 40px rgba(0,0,0,.8);}
+.sc-head{background:var(--panel2);padding:10px 14px;border-bottom:1px solid var(--border);}
+.sc-commit-meta{font-size:9px;color:var(--dim);margin-bottom:3px;}
+.sc-commit-msg{font-size:11px;color:var(--white);}
+.sc-body{padding:14px;}
+.sc-list{font-size:10px;line-height:2.1;margin-bottom:12px;}
+.sc-check{color:var(--teal);margin-right:6px;}
+.sc-item{color:var(--white);}
+.sc-divider{height:1px;background:var(--border);margin:10px 0;}
+.sc-rewards{font-size:10px;line-height:2;}
+.sc-rewards .lbl{color:var(--dim);}.sc-rewards .val{color:var(--teal);margin-left:6px;}
+.sc-stats-row{display:flex;gap:20px;font-size:10px;margin-top:10px;}
+.sc-st .lbl{color:var(--dim);}.sc-st .val{color:var(--white);margin-left:4px;}
+.sc-acts{padding:9px 14px;border-top:1px solid var(--border);background:var(--panel2);}
+</style>
+</head>
+<body>
+
+<!-- Demo Navigation -->
+<div class="demo-nav">
+  <span class="demo-nav-label">JY SURVIVAL — UI FLOW DEMO</span>
+  <div class="demo-center">
+    <button class="demo-btn" id="prevBtn">← 이전</button>
+    <span class="demo-info">
+      <span id="navNum">01</span> / 11 —
+      <span class="sn" id="navName">시작 화면</span>
+    </span>
+    <button class="demo-btn" id="nextBtn">다음 →</button>
+  </div>
+  <span class="demo-nav-label">DESIGN.md · VS CODE TERMINAL</span>
+</div>
+
+<!-- VS Code Chrome -->
+<div class="vscode-wrap">
+  <div class="titlebar">
+    <div class="dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+    <div class="tb-title">김지윤의 디버그 서바이벌 — Visual Studio Code</div>
+  </div>
+  <div class="tab-bar" id="tabBar"></div>
+
+  <div class="screen-area">
+
+    <!-- ── 01 Start Screen ── -->
+    <div class="screen active" id="s01">
+      <canvas id="startCanvas" width="700" height="460"></canvas>
+    </div>
+
+    <!-- ── 02 Weapon Select ── -->
+    <div class="screen" id="s02">
+      <div class="ws-wrap">
+        <div class="ws-sidebar">
+          <div class="ws-sb-title">탐색기</div>
+          <div class="ws-tree">
+            <div class="ws-dir" style="color:var(--dim)">
+              <span style="font-size:9px">▸</span> WEAPONS
+            </div>
+            <div class="ws-file sel" id="wf-python">
+              <div class="ws-fdot" style="background:var(--teal)"></div>
+              <span class="wname">Python.py</span>
+            </div>
+            <div class="ws-file" id="wf-c">
+              <div class="ws-fdot" style="background:var(--white)"></div>
+              <span class="wname">C_Cpp.c</span>
+            </div>
+            <div class="ws-file" id="wf-java">
+              <div class="ws-fdot" style="background:var(--orange)"></div>
+              <span class="wname">Java.class</span>
+            </div>
+            <div class="ws-dir" style="margin-top:8px">
+              <span style="font-size:9px">▸</span> PLAYER
+            </div>
+            <div class="ws-file">
+              <div class="ws-fdot" style="background:var(--blue)"></div>
+              <span class="wname">Player.ts</span>
+            </div>
+          </div>
+        </div>
+        <div class="ws-editor">
+          <div class="ws-code-wrap">
+            <div class="ws-gutter">
+              <div class="ws-ln">1<br>2<br>3<br>4<br>5<br>6<br>7<br>8<br>9<br>10<br>11<br>12<br>13<br>14<br>15<br>16<br>17<br>18</div>
+            </div>
+            <div class="ws-code" id="wsCode">
+              <div><span class="cm">// Python.py — 360° 자동 투사체</span></div>
+              <div><span class="cm">// 범위: 넓음 | 속도: 보통 | 관통: ✓</span></div>
+              <div>&nbsp;</div>
+              <div><span class="kw">import</span> <span class="str">'./WeaponBase.js'</span></div>
+              <div>&nbsp;</div>
+              <div><span class="kw">class</span> <span class="cl">Python</span> <span class="kw">extends</span> <span class="cl">WeaponBase</span> {</div>
+              <div>&nbsp; <span class="fn">constructor</span>() {</div>
+              <div>&nbsp;&nbsp;&nbsp; <span class="kw">super</span>({</div>
+              <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; name: <span class="str">'Python'</span>,</div>
+              <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; damage: <span class="num">25</span>,</div>
+              <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; fireRate: <span class="num">1.2</span>,</div>
+              <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; projectiles: <span class="num">8</span>,</div>
+              <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; pierce: <span class="kw">true</span></div>
+              <div>&nbsp;&nbsp;&nbsp; })</div>
+              <div>&nbsp; }</div>
+              <div>&nbsp; <span class="fn">fire</span>() { <span class="cm">/* S-curve snake path */</span> }</div>
+              <div>}</div>
+            </div>
+          </div>
+          <div class="ws-bottom">
+            <div class="ws-stats">
+              <div class="ws-s"><span class="lbl">DMG</span><span class="val">25</span></div>
+              <div class="ws-s"><span class="lbl">FIRE</span><span class="val">1.2/s</span></div>
+              <div class="ws-s"><span class="lbl">TYPE</span><span class="val" style="color:var(--teal)">PIERCE</span></div>
+              <div class="ws-s"><span class="lbl">RANGE</span><span class="val">360°</span></div>
+            </div>
+            <div class="ws-nav">
+              <span style="color:var(--dim);font-size:10px">↑↓ 무기선택</span>
+              <button class="btn-p">// Start with Python</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 03 Playing HUD ── -->
+    <div class="screen" id="s03">
+      <canvas id="gameCanvas" width="700" height="460"></canvas>
+    </div>
+
+    <!-- ── 04 Event Toast ── -->
+    <div class="screen" id="s04">
+      <div class="game-bg">
+        <div class="gutter"></div>
+        <canvas id="bgCanvas04" width="700" height="460"></canvas>
+      </div>
+      <!-- paused HUD top -->
+      <div style="position:absolute;top:0;left:0;right:0;height:26px;background:rgba(30,30,30,.96);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;padding:0 12px;pointer-events:none;">
+        <span style="font-size:11px;color:var(--white);display:flex;align-items:center;gap:5px"><span style="width:7px;height:7px;border-radius:50%;background:var(--teal);display:inline-block"></span>game.js</span>
+        <span style="font-size:10px;color:var(--dim)">|</span>
+        <span style="font-size:10px;color:var(--dim)">HP</span>
+        <div style="width:60px;height:3px;background:var(--border)"><div style="width:72%;height:100%;background:var(--teal)"></div></div>
+        <span style="font-size:10px;color:var(--teal)">72</span>
+        <span style="font-size:10px;color:var(--dim)">|</span>
+        <span style="font-size:10px;color:var(--yellow)">⚔ 47 kills</span>
+        <span style="flex:1"></span>
+        <span style="font-size:10px;color:var(--dim)">⏱ 2:04</span>
+        <span style="font-size:10px;color:var(--white);margin-left:8px">python.py ●</span>
+      </div>
+      <!-- toast -->
+      <div class="toast">
+        <div class="toast-head">
+          <span class="toast-title">⚠ EVENT: indentation_hell</span>
+          <span class="toast-badge">● NEW</span>
+        </div>
+        <div class="toast-body">
+          <div class="toast-npc">
+            <canvas id="npc04" width="40" height="40" style="flex-shrink:0;image-rendering:pixelated;"></canvas>
+            <div>
+              <div class="toast-name">박진우:</div>
+              <div class="toast-txt">"지윤님!! 제 파이썬이<br>이상해요!! 도와주세요!!"</div>
+            </div>
+          </div>
+          <div class="toast-event">
+            <span class="kw">event</span>: <span class="str">"indentation_hell"</span><br>
+            <span class="kw">target</span>: <span class="num">IndentationError ×15</span>
+          </div>
+        </div>
+        <div class="toast-acts">
+          <button class="btn-s" style="flex:1">// 무시하기</button>
+          <button class="btn-p" style="flex:1">// 도와주기</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 05 Event Modal ── -->
+    <div class="screen" id="s05">
+      <div class="game-bg">
+        <div class="gutter"></div>
+        <canvas id="bgCanvas05" width="700" height="460"></canvas>
+      </div>
+      <div class="dim-layer"></div>
+      <div class="modal-center">
+        <div class="modal">
+          <div class="modal-head">
+            <span class="modal-title">⚠ EVENT: indentation_hell</span>
+            <span class="modal-badge">● ACTIVE</span>
+          </div>
+          <div class="modal-body">
+            <div class="modal-line"><span class="kw">event</span>.<span class="fn">trigger</span>(<span class="str">"indentation_hell"</span>)</div>
+            <div class="modal-line"><span class="kw">objective</span>: <span class="str">"kill 15x IndentationError"</span></div>
+            <div class="modal-line"><span class="kw">progress</span>: <span class="num">7</span> <span class="cm">// 7/15</span></div>
+            <div class="prog-bar"><div class="prog-fill" style="width:46%"></div></div>
+            <div class="modal-line"><span class="kw">reward</span>: <span class="num">강화 재화 ×3</span></div>
+            <div class="modal-npc">
+              <canvas id="npc05" width="40" height="40" style="flex-shrink:0;image-rendering:pixelated;"></canvas>
+              <div>
+                <div class="modal-npc-name">박진우:</div>
+                <div class="modal-npc-txt">"고마워요 지윤님!<br>이제 좀 살 것 같아요!"</div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-acts">
+            <button class="btn-p" style="flex:1">// 계속 플레이</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 06 Stat Upgrade ── -->
+    <div class="screen" id="s06">
+      <div class="game-bg">
+        <div class="gutter"></div>
+        <canvas id="bgCanvas06" width="700" height="460"></canvas>
+      </div>
+      <div class="dim-layer"></div>
+      <div class="stat-center">
+        <div class="stat-header">
+          <div class="sec-lbl" style="width:490px">// Q1 달성 — Choose Upgrade</div>
+          <p style="font-size:10px;color:var(--comment);margin-top:4px">버그 100마리 처치 완료 — 스탯 1개 영구 강화</p>
+        </div>
+        <div class="stat-cards">
+          <div class="stat-card" style="border-top-color:var(--teal)">
+            <div class="sc-label">이동 속도</div>
+            <div class="sc-val" style="color:var(--teal)">+15%</div>
+            <div class="sc-from" style="color:var(--dim)">100 → <span style="color:var(--white)">115</span></div>
+            <div class="sc-desc">적을 피하거나<br>회복 버그를 추격할 때 유리</div>
+          </div>
+          <div class="stat-card" style="border-top-color:var(--yellow)">
+            <div class="sc-label">공격 속도</div>
+            <div class="sc-val" style="color:var(--yellow)">+20%</div>
+            <div class="sc-from" style="color:var(--dim)">1.2/s → <span style="color:var(--white)">1.44/s</span></div>
+            <div class="sc-desc">투사체 발사 간격<br>단축, DPS 직결</div>
+          </div>
+          <div class="stat-card" style="border-top-color:var(--red)">
+            <div class="sc-label">피해량</div>
+            <div class="sc-val" style="color:var(--red)">+25%</div>
+            <div class="sc-from" style="color:var(--dim)">×1.0 → <span style="color:var(--white)">×1.25</span></div>
+            <div class="sc-desc">모든 무기 피해량<br>곱연산 적용</div>
+          </div>
+        </div>
+        <div style="font-size:10px;color:var(--dim)">클릭하여 선택 · Enter 확인</div>
+      </div>
+    </div>
+
+    <!-- ── 07 Weapon Get ── -->
+    <div class="screen" id="s07">
+      <div class="game-bg">
+        <div class="gutter"></div>
+        <canvas id="bgCanvas07" width="700" height="460"></canvas>
+      </div>
+      <div class="dim-layer"></div>
+      <div class="wg-center">
+        <div class="wg-card">
+          <div class="wg-head">
+            <div class="wg-htop">// 이벤트 E2 클리어 보상</div>
+            <div class="wg-title">WEAPON UNLOCKED: git.revert()</div>
+          </div>
+          <div class="wg-body">
+            <div class="wg-code">
+              <div><span class="kw">import</span> <span class="str">'./Git.js'</span></div>
+              <div>&nbsp;</div>
+              <div><span class="cm">// 범위 스턴 + 롤백 CC기</span></div>
+              <div><span class="fn">git</span>.<span class="fn">revert</span>(<span class="str">'HEAD~1'</span>)</div>
+              <div><span class="cm">// 적 이동속도 0으로 감소 (2s)</span></div>
+            </div>
+            <div class="wg-stats">
+              <div class="wg-st"><span class="lbl">DMG</span><span class="val">40</span></div>
+              <div class="wg-st"><span class="lbl">범위</span><span class="val">광역</span></div>
+              <div class="wg-st"><span class="lbl">CC</span><span class="val" style="color:var(--purple)">스턴 2s</span></div>
+              <div class="wg-st"><span class="lbl">쿨다운</span><span class="val">8s</span></div>
+            </div>
+            <div class="wg-desc">범위 내 모든 적에게 타임스톱 효과.<br>보라색 링이 퍼지며 이동 불가 상태 적용.</div>
+          </div>
+          <div class="wg-acts">
+            <button class="btn-s" style="flex:1">// 버리기</button>
+            <button class="btn-p" style="flex:1">// 장착 슬롯 2</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 08 Boss Intro ── -->
+    <div class="screen" id="s08">
+      <div class="game-bg" style="background:#1a0808">
+        <div class="gutter"></div>
+        <canvas id="bgCanvas08" width="700" height="460"></canvas>
+      </div>
+      <div class="dim-layer" style="background:rgba(30,0,0,.7)"></div>
+      <div class="boss-center">
+        <div class="boss-card">
+          <div class="boss-head">
+            <span class="boss-htitle">⚠ BOSS INCOMING</span>
+            <div class="boss-hp-row">
+              <span class="boss-hp-lbl">HP</span>
+              <div class="boss-hp-bar"><div class="boss-hp-fill" style="width:100%"></div></div>
+              <span class="boss-hp-val">100%</span>
+            </div>
+          </div>
+          <div class="boss-body">
+            <canvas id="bossSprite" width="64" height="80" style="image-rendering:pixelated;flex-shrink:0;"></canvas>
+            <div class="boss-info">
+              <div class="boss-name">장선형</div>
+              <div class="boss-dialogue">"지윤님... 이번엔 제가 꼭 이깁니다!<br>두고 보세요!!"</div>
+              <div class="boss-stats">
+                <div><span class="lbl">HP</span><span class="val">500</span></div>
+                <div><span class="lbl">공격</span><span class="val">3방향 투사체</span></div>
+                <div><span class="lbl">이동</span><span class="val">플레이어 추적</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="boss-footer">자동 전환 <span style="color:var(--red)">2.0s</span>...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 09 Boss Phase 2 ── -->
+    <div class="screen" id="s09">
+      <div class="game-bg" style="background:#1a0d00">
+        <div class="gutter"></div>
+        <canvas id="bgCanvas09" width="700" height="460"></canvas>
+      </div>
+      <div class="dim-layer" style="background:rgba(30,15,0,.72)"></div>
+      <div class="ph2-center">
+        <div class="ph2-card">
+          <div class="ph2-head">
+            <div class="ph2-htitle">⚡ PHASE 2 ACTIVATED</div>
+          </div>
+          <div class="ph2-body">
+            <div class="ph2-tag">HP 50% 이하 돌입</div>
+            <div class="ph2-dialogue">"이게 말이 돼요?! 왜 지윤님만<br>무기가 그렇게 많아요!! 억울해서 못 살겠네!!"</div>
+            <div class="ph2-changes">
+              <div><span class="chg">+</span> 추적 속도 <span style="color:var(--white)">+40%</span></div>
+              <div><span class="chg">+</span> 투사체 패턴 <span style="color:var(--white)">3방향 → 5방향</span></div>
+              <div><span class="chg">+</span> 방어력 증가</div>
+            </div>
+          </div>
+          <div class="ph2-footer">자동 전환 <span style="color:var(--orange)">2.0s</span>...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 10 Game Over ── -->
+    <div class="screen" id="s10">
+      <div style="position:absolute;inset:0;background:#0a0505;"></div>
+      <div class="go-center">
+        <div class="go-trace">
+          <div class="trace-path">Traceback (most recent call last):</div>
+          <div class="trace-path">&nbsp; File <span style="color:var(--orange)">"game.py"</span>, line <span style="color:var(--blue)">241</span>, in <span style="color:var(--yellow)">update</span></div>
+          <div class="trace-path">&nbsp;&nbsp;&nbsp; player.take_damage(<span style="color:var(--blue)">45</span>)</div>
+          <div class="trace-path">&nbsp; File <span style="color:var(--orange)">"Player.py"</span>, line <span style="color:var(--blue)">88</span></div>
+          <div class="trace-err">PlayerDeathError: HP reached 0</div>
+        </div>
+        <div class="go-stats">
+          <div class="go-stats-grid">
+            <div class="go-st"><div class="lbl">생존 시간</div><div class="val">4:23</div></div>
+            <div class="go-st"><div class="lbl">처치 수</div><div class="val" style="color:var(--yellow)">87</div></div>
+            <div class="go-st"><div class="lbl">최대 콤보</div><div class="val" style="color:var(--teal)">×12</div></div>
+            <div class="go-st"><div class="lbl">도달 웨이브</div><div class="val">Wave 9</div></div>
+          </div>
+        </div>
+        <div class="go-acts">
+          <button class="btn-s" style="flex:1">// exit</button>
+          <button class="btn-p" style="flex:1">game.restart()</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 11 Stage Clear ── -->
+    <div class="screen" id="s11">
+      <div class="game-bg" style="background:#091209">
+        <div class="gutter"></div>
+        <canvas id="bgCanvas11" width="700" height="460"></canvas>
+      </div>
+      <div class="dim-layer" style="background:rgba(0,20,0,.72)"></div>
+      <div class="sc-center">
+        <div class="sc-card">
+          <div class="sc-head">
+            <div class="sc-commit-meta"><span class="cm">[main 4a8b2c3]</span></div>
+            <div class="sc-commit-msg">feat: Stage 1 — 파이썬 기초 완료 ✓</div>
+          </div>
+          <div class="sc-body">
+            <div class="sec-lbl" style="margin-bottom:8px">// Clear Log</div>
+            <div class="sc-list">
+              <div><span class="sc-check">✓</span><span class="sc-item">보스 장선형 처치</span></div>
+              <div><span class="sc-check">✓</span><span class="sc-item">퀘스트 Q1 달성 (처치 100+)</span></div>
+              <div><span class="sc-check">✓</span><span class="sc-item">이벤트 E1 — indentation_hell 클리어</span></div>
+              <div><span class="sc-check">✓</span><span class="sc-item">이벤트 E2 — 파이참 위기 클리어</span></div>
+            </div>
+            <div class="sc-divider"></div>
+            <div class="sc-rewards">
+              <div><span class="lbl">획득 무기</span><span class="val">git.revert() 추가됨</span></div>
+              <div><span class="lbl">강화 재화</span><span class="val">×6 획득</span></div>
+              <div><span class="lbl">소요 시간</span><span class="val">7:41</span></div>
+            </div>
+            <div class="sc-stats-row">
+              <div class="sc-st"><span class="lbl">처치</span><span class="val">143</span></div>
+              <div class="sc-st"><span class="lbl">최대 콤보</span><span class="val">×18</span></div>
+              <div class="sc-st"><span class="lbl">피격 횟수</span><span class="val">24</span></div>
+              <div class="sc-st"><span class="lbl">보유 무기</span><span class="val">2개</span></div>
+            </div>
+          </div>
+          <div class="sc-acts">
+            <button class="btn-p">git push origin Stage2 →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /screen-area -->
+
+  <div class="statusbar" id="statusBar"></div>
+</div><!-- /vscode-wrap -->
+
+<script>
+const _ = null;
+const C = {
+  bg:'#1e1e1e',panel:'#252526',panel2:'#2d2d2d',border:'#3e3e3e',
+  teal:'#4ec9b0',red:'#f44747',orange:'#ce9178',yellow:'#dcdcaa',
+  blue:'#9cdcfe',purple:'#c586c0',comment:'#6a9955',status:'#007acc',
+  white:'#d4d4d4',dim:'#858585'
+};
+
+// ── Sprites ────────────────────────────────────────────────────────
+const SK='#f5c5a3',BH='#3d2314',BE='#1a1a1a',PU='#4a90d9',PD='#2c5f8a',PP='#1e3f5a';
+const JINU=[
+  [_,_,_,BH,BH,BH,BH,BH,BH,_],
+  [_,_,BH,BH,BH,BH,BH,BH,BH,BH],
+  [_,_,BH,SK,SK,SK,SK,SK,SK,BH],
+  [_,_,BH,SK,BE,SK,SK,BE,SK,BH],
+  [_,_,BH,SK,SK,SK,SK,SK,SK,BH],
+  [_,_,BH,SK,'#e8a87c',SK,SK,SK,SK,BH],
+  [_,_,_,BH,SK,BH,BH,_,_,_],
+  [_,SK,PU,PU,PU,PU,PU,PU,PU,SK],
+  [_,SK,PU,PD,PU,PU,PU,PD,PU,SK],
+  [_,SK,PU,PU,PU,PU,PU,PU,PU,SK],
+  [_,_,PU,PU,PU,PU,PU,PU,PU,_],
+  [_,_,PP,PP,PU,PU,PU,PP,PP,_],
+  [_,_,PP,PP,PP,PP,PP,PP,PP,_],
+  [_,_,PP,PP,_,PP,PP,_,PP,_],
+];
+
+const SX='#f44747',SD='#cc2200',SW='#ffffff',SS='#220000';
+const SYNTAX_ERR=[
+  [_,_,_,SX,SX,SX,SX,SX,_],
+  [_,_,SX,SD,SD,SD,SD,SD,SX],
+  [_,SX,SD,SW,SW,SW,SW,SW,SD,SX],
+  [_,SX,SD,SW,SS,SX,SX,SS,SW,SD,SX],
+  [_,SX,SD,SW,SS,SX,SX,SS,SW,SD,SX],
+  [_,SX,SD,SW,SW,SW,SW,SW,SD,SX],
+  [_,SX,SD,SW,SS,SX,SX,SS,SW,SD,SX],
+  [_,SX,SD,SW,SW,SW,SW,SW,SD,SX],
+  [_,_,SX,SD,SD,SD,SD,SD,SX],
+  [_,_,_,SX,SX,SX,SX,SX,_],
+];
+
+// Boss sprite (장선형) — 빨간 악센트 휴머노이드
+const BR='#f44747',BRD='#8b1a1a',BW='#e8d5c0',BHH='#2d1a0a',BS='#2255aa',BSD='#1a3a7a',BSS='#112950';
+const JANSUNHYEONG=[
+  [_,_,BHH,BHH,BHH,BHH,BHH,BHH,_,_],
+  [_,BHH,BHH,BHH,BHH,BHH,BHH,BHH,BHH,_],
+  [_,BHH,BW,BW,BW,BW,BW,BW,BHH,_],
+  [_,BHH,BW,BE,BW,BW,BE,BW,BHH,_],
+  [_,BHH,BW,BW,BW,BW,BW,BW,BHH,_],
+  [_,_,BHH,BR,BHH,BHH,_,_,_,_],
+  [_,BW,BS,BR,BS,BS,BS,BS,BS,BW],
+  [_,BW,BS,BSD,BS,BS,BS,BSD,BS,BW],
+  [_,BW,BS,BS,BS,BS,BS,BS,BS,BW],
+  [_,_,BS,BS,BS,BS,BS,BS,BS,_],
+  [_,_,BSS,BSS,BS,BS,BS,BSS,BSS,_],
+  [_,_,BSS,BSS,_,BSS,BSS,_,BSS,_],
+];
+
+function drawSprite(ctx, spr, x, y, sc, tint, alpha) {
+  const a = alpha ?? 1;
+  for (let r=0; r<spr.length; r++) {
+    const row = spr[r]; if (!row) continue;
+    for (let c=0; c<row.length; c++) {
+      if (!row[c]) continue;
+      ctx.globalAlpha = a;
+      ctx.fillStyle = row[c];
+      ctx.fillRect(x+c*sc, y+r*sc, sc, sc);
+    }
+  }
+  if (tint) {
+    ctx.globalAlpha = a*0.3; ctx.fillStyle = tint;
+    for (let r=0; r<spr.length; r++) {
+      const row = spr[r]; if (!row) continue;
+      for (let c=0; c<row.length; c++) {
+        if (row[c]) ctx.fillRect(x+c*sc, y+r*sc, sc, sc);
+      }
+    }
+  }
+  ctx.globalAlpha = 1;
+}
+
+// NPC canvases
+function drawNPC(id) {
+  const cvs = document.getElementById(id); if (!cvs) return;
+  const ctx = cvs.getContext('2d'); ctx.imageSmoothingEnabled = false;
+  ctx.fillStyle = C.panel2; ctx.fillRect(0,0,cvs.width,cvs.height);
+  drawSprite(ctx, JINU, 3, 2, 2);
+}
+drawNPC('npc04'); drawNPC('npc05');
+
+// Boss sprite canvas
+const bossC = document.getElementById('bossSprite');
+if (bossC) {
+  const bctx = bossC.getContext('2d'); bctx.imageSmoothingEnabled = false;
+  bctx.fillStyle = C.panel2; bctx.fillRect(0,0,64,80);
+  drawSprite(bctx, JANSUNHYEONG, 8, 8, 4, C.red);
+}
+
+// ── Screen data ────────────────────────────────────────────────────
+const SCREENS = [
+  { name:'시작 화면',
+    tabs:[{n:'README.md',c:'#6a9955',a:true},{n:'game.js',c:'#4ec9b0'},{n:'monsters.ts',c:'#f44747'}],
+    status:['⚡ 준비 완료 — PRESS ENTER','⎇ main','Stage 1','UTF-8','Markdown','Ln 1'] },
+  { name:'무기 선택',
+    tabs:[{n:'weapons.ts ●',c:'#dcdcaa',a:true},{n:'game.js',c:'#4ec9b0'},{n:'Player.ts',c:'#9cdcfe'}],
+    status:['weapon-select','⎇ main','Stage 1: 파이썬 기초','UTF-8','TypeScript','Ln 1'] },
+  { name:'게임 플레이 / HUD',
+    tabs:[{n:'game.js',c:'#4ec9b0',a:true},{n:'monsters.ts',c:'#f44747'},{n:'weapons.ts ●',c:'#dcdcaa'}],
+    status:['⚡ Stage 1 — 파이썬 기초','⎇ main','Q1: 47/100','UTF-8','JavaScript','Ln 241'] },
+  { name:'이벤트 알림 (토스트)',
+    tabs:[{n:'game.js',c:'#4ec9b0',a:true},{n:'EventSystem.js',c:'#6a9955'},{n:'monsters.ts',c:'#f44747'}],
+    status:['⚡ EVENT: indentation_hell','⎇ main','Q1: 47/100','UTF-8','JavaScript','Ln 304'] },
+  { name:'이벤트 미션 (모달)',
+    tabs:[{n:'EventSystem.js',c:'#6a9955',a:true},{n:'game.js',c:'#4ec9b0'},{n:'monsters.ts',c:'#f44747'}],
+    status:['● EVENT ACTIVE: indentation_hell','⎇ main','킬: 7/15','UTF-8','JavaScript','Ln 304'] },
+  { name:'스탯 업그레이드',
+    tabs:[{n:'UpgradeSystem.js',c:'#9cdcfe',a:true},{n:'game.js',c:'#4ec9b0'},{n:'Player.ts',c:'#9cdcfe'}],
+    status:['⚡ Q1 달성! — 업그레이드 선택','⎇ main','킬: 100/100 ✓','UTF-8','JavaScript','Ln 401'] },
+  { name:'무기 획득',
+    tabs:[{n:'weapons.ts ●',c:'#dcdcaa',a:true},{n:'Git.js',c:'#c586c0'},{n:'game.js',c:'#4ec9b0'}],
+    status:['⚡ 무기 획득! git.revert()','⎇ main','E2 클리어 ✓','UTF-8','TypeScript','Ln 512'] },
+  { name:'보스 등장',
+    tabs:[{n:'Boss.js',c:'#f44747',a:true},{n:'game.js',c:'#4ec9b0'},{n:'Stage1.js',c:'#ce9178'}],
+    status:['⚠ BOSS INCOMING','⎇ main','장선형 HP: 100%','UTF-8','JavaScript','Ln 608'] },
+  { name:'보스 2페이즈',
+    tabs:[{n:'Boss.js',c:'#f44747',a:true},{n:'game.js',c:'#4ec9b0'},{n:'Stage1.js',c:'#ce9178'}],
+    status:['⚠ PHASE 2 ACTIVATED','⎇ main','장선형 HP: 48%','UTF-8','JavaScript','Ln 608'] },
+  { name:'게임 오버',
+    tabs:[{n:'game.js',c:'#f44747',a:true},{n:'main.js',c:'#d4d4d4'},{n:'Player.ts',c:'#9cdcfe'}],
+    status:['✗ PlayerDeathError','⎇ main','생존: 4:23','UTF-8','JavaScript','Ln 0'] },
+  { name:'스테이지 클리어',
+    tabs:[{n:'Stage1.js',c:'#ce9178',a:true},{n:'game.js',c:'#4ec9b0'},{n:'StageClear.js',c:'#4ec9b0'}],
+    status:['✓ STAGE CLEAR','⎇ main','commit: 4a8b2c3','UTF-8','JavaScript','Ln 999'] },
+];
+
+let cur = 0;
+const tabBar = document.getElementById('tabBar');
+const statusBar = document.getElementById('statusBar');
+const navNum = document.getElementById('navNum');
+const navName = document.getElementById('navName');
+
+function renderNav() {
+  const d = SCREENS[cur];
+  navNum.textContent = String(cur+1).padStart(2,'0');
+  navName.textContent = d.name;
+
+  tabBar.innerHTML = d.tabs.map(t =>
+    `<div class="tab${t.a?' active':''}"><div class="tdot" style="background:${t.c}"></div>${t.n}</div>`
+  ).join('');
+
+  const [s0,...rest] = d.status;
+  statusBar.innerHTML = `<span class="si">${s0}</span>` +
+    rest.map(s => `<span class="ss">|</span><span class="si">${s}</span>`).join('') +
+    `<span class="ss" style="flex:1"></span>`;
+}
+
+function goTo(idx) {
+  document.querySelector('.screen.active')?.classList.remove('active');
+  cur = (idx + 11) % 11;
+  document.getElementById(`s${String(cur+1).padStart(2,'0')}`).classList.add('active');
+  renderNav();
+  // draw bg canvas for overlay screens (04-11 = index 3-10)
+  if (cur >= 3) drawBgCanvas(cur);
+}
+
+document.getElementById('prevBtn').onclick = () => goTo(cur - 1);
+document.getElementById('nextBtn').onclick = () => goTo(cur + 1);
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') goTo(cur+1);
+  if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   goTo(cur-1);
+});
+
+// ── BG canvas (paused game scene) ─────────────────────────────────
+const CODE_BG = [
+  'def attack(self, target): self.projectile.fire(target)',
+  'SELECT * FROM enemies WHERE alive = true ORDER BY hp',
+  'git commit -m "fix: null pointer exception in Wave"',
+  'for bug in wave.enemies: bug.take_damage(self.dmg)',
+  'const player = new Player({ hp: 100, weapons: [] })',
+  'void Wave::spawn() { Monster* m = new SyntaxError(); }',
+  'while (player.alive) { wave.spawn(); player.update(); }',
+  'interface Bug { hp: number; special(): void; }',
+];
+const BG_ENEMIES = [
+  {x:430,y:120,color:C.red,spr:SYNTAX_ERR,sc:2},
+  {x:520,y:230,color:C.blue,spr:null,sc:2},
+  {x:380,y:310,color:C.orange,spr:null,sc:2},
+  {x:560,y:340,color:C.teal,spr:null,sc:2},
+];
+
+function drawBgCanvas(screenIdx) {
+  const ids = [null,null,null,'bgCanvas04','bgCanvas05','bgCanvas06','bgCanvas07','bgCanvas08','bgCanvas09',null,'bgCanvas11'];
+  const id = ids[screenIdx]; if (!id) return;
+  const cvs = document.getElementById(id); if (!cvs) return;
+  const ctx = cvs.getContext('2d'); ctx.imageSmoothingEnabled = false;
+
+  const W=700,H=460,HTOP=26,HBOT=22;
+  ctx.fillStyle = C.bg; ctx.fillRect(0,0,W,H);
+
+  // code bg
+  ctx.font = '11px JetBrains Mono,monospace'; ctx.globalAlpha=0.03; ctx.fillStyle=C.blue;
+  CODE_BG.forEach((line,i)=>{ ctx.fillText(line, 52, HTOP+i*40); });
+  ctx.globalAlpha=1;
+
+  // gutter
+  ctx.fillStyle=C.panel2; ctx.fillRect(0,HTOP,44,H-HTOP-HBOT);
+  ctx.fillStyle='#383838'; ctx.fillRect(44,HTOP,1,H-HTOP-HBOT);
+  ctx.font='10px JetBrains Mono,monospace'; ctx.textAlign='right'; ctx.fillStyle='#3a3a3a';
+  for(let i=0;i<12;i++) ctx.fillText(String(i+1),40,HTOP+i*34+18);
+  ctx.textAlign='left';
+
+  // player glow
+  const g=ctx.createRadialGradient(185,220,0,185,220,70);
+  g.addColorStop(0,'rgba(78,201,176,0.06)'); g.addColorStop(1,'transparent');
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+
+  // player sprite
+  drawSprite(ctx, JINU, 177, 213, 1);
+
+  // enemies (simplified colored squares if no sprite)
+  BG_ENEMIES.forEach(e => {
+    if (e.spr) {
+      drawSprite(ctx, e.spr, e.x-10, e.y-10, e.sc, e.color, 0.7);
+    } else {
+      ctx.globalAlpha=0.5; ctx.fillStyle=e.color;
+      ctx.fillRect(e.x-8,e.y-8,16,16);
+      ctx.globalAlpha=0.2; ctx.fillRect(e.x-12,e.y-12,24,24);
+      ctx.globalAlpha=1;
+    }
+    // hp bar
+    ctx.fillStyle='#2a2a2a'; ctx.fillRect(e.x-16,e.y-18,32,2);
+    ctx.fillStyle=e.color; ctx.fillRect(e.x-16,e.y-18,32*0.7,2);
+  });
+
+  // paused HUD top
+  ctx.fillStyle='rgba(30,30,30,0.96)'; ctx.fillRect(0,0,W,HTOP);
+  ctx.fillStyle=C.border; ctx.fillRect(0,HTOP-1,W,1);
+}
+
+// ── Screen 01 — Start canvas ────────────────────────────────────
+const startCvs = document.getElementById('startCanvas');
+const sctx = startCvs.getContext('2d'); sctx.imageSmoothingEnabled=false;
+const W=700,H=460;
+const LETTERS={
+  D:[[1,1,1,0],[1,0,0,1],[1,0,0,1],[1,0,0,1],[1,1,1,0]],
+  E:[[1,1,1,1],[1,0,0,0],[1,1,1,0],[1,0,0,0],[1,1,1,1]],
+  B:[[1,1,1,0],[1,0,0,1],[1,1,1,0],[1,0,0,1],[1,1,1,0]],
+  U:[[1,0,0,1],[1,0,0,1],[1,0,0,1],[1,0,0,1],[1,1,1,1]],
+  G:[[0,1,1,1],[1,0,0,0],[1,0,1,1],[1,0,0,1],[0,1,1,1]],
+  S:[[0,1,1,1],[1,0,0,0],[0,1,1,0],[0,0,0,1],[1,1,1,0]],
+  R:[[1,1,1,0],[1,0,0,1],[1,1,1,0],[1,0,1,0],[1,0,0,1]],
+  V:[[1,0,0,1],[1,0,0,1],[1,0,0,1],[0,1,1,0],[0,0,1,0]],
+  I:[[1,1,1],[0,1,0],[0,1,0],[0,1,0],[1,1,1]],
+  A:[[0,1,1,0],[1,0,0,1],[1,1,1,1],[1,0,0,1],[1,0,0,1]],
+  L:[[1,0,0],[1,0,0],[1,0,0],[1,0,0],[1,1,1]],
+  ' ':[[0,0],[0,0],[0,0],[0,0],[0,0]],
+};
+function pxText(ctx,text,x,y,sc,color){
+  let cx=x;
+  for(const ch of text){
+    const g=LETTERS[ch]; if(!g){cx+=3*sc;continue;}
+    for(let r=0;r<g.length;r++) for(let c=0;c<g[r].length;c++)
+      if(g[r][c]){ctx.fillStyle=color;ctx.fillRect(cx+c*sc,y+r*sc,sc,sc);}
+    cx+=(g[0].length+1)*sc;
+  }
+}
+function pxWidth(text,sc){
+  let w=0;for(const ch of text){const g=LETTERS[ch];w+=(g?g[0].length+1:3)*sc;}return w;
+}
+
+const PROMPT_TEXT='python game.js --stage 1';
+let typedLen=0;
+const WEAPONS_LIST=[
+  {name:'Python',fn:'python.attack()',color:C.teal},
+  {name:'C/C++',fn:'c.bullet()',color:C.white},
+  {name:'Java',fn:'Java.gc()',color:C.orange},
+  {name:'Git',fn:'git.revert()',color:C.purple},
+  {name:'SQL',fn:'SQL.query()',color:C.blue},
+  {name:'JS',fn:'JS.spray()',color:C.yellow},
+  {name:'Django',fn:'django.view()',color:C.teal},
+  {name:'Linux',fn:'$ rm -rf /',color:C.white},
+];
+
+let frame=0, bgFrame=0;
+setTimeout(()=>{
+  const t=setInterval(()=>{
+    if(typedLen<PROMPT_TEXT.length)typedLen++;
+    else clearInterval(t);
+  },55);
+},600);
+
+function drawStart(f){
+  sctx.fillStyle=C.bg; sctx.fillRect(0,0,W,H);
+  // code bg
+  sctx.font='11px JetBrains Mono,monospace';
+  CODE_BG.forEach((line,i)=>{
+    const y=((i*38+f*.35)%(H+38))-38;
+    sctx.globalAlpha=.025; sctx.fillStyle=C.blue; sctx.fillText(line,60,y);
+  });
+  sctx.globalAlpha=1;
+  // vignette
+  const grd=sctx.createRadialGradient(W/2,H/2,H*.15,W/2,H/2,H*.72);
+  grd.addColorStop(0,'transparent'); grd.addColorStop(1,'rgba(20,20,20,.7)');
+  sctx.fillStyle=grd; sctx.fillRect(0,0,W,H);
+  // title px
+  const sc=4;
+  const w1=pxWidth('DEBUG',sc), w2=pxWidth('SURVIVAL',sc), tot=w1+sc*3+w2;
+  const tx=(W-tot)/2, ty=55;
+  sctx.save(); sctx.shadowColor=C.teal; sctx.shadowBlur=10+4*Math.sin(f*.04);
+  pxText(sctx,'DEBUG',tx,ty,sc,C.teal);
+  sctx.restore();
+  sctx.save(); sctx.shadowColor=C.yellow; sctx.shadowBlur=8+3*Math.sin(f*.04+1.4);
+  pxText(sctx,'SURVIVAL',tx+w1+sc*3,ty,sc,C.yellow);
+  sctx.restore();
+  // subtitle
+  sctx.font='12px JetBrains Mono,monospace'; sctx.fillStyle=C.white; sctx.textAlign='center';
+  sctx.fillText('김지윤의 디버그 서바이벌',W/2,ty+5*sc+22);
+  sctx.font='10px JetBrains Mono,monospace'; sctx.fillStyle=C.dim;
+  sctx.fillText('version: "1.0.0"  stage: 1  author: "김지윤"',W/2,ty+5*sc+38);
+  // prompt
+  const prompt=PROMPT_TEXT.slice(0,typedLen);
+  const blink=(f%50)<25;
+  sctx.font='13px JetBrains Mono,monospace'; sctx.fillStyle=C.comment;
+  sctx.fillText('> ',W/2-80,ty+5*sc+68);
+  sctx.fillStyle=C.teal;
+  sctx.fillText(prompt,W/2-80+22,ty+5*sc+68);
+  if(blink&&typedLen>=PROMPT_TEXT.length){
+    const pw=sctx.measureText(prompt).width;
+    sctx.fillStyle=C.teal; sctx.fillRect(W/2-80+22+pw,ty+5*sc+55,8,14);
+  }
+  // buttons
+  sctx.textAlign='center';
+  // play btn
+  const bx=W/2-110,by=ty+5*sc+88,bw=100,bh=28;
+  sctx.fillStyle=C.status; sctx.fillRect(bx,by,bw,bh);
+  sctx.fillStyle='#fff'; sctx.font='11px JetBrains Mono,monospace';
+  sctx.fillText('// Start',bx+bw/2,by+18);
+  // select btn
+  sctx.fillStyle=C.panel; sctx.fillRect(bx+bw+10,by,120,bh);
+  sctx.strokeStyle=C.border; sctx.lineWidth=1; sctx.strokeRect(bx+bw+10,by,120,bh);
+  sctx.fillStyle=C.dim; sctx.fillText('// Select Weapon',bx+bw+10+60,by+18);
+  // weapon row
+  sctx.font='10px JetBrains Mono,monospace'; sctx.fillStyle=C.comment;
+  sctx.fillText('// Available Weapons',W/2,ty+5*sc+145);
+  const ww=72, wgap=6, wtotal=WEAPONS_LIST.length*(ww+wgap)-wgap;
+  const wx=(W-wtotal)/2;
+  WEAPONS_LIST.forEach((wp,i)=>{
+    const x=wx+i*(ww+wgap), y=ty+5*sc+152;
+    sctx.fillStyle=C.panel; sctx.fillRect(x,y,ww,40);
+    sctx.strokeStyle=wp.color+'55'; sctx.lineWidth=1; sctx.strokeRect(x,y,ww,40);
+    // left accent
+    sctx.fillStyle=wp.color; sctx.fillRect(x,y,3,40);
+    sctx.fillStyle=wp.color; sctx.font='10px JetBrains Mono,monospace'; sctx.textAlign='center';
+    sctx.fillText(wp.name,x+ww/2,y+15);
+    sctx.fillStyle=C.dim; sctx.font='8px JetBrains Mono,monospace';
+    sctx.fillText(wp.fn,x+ww/2,y+28);
+  });
+  sctx.textAlign='left';
+}
+
+// ── Screen 03 — Playing HUD canvas ──────────────────────────────
+const gameCvs = document.getElementById('gameCanvas');
+const gctx = gameCvs.getContext('2d'); gctx.imageSmoothingEnabled=false;
+const GW=700,GH=460,HTOP=26,HBOT=22;
+const PX=185,PY=220;
+const GAME_ENEMIES=[
+  {x:435,y:115,type:'syntax',hp:.7,wobble:0,color:C.red},
+  {x:510,y:225,type:'null',hp:.4,wobble:1.5,color:C.blue},
+  {x:375,y:310,type:'seg',hp:.9,wobble:3,color:C.orange},
+  {x:535,y:335,type:'heal',hp:.5,wobble:.8,color:C.teal},
+  {x:465,y:175,type:'env',hp:.6,wobble:2.2,color:C.yellow},
+];
+let projs=[], parts=[], gframe=0;
+function spawnPrj(){
+  const a=Math.random()*Math.PI*2,sp=4+Math.random()*2;
+  projs.push({x:PX,y:PY,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,life:1,trail:[]});
+}
+function drawGame(f){
+  gctx.fillStyle=C.bg; gctx.fillRect(0,0,GW,GH);
+  CODE_BG.forEach((line,i)=>{
+    const y=((i*40+f*.4)%(GH+40))-40+HTOP;
+    gctx.globalAlpha=.03; gctx.fillStyle=C.blue;
+    gctx.font='11px JetBrains Mono,monospace'; gctx.fillText(line,52,y);
+  });
+  gctx.globalAlpha=1;
+  gctx.fillStyle=C.panel2; gctx.fillRect(0,HTOP,44,GH-HTOP-HBOT);
+  gctx.fillStyle='#383838'; gctx.fillRect(44,HTOP,1,GH-HTOP-HBOT);
+  gctx.font='10px JetBrains Mono,monospace'; gctx.textAlign='right'; gctx.fillStyle='#4a4a4a';
+  for(let i=0;i<13;i++) gctx.fillText(String(i+1),40,HTOP+i*30+18);
+  gctx.textAlign='left';
+  const gg=gctx.createRadialGradient(PX,PY,0,PX,PY,72);
+  gg.addColorStop(0,'rgba(78,201,176,0.08)'); gg.addColorStop(1,'transparent');
+  gctx.fillStyle=gg; gctx.fillRect(0,0,GW,GH);
+  // enemies
+  GAME_ENEMIES.forEach(e=>{
+    const bob=Math.sin(f*.03+e.wobble)*2;
+    const alpha=e.type==='null'?(0.55+0.45*Math.sin(f*.08)):1;
+    if(e.type==='syntax'){
+      drawSprite(gctx,SYNTAX_ERR,e.x-10,e.y-10+bob,2,e.color,alpha);
+    } else {
+      gctx.globalAlpha=alpha*.6; gctx.fillStyle=e.color;
+      gctx.fillRect(e.x-10,e.y-10+bob,20,20);
+      gctx.globalAlpha=alpha*.25; gctx.fillRect(e.x-14,e.y-14+bob,28,28);
+      gctx.globalAlpha=1;
+    }
+    gctx.fillStyle='#2a2a2a'; gctx.fillRect(e.x-16,e.y-18+bob,32,3);
+    gctx.fillStyle=e.color; gctx.fillRect(e.x-16,e.y-18+bob,32*e.hp,3);
+    gctx.globalAlpha=.6; gctx.fillStyle=e.color; gctx.font='8px JetBrains Mono,monospace';
+    gctx.fillText(e.type,e.x-16,e.y-21+bob); gctx.globalAlpha=1;
+  });
+  // player
+  gctx.strokeStyle='rgba(78,201,176,0.28)'; gctx.lineWidth=1;
+  gctx.strokeRect(PX-10,PY-7,20,22);
+  drawSprite(gctx,JINU,PX-8,PY-7,1);
+  // projectiles
+  if(f%22===0) spawnPrj();
+  projs=projs.filter(p=>p.life>0);
+  projs.forEach(p=>{
+    p.trail.push({x:p.x,y:p.y}); if(p.trail.length>12) p.trail.shift();
+    p.x+=p.vx; p.y+=p.vy; p.life-=.014;
+    if(p.x<44||p.x>GW||p.y<HTOP||p.y>GH-HBOT){p.life=0;return;}
+    p.trail.forEach((tr,i)=>{
+      gctx.globalAlpha=(i/p.trail.length)*.3; gctx.fillStyle=C.teal;
+      const sz=(i/p.trail.length)*3; gctx.fillRect(tr.x-sz/2,tr.y-sz/2,sz,sz);
+    });
+    gctx.globalAlpha=1; gctx.fillStyle=C.teal; gctx.fillRect(p.x-3,p.y-3,6,6);
+    gctx.fillStyle='#c8f0e8'; gctx.fillRect(p.x-1,p.y-1,2,2);
+  });
+  // HUD top
+  gctx.fillStyle='rgba(30,30,30,.96)'; gctx.fillRect(0,0,GW,HTOP);
+  gctx.fillStyle=C.border; gctx.fillRect(0,HTOP-1,GW,1);
+  gctx.fillStyle=C.teal; gctx.fillRect(12,9,7,7); gctx.beginPath(); gctx.arc(15.5,12.5,3.5,0,Math.PI*2); gctx.fill();
+  gctx.fillStyle=C.white; gctx.font='11px JetBrains Mono,monospace'; gctx.fillText('game.js',24,17);
+  gctx.fillStyle=C.dim; gctx.font='10px JetBrains Mono,monospace'; gctx.fillText('|',106,17);
+  gctx.fillStyle=C.dim; gctx.fillText('HP',116,17);
+  gctx.fillStyle=C.border; gctx.fillRect(134,10,60,3);
+  gctx.fillStyle=C.teal; gctx.fillRect(134,10,60*.72,3);
+  gctx.fillStyle=C.teal; gctx.fillText('72',200,17);
+  gctx.fillStyle=C.dim; gctx.fillText('|',222,17);
+  gctx.fillStyle=C.yellow; gctx.fillText('⚔ 47 kills',232,17);
+  gctx.fillStyle=C.dim; gctx.fillText('⏱ 2:34',GW-120,17);
+  gctx.fillStyle=C.white; gctx.fillText('python.py ●',GW-60,17);
+  // status bar
+  gctx.fillStyle=C.status; gctx.fillRect(0,GH-HBOT,GW,HBOT);
+  gctx.fillStyle='rgba(255,255,255,.9)'; gctx.font='10px JetBrains Mono,monospace';
+  gctx.fillText('⚡ Stage 1 — 파이썬 기초',12,GH-HBOT+15);
+  gctx.fillStyle='rgba(255,255,255,.3)'; gctx.fillText('|',195,GH-HBOT+15);
+  gctx.fillStyle='rgba(255,255,255,.9)'; gctx.fillText('⎇ main',205,GH-HBOT+15);
+  gctx.fillStyle='rgba(255,255,255,.3)'; gctx.fillText('|',262,GH-HBOT+15);
+  gctx.fillStyle='rgba(255,255,255,.9)'; gctx.fillText('Q1: 47/100',272,GH-HBOT+15);
+  gctx.fillStyle='rgba(255,255,255,.9)'; gctx.fillText('JavaScript',GW-130,GH-HBOT+15);
+  gctx.fillText('Ln 241',GW-55,GH-HBOT+15);
+}
+
+// ── Main animation loop ─────────────────────────────────────────
+function loop(){
+  frame++; bgFrame++;
+  drawStart(frame);
+  if(cur===2) drawGame(bgFrame);
+  requestAnimationFrame(loop);
+}
+loop();
+
+// ── Init ────────────────────────────────────────────────────────
+renderNav();
+</script>
+</body>
+</html>

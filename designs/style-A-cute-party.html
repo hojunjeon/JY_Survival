@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>Style A — 귀엽고 발랄한 SSAFY 파티게임</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  background:#fff5ee;
+  font-family:'Nunito',sans-serif;
+  color:#333;
+  padding:28px;
+  min-height:100vh;
+}
+
+h1 { font-size:24px; font-weight:900; color:#ff6b6b; margin-bottom:2px; }
+.subtitle { font-size:13px; color:#bba; margin-bottom:28px; }
+.section { margin-bottom:36px; }
+.sec-label { font-size:11px; font-weight:800; color:#cca; letter-spacing:2px; text-transform:uppercase; margin-bottom:12px; }
+
+/* 팔레트 */
+.palette { display:flex; gap:8px; flex-wrap:wrap; }
+.swatch {
+  width:72px; height:72px; border-radius:18px;
+  display:flex; flex-direction:column; align-items:center; justify-content:flex-end;
+  padding-bottom:7px; font-size:10px; font-weight:800; color:rgba(255,255,255,0.9);
+  text-shadow:0 1px 3px rgba(0,0,0,0.3);
+}
+
+/* 게임 캔버스 영역 */
+.game-wrap {
+  position:relative; display:inline-block;
+  border-radius:24px; overflow:hidden;
+  box-shadow:0 8px 40px rgba(255,107,107,0.2);
+  border:3px solid #ffe0d0;
+}
+#gameCanvas { display:block; background:#fff8f0; }
+
+/* HUD 오버레이 */
+.hud-overlay {
+  position:absolute; top:14px; left:14px; right:14px;
+  display:flex; align-items:center; gap:12px;
+  pointer-events:none;
+}
+.hud-box {
+  background:rgba(255,255,255,0.92);
+  border-radius:14px;
+  padding:8px 14px;
+  backdrop-filter:blur(6px);
+  border:2px solid rgba(255,107,107,0.2);
+  display:flex; align-items:center; gap:10px;
+}
+.hud-hp-wrap { display:flex; flex-direction:column; gap:3px; }
+.hud-hp-label { font-size:9px; font-weight:800; color:#ff6b6b; letter-spacing:1px; }
+.hp-track { width:100px; height:8px; background:#ffe0d0; border-radius:99px; overflow:hidden; }
+.hp-fill { height:100%; background:linear-gradient(90deg,#ff6b6b,#ff8e53); border-radius:99px; width:72%; }
+.hud-num { font-size:16px; font-weight:900; color:#ff6b6b; }
+.hud-sub { font-size:8px; color:#ccc; font-weight:700; }
+.weapon-slot {
+  width:36px; height:36px; border-radius:10px;
+  border:2px solid #ffddd0; background:#fff9f7;
+  display:flex; align-items:center; justify-content:center; font-size:16px;
+}
+.weapon-slot.active { border-color:#ff6b6b; background:#fff0ee; box-shadow:0 0 0 3px rgba(255,107,107,0.15); }
+
+/* 이벤트 모달 */
+.modal-wrap { max-width:340px; }
+.modal {
+  background:white; border-radius:24px; padding:22px 24px;
+  box-shadow:0 10px 40px rgba(255,107,107,0.18);
+  border:3px solid #ffe0d0;
+  position:relative; overflow:hidden;
+}
+.modal::before {
+  content:'';
+  position:absolute; top:-40px; right:-40px;
+  width:130px; height:130px;
+  background:radial-gradient(circle,#ffebe0,transparent 70%);
+}
+.modal-badge {
+  display:inline-flex; align-items:center; gap:5px;
+  background:#ff6b6b; color:white; font-size:11px; font-weight:800;
+  padding:3px 12px; border-radius:99px; margin-bottom:12px;
+}
+.modal-title { font-size:18px; font-weight:900; color:#333; margin-bottom:6px; }
+.modal-desc { font-size:13px; color:#888; line-height:1.6; margin-bottom:16px; }
+.npc-row {
+  background:#fff8f5; border-radius:14px; padding:10px 14px;
+  display:flex; align-items:center; gap:12px;
+}
+.npc-avatar { font-size:30px; }
+.npc-speech { font-size:12px; color:#666; font-style:italic; line-height:1.5; }
+.npc-name { font-size:10px; color:#bbb; font-weight:700; margin-top:2px; }
+.modal-btns { display:flex; gap:8px; margin-top:16px; }
+.btn-primary {
+  flex:1; padding:10px; border-radius:12px; border:none; cursor:pointer;
+  background:linear-gradient(135deg,#ff6b6b,#ff8e53); color:white;
+  font-family:'Nunito',sans-serif; font-size:13px; font-weight:800;
+  box-shadow:0 4px 14px rgba(255,107,107,0.35);
+}
+.btn-secondary {
+  flex:1; padding:10px; border-radius:12px; border:2px solid #ffddd0; cursor:pointer;
+  background:white; color:#ff6b6b;
+  font-family:'Nunito',sans-serif; font-size:13px; font-weight:800;
+}
+
+/* 몬스터 쇼케이스 */
+.monster-row { display:flex; gap:12px; flex-wrap:wrap; }
+.monster-card {
+  background:white; border-radius:18px; padding:14px 16px;
+  border:2px solid #ffeee8; text-align:center; width:110px;
+  box-shadow:0 2px 14px rgba(0,0,0,0.05);
+}
+.monster-card canvas { display:block; margin:0 auto 6px; image-rendering:pixelated; }
+.monster-name { font-size:10px; font-weight:800; color:#555; }
+.monster-trait { font-size:9px; color:#bbb; margin-top:2px; line-height:1.4; }
+
+/* FX 쇼케이스 */
+.fx-row { display:flex; gap:10px; flex-wrap:wrap; }
+.fx-card {
+  background:white; border-radius:16px; padding:14px 16px; min-width:148px;
+  border:2px solid #ffeee8;
+}
+.fx-weapon { font-size:12px; font-weight:800; color:#ff6b6b; margin-bottom:8px; }
+.fx-canvas { display:block; border-radius:10px; background:#fff8f5; margin-bottom:8px; }
+.fx-desc { font-size:11px; color:#aaa; line-height:1.5; }
+
+.layout { display:flex; gap:28px; flex-wrap:wrap; align-items:flex-start; }
+</style>
+</head>
+<body>
+
+<h1>Style A — 귀엽고 발랄한 파티게임 🎀</h1>
+<p class="subtitle">따뜻한 크림 + 코랄 · 둥근 UI · 통통 튀는 파티클 · 코믹 분위기</p>
+
+<!-- 팔레트 -->
+<div class="section">
+  <div class="sec-label">Color Palette</div>
+  <div class="palette">
+    <div class="swatch" style="background:#ff6b6b">메인<br>#FF6B6B</div>
+    <div class="swatch" style="background:#ff8e53">강조<br>#FF8E53</div>
+    <div class="swatch" style="background:#ffd166; color:#c8932a">보상<br>#FFD166</div>
+    <div class="swatch" style="background:#06d6a0">HP<br>#06D6A0</div>
+    <div class="swatch" style="background:#4a90d9">SSAFY<br>#4A90D9</div>
+    <div class="swatch" style="background:#9b59b6">보스<br>#9B59B6</div>
+    <div class="swatch" style="background:#fff8f0; border:2px solid #ffd0c0; color:#dda">배경<br>#FFF8F0</div>
+  </div>
+</div>
+
+<div class="layout">
+  <!-- 게임 캔버스 + HUD -->
+  <div class="section">
+    <div class="sec-label">Game Screen + HUD</div>
+    <div class="game-wrap">
+      <canvas id="gameCanvas" width="560" height="380"></canvas>
+      <div class="hud-overlay">
+        <div class="hud-box">
+          <div class="hud-hp-wrap">
+            <div class="hud-hp-label">HP</div>
+            <div class="hp-track"><div class="hp-fill" id="hpFill"></div></div>
+          </div>
+          <div style="text-align:center"><div class="hud-num">72</div><div class="hud-sub">KILLS</div></div>
+          <div style="text-align:center"><div class="hud-num">2:34</div><div class="hud-sub">TIME</div></div>
+          <div class="weapon-slot active">🐍</div>
+          <div class="weapon-slot">☕</div>
+          <div class="weapon-slot" style="opacity:.4;font-size:13px;color:#ccc">+</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 이벤트 모달 -->
+  <div class="section">
+    <div class="sec-label">Event Modal</div>
+    <div class="modal-wrap">
+      <div class="modal">
+        <div class="modal-badge">⚠️ 이벤트 발생!</div>
+        <div class="modal-title">들여쓰기 지옥</div>
+        <div class="modal-desc">동기가 IndentationError 패닉 상태! IndentationError 15마리를 처치하면 강화 재화를 받아요.</div>
+        <div class="npc-row">
+          <canvas id="npcCanvas" width="48" height="48" style="image-rendering:pixelated"></canvas>
+          <div>
+            <div class="npc-speech">"지윤님!! 제 파이썬이<br>이상해요!!"</div>
+            <div class="npc-name">— 박진우</div>
+          </div>
+        </div>
+        <div class="modal-btns">
+          <button class="btn-primary">도전하기!</button>
+          <button class="btn-secondary">나중에</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 몬스터 쇼케이스 -->
+<div class="section">
+  <div class="sec-label">Monster Sprites — 귀엽고 통통한 픽셀아트</div>
+  <div class="monster-row">
+    <div class="monster-card" style="border-color:#ffccc8">
+      <canvas id="m-se" width="64" height="64" style="image-rendering:pixelated"></canvas>
+      <div class="monster-name">SyntaxError</div>
+      <div class="monster-trait">빨간 타원 + 느낌표<br>기본형 다수 등장</div>
+    </div>
+    <div class="monster-card" style="border-color:#ddddf5">
+      <canvas id="m-np" width="64" height="64" style="image-rendering:pixelated"></canvas>
+      <div class="monster-name">NullPointer</div>
+      <div class="monster-trait">반투명 유령<br>빠른 히트앤런</div>
+    </div>
+    <div class="monster-card" style="border-color:#ffe0cc">
+      <canvas id="m-sf" width="64" height="64" style="image-rendering:pixelated"></canvas>
+      <div class="monster-name">SegFault</div>
+      <div class="monster-trait">육각형 탱커<br>느리고 체력 높음</div>
+    </div>
+    <div class="monster-card" style="border-color:#c8f5d8">
+      <canvas id="m-hb" width="64" height="64" style="image-rendering:pixelated"></canvas>
+      <div class="monster-name">HealBug</div>
+      <div class="monster-trait">초록 하트 도망병<br>처치 시 HP 드롭</div>
+    </div>
+    <div class="monster-card" style="border-color:#ffe0aa">
+      <canvas id="m-ie" width="64" height="64" style="image-rendering:pixelated"></canvas>
+      <div class="monster-name">IndentationError</div>
+      <div class="monster-trait">주황 코드블록<br>이벤트 전용</div>
+    </div>
+  </div>
+</div>
+
+<!-- 무기 이펙트 쇼케이스 -->
+<div class="section">
+  <div class="sec-label">Weapon Effects — 파스텔 파티클 + 별 튐</div>
+  <div class="fx-row">
+    <div class="fx-card">
+      <div class="fx-weapon">🐍 Python — 360° 구체</div>
+      <canvas class="fx-canvas" id="fx-python" width="144" height="100"></canvas>
+      <div class="fx-desc">파란 둥근 구체 · 맞으면 별✨ 파티클 · 부드러운 잔상</div>
+    </div>
+    <div class="fx-card">
+      <div class="fx-weapon">☕ Java — 오비탈 오브</div>
+      <canvas class="fx-canvas" id="fx-java" width="144" height="100"></canvas>
+      <div class="fx-desc">주변 공전 오렌지 오브 · 회전 시 불꽃 스파크</div>
+    </div>
+    <div class="fx-card">
+      <div class="fx-weapon">🔀 Git — 스턴 웨이브</div>
+      <canvas class="fx-canvas" id="fx-git" width="144" height="100"></canvas>
+      <div class="fx-desc">분홍 웨이브 확산 · 스턴 시 💫 플로팅 이모지</div>
+    </div>
+    <div class="fx-card">
+      <div class="fx-weapon">🐧 Linux — 궁극기</div>
+      <canvas class="fx-canvas" id="fx-linux" width="144" height="100"></canvas>
+      <div class="fx-desc">화면 전체 폭발 · $ rm -rf 텍스트 팝업 · 무지개 파편</div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── 픽셀 스프라이트 데이터 ──────────────────────────────────────────────────
+const _ = null;
+const SPRITES = {
+  syntax_error: (() => {
+    const SR='#cc2200',SL='#ff4422',SW='#ffffff';
+    return [[_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],[_,_,_,SR,SR,SR,SR,SR,SR,SR,SR,_,_,_,_,_],[_,_,SR,SR,SL,SL,SL,SL,SL,SL,SR,SR,_,_,_,_],[_,_,SR,SL,SL,SL,SW,SW,SL,SL,SL,SR,_,_,_,_],[_,_,SR,SL,SL,SL,SW,SW,SL,SL,SL,SR,_,_,_,_],[_,_,SR,SL,SL,SL,SW,SW,SL,SL,SL,SR,_,_,_,_],[_,_,SR,SL,SL,SL,SL,SL,SL,SL,SL,SR,_,_,_,_],[_,_,SR,SL,SL,SL,SW,SW,SL,SL,SL,SR,_,_,_,_],[_,_,SR,SL,SL,SL,SW,SW,SL,SL,SL,SR,_,_,_,_],[_,_,SR,SR,SL,SL,SL,SL,SL,SL,SR,SR,_,_,_,_],[_,_,_,SR,SR,SR,SR,SR,SR,SR,SR,_,_,_,_,_]];
+  })(),
+  null_pointer: (() => {
+    const NG='#ccccee',NE='#000022';
+    return [[_,_,_,_,NG,NG,NG,NG,NG,NG,_,_,_,_,_,_],[_,_,_,NG,NG,NG,NG,NG,NG,NG,NG,_,_,_,_,_],[_,_,NG,NG,NG,NG,NG,NG,NG,NG,NG,NG,_,_,_,_],[_,_,NG,NG,NE,NE,NG,NG,NE,NE,NG,NG,_,_,_,_],[_,_,NG,NG,NE,NE,NG,NG,NE,NE,NG,NG,_,_,_,_],[_,_,NG,NG,NG,NG,NG,NG,NG,NG,NG,NG,_,_,_,_],[_,_,NG,NG,NG,NG,NG,NG,NG,NG,NG,NG,_,_,_,_],[_,_,NG,NG,NG,NG,NG,NG,NG,NG,NG,NG,_,_,_,_],[_,_,NG,NG,NG,NG,NG,NG,NG,NG,NG,NG,_,_,_,_],[_,NG,NG,_,NG,NG,NG,_,NG,NG,NG,_,NG,_,_,_],[_,NG,_,_,_,NG,NG,_,_,NG,NG,_,NG,_,_,_]];
+  })(),
+  seg_fault: (() => {
+    const SFB='#884400',SFO='#cc6600',SFC='#ffaa55';
+    return [[_,_,_,_,SFB,SFB,SFB,SFB,SFB,SFB,SFB,_,_,_,_,_],[_,_,_,SFB,SFO,SFO,SFO,SFO,SFO,SFO,SFB,SFB,_,_,_,_],[_,_,SFB,SFO,SFO,SFC,SFO,SFO,SFO,SFO,SFO,SFB,SFB,_,_,_],[_,SFB,SFO,SFO,SFC,SFO,SFO,SFO,SFO,SFO,SFO,SFO,SFB,_,_,_],[_,SFB,SFO,SFC,SFB,SFB,SFO,SFO,SFO,SFC,SFO,SFO,SFB,_,_,_],[_,SFB,SFO,SFO,SFO,SFB,SFO,SFO,SFC,SFO,SFO,SFO,SFB,_,_,_],[_,SFB,SFO,SFO,SFO,SFO,SFB,SFC,SFO,SFO,SFO,SFO,SFB,_,_,_],[_,SFB,SFO,SFO,SFC,SFO,SFO,SFB,SFO,SFO,SFO,SFO,SFB,_,_,_],[_,SFB,SFO,SFO,SFO,SFC,SFO,SFO,SFB,SFO,SFO,SFO,SFB,_,_,_],[_,_,SFB,SFO,SFO,SFO,SFO,SFO,SFO,SFB,SFB,SFB,_,_,_,_],[_,_,_,SFB,SFB,SFB,SFB,SFB,SFB,SFB,_,_,_,_,_,_]];
+  })(),
+  heal_bug: (() => {
+    const HG='#22cc44',HD='#118822';
+    return [[_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],[_,_,_,_,HG,HG,HG,_,HG,HG,HG,_,_,_,_,_],[_,_,_,HG,HG,HG,HG,HG,HG,HG,HG,HG,_,_,_,_],[_,_,HG,HG,HG,HD,HG,HG,HD,HG,HG,HG,HG,_,_,_],[_,_,HG,HG,HG,HG,HG,HG,HG,HG,HG,HG,HG,_,_,_],[_,_,HG,HG,HG,HG,HG,HG,HG,HG,HG,HG,HG,_,_,_],[_,_,_,HG,HG,HG,HG,HG,HG,HG,HG,HG,_,_,_,_],[_,_,_,_,HG,HG,HG,HG,HG,HG,HG,_,_,_,_,_],[_,_,_,_,_,HG,HG,HG,HG,HG,_,_,_,_,_,_],[_,_,_,_,_,_,HG,HG,HG,_,_,_,_,_,_,_],[_,_,_,_,_,_,_,HG,_,_,_,_,_,_,_,_]];
+  })(),
+  indentation_error: (() => {
+    const IO='#ff8800',ID2='#cc5500',IW='#ffffff';
+    return [[_,IO,IO,IO,IO,IO,IO,IO,IO,IO,IO,IO,IO,IO,_,_],[_,IO,ID2,ID2,ID2,ID2,ID2,ID2,ID2,ID2,ID2,ID2,ID2,IO,_,_],[_,IO,IW,IW,IW,IW,IW,IW,IW,ID2,ID2,ID2,ID2,IO,_,_],[_,IO,ID2,ID2,ID2,ID2,ID2,ID2,ID2,ID2,ID2,ID2,ID2,IO,_,_],[_,IO,ID2,IW,IW,IW,IW,IW,IW,ID2,ID2,ID2,ID2,IO,_,_],[_,IO,ID2,ID2,ID2,ID2,ID2,ID2,ID2,ID2,ID2,ID2,ID2,IO,_,_],[_,IO,ID2,ID2,IW,IW,IW,IW,IW,ID2,ID2,ID2,ID2,IO,_,_],[_,IO,ID2,ID2,ID2,ID2,ID2,ID2,ID2,ID2,ID2,ID2,ID2,IO,_,_],[_,IO,ID2,ID2,ID2,IW,IW,IW,IW,ID2,ID2,ID2,ID2,IO,_,_],[_,IO,ID2,ID2,ID2,ID2,ID2,ID2,ID2,ID2,ID2,ID2,ID2,IO,_,_],[_,IO,IO,IO,IO,IO,IO,IO,IO,IO,IO,IO,IO,IO,_,_]];
+  })(),
+};
+
+const NS='#f5c5a3',NH='#222222',NE2='#1a1a1a',NU='#4a90d9',ND2='#2c5f8a',NP2='#1e3f5a';
+const JINU_SPRITE = [[_,_,_,NH,NH,NH,NH,NH,NH,NH,_,_,_,_,_,_],[_,_,NH,NH,NH,NH,NH,NH,NH,NH,NH,_,_,_,_,_],[_,_,NH,NS,NS,NS,NS,NS,NS,NS,NH,_,_,_,_,_],[_,_,NH,NS,NE2,NS,NS,NE2,NS,NS,NH,_,_,_,_,_],[_,_,NH,NS,NS,NS,NS,NS,NS,NS,NH,_,_,_,_,_],[_,_,NH,NS,NS,'#e8a87c',NS,NS,NS,NS,NH,_,_,_,_,_],[_,_,_,NH,NH,NS,NH,NH,_,_,_,_,_,_,_,_],[_,NS,NU,NU,NU,NU,NU,NU,NU,NS,_,_,_,_,_,_],[_,NS,NU,ND2,NU,NU,NU,ND2,NU,NS,_,_,_,_,_,_],[_,NS,NU,NU,NU,NU,NU,NU,NU,NS,_,_,_,_,_,_],[_,_,NU,NU,NU,NU,NU,NU,NU,_,_,_,_,_,_,_],[_,_,NP2,NP2,NU,NU,NU,NP2,NP2,_,_,_,_,_,_,_],[_,_,NP2,NP2,NP2,NP2,NP2,NP2,NP2,_,_,_,_,_,_,_],[_,_,NP2,NP2,NP2,NP2,NP2,NP2,NP2,_,_,_,_,_,_,_],[_,_,NP2,NP2,_,NP2,NP2,_,NP2,_,_,_,_,_,_,_]];
+const S2='#f5c5a3',BH='#3d2314',BE='#1a1a1a',BU='#9b59b6',BD='#7d3c98',BP='#2c3e50',BW='#ffffff';
+const PLAYER_SPRITE = [[_,_,_,_,_,_,_,_,_,_,_,BH,BH,BH,BH,BH,BH,BH,BH,BH,BH,_,_,_,_,_,_,_,_,_,_,_],[_,_,_,_,_,_,_,_,_,_,BH,BH,BH,BH,BH,BH,BH,BH,BH,BH,BH,BH,_,_,_,_,_,_,_,_,_,_],[_,_,_,_,_,_,_,_,_,BH,BH,BH,BH,BH,BH,BH,BH,BH,BH,BH,BH,BH,BH,_,_,_,_,_,_,_,_,_],[_,_,_,_,_,_,_,_,BH,BH,BH,BH,BH,BH,BH,BH,BH,BH,BH,BH,BH,BH,BH,BH,_,_,_,_,_,_,_,_],[_,_,_,_,_,_,_,BH,BH,S2,S2,S2,S2,S2,S2,S2,S2,S2,S2,S2,S2,BH,BH,BH,_,_,_,_,_,_,_,_],[_,_,_,_,_,_,_,BH,S2,S2,S2,S2,S2,S2,S2,S2,S2,S2,S2,S2,S2,S2,BH,BH,_,_,_,_,_,_,_,_],[_,_,_,_,_,_,BH,BH,S2,S2,S2,S2,S2,S2,S2,S2,S2,S2,S2,S2,S2,S2,S2,BH,BH,_,_,_,_,_,_,_],[_,_,_,_,_,_,BH,S2,S2,S2,S2,S2,S2,S2,S2,S2,S2,S2,S2,S2,S2,S2,S2,S2,BH,_,_,_,_,_,_,_],[_,_,_,_,_,_,BH,S2,S2,BE,BE,S2,S2,S2,S2,S2,S2,S2,S2,BE,BE,S2,S2,S2,BH,_,_,_,_,_,_,_],[_,_,_,_,_,_,BH,S2,S2,BE,BW,S2,S2,S2,S2,S2,S2,S2,S2,BE,BW,S2,S2,S2,BH,_,_,_,_,_,_,_],[_,_,_,_,_,_,BH,S2,S2,S2,S2,S2,S2,S2,S2,S2,S2,S2,S2,S2,S2,S2,S2,S2,BH,_,_,_,_,_,_,_],[_,_,_,_,_,_,BH,S2,S2,S2,S2,S2,S2,S2,S2,S2,S2,S2,S2,S2,S2,S2,S2,S2,BH,_,_,_,_,_,_,_],[_,_,_,_,_,_,BH,S2,S2,S2,S2,S2,'#e8a87c',S2,S2,S2,S2,'#e8a87c',S2,S2,S2,S2,S2,S2,BH,_,_,_,_,_,_,_],[_,_,_,_,_,_,BH,BH,S2,S2,S2,S2,S2,S2,S2,S2,S2,S2,S2,S2,S2,S2,S2,BH,BH,_,_,_,_,_,_,_],[_,_,_,_,_,_,_,BH,S2,S2,S2,BE,BE,BE,BE,BE,BE,BE,BE,BE,S2,S2,S2,BH,_,_,_,_,_,_,_,_],[_,_,_,_,_,_,_,BH,BH,S2,S2,S2,S2,S2,S2,S2,S2,S2,S2,S2,S2,BH,BH,_,_,_,_,_,_,_,_,_],[_,_,_,_,_,_,_,_,_,BH,BH,BH,BH,BH,BH,BH,BH,BH,BH,BH,BH,_,_,_,_,_,_,_,_,_,_,_],[_,_,_,_,_,_,_,_,_,_,S2,S2,S2,S2,S2,S2,S2,S2,S2,S2,_,_,_,_,_,_,_,_,_,_,_,_],[_,_,_,_,_,_,_,_,'#4a90d9','#4a90d9','#4a90d9',S2,S2,S2,S2,S2,S2,S2,S2,'#4a90d9','#4a90d9','#4a90d9',_,_,_,_,_,_,_,_,_,_],[_,_,_,_,_,_,_,'#4a90d9','#4a90d9','#4a90d9','#4a90d9','#4a90d9','#4a90d9','#4a90d9','#4a90d9','#4a90d9','#4a90d9','#4a90d9','#4a90d9','#4a90d9','#4a90d9','#4a90d9','#4a90d9',_,_,_,_,_,_,_,_,_]];
+
+function drawSprite(ctx, sprite, x, y, scale) {
+  for (let r = 0; r < sprite.length; r++) {
+    for (let c = 0; c < sprite[r].length; c++) {
+      if (!sprite[r][c]) continue;
+      ctx.fillStyle = sprite[r][c];
+      ctx.fillRect(x + c*scale, y + r*scale, scale, scale);
+    }
+  }
+}
+
+// NPC 캔버스
+drawSprite(document.getElementById('npcCanvas').getContext('2d'), JINU_SPRITE, 0, 0, 3);
+
+// 몬스터 카드 캔버스
+['m-se','m-np','m-sf','m-hb','m-ie'].forEach((id,i) => {
+  const keys = Object.keys(SPRITES);
+  const ctx = document.getElementById(id).getContext('2d');
+  ctx.imageSmoothingEnabled = false;
+  // 배경 원
+  const colors = ['#ffeeec','#eeeeff','#fff0e0','#e8fff0','#fff0d8'];
+  ctx.fillStyle = colors[i];
+  ctx.beginPath(); ctx.arc(32,32,28,0,Math.PI*2); ctx.fill();
+  drawSprite(ctx, SPRITES[keys[i]], 0, i===2?-2:0, 4);
+});
+
+// ── 게임 캔버스 ──────────────────────────────────────────────────────────────
+const gc = document.getElementById('gameCanvas');
+const gctx = gc.getContext('2d');
+const GW = 560, GH = 380;
+
+let particles = [];
+let enemies = [
+  { x:400, y:100, type:'syntax_error', hp:0.7, wobble:0, vy:0.3 },
+  { x:450, y:220, type:'null_pointer', hp:0.4, wobble:1.5, vy:-0.2 },
+  { x:350, y:300, type:'seg_fault', hp:0.9, wobble:3, vy:0.15 },
+  { x:480, y:320, type:'heal_bug', hp:0.5, wobble:0.8, vy:0.4 },
+  { x:420, y:170, type:'indentation_error', hp:0.6, wobble:2.2, vy:-0.1 },
+];
+let projectiles = [];
+let t = 0;
+
+function spawnProjectile() {
+  const angle = Math.random() * Math.PI * 2;
+  const px = 180, py = 200;
+  projectiles.push({ x: px, y: py, vx: Math.cos(angle)*4, vy: Math.sin(angle)*4, life:1, color:'#4a90d9' });
+}
+
+function spawnParticle(x, y, color) {
+  for (let i = 0; i < 8; i++) {
+    const a = Math.random() * Math.PI * 2;
+    const spd = 2 + Math.random()*3;
+    particles.push({ x, y, vx:Math.cos(a)*spd, vy:Math.sin(a)*spd, life:1, color, size:3+Math.random()*3 });
+  }
+}
+
+function drawBg() {
+  // 배경 그리드
+  gctx.fillStyle = '#fff8f0';
+  gctx.fillRect(0,0,GW,GH);
+  gctx.strokeStyle = '#ffeee5';
+  gctx.lineWidth = 1;
+  for (let x=0;x<GW;x+=32) { gctx.beginPath();gctx.moveTo(x,0);gctx.lineTo(x,GH);gctx.stroke(); }
+  for (let y=0;y<GH;y+=32) { gctx.beginPath();gctx.moveTo(0,y);gctx.lineTo(GW,y);gctx.stroke(); }
+  // 빛나는 중앙 원
+  const grd = gctx.createRadialGradient(180,200,0,180,200,120);
+  grd.addColorStop(0,'rgba(255,107,107,0.07)');
+  grd.addColorStop(1,'transparent');
+  gctx.fillStyle=grd; gctx.fillRect(0,0,GW,GH);
+}
+
+function drawPlayer() {
+  // 아웃라인
+  gctx.shadowBlur = 12;
+  gctx.shadowColor = '#ff6b6b44';
+  drawSprite(gctx, PLAYER_SPRITE, 148, 168, 1);
+  gctx.shadowBlur = 0;
+  // 아래 그림자
+  gctx.fillStyle = 'rgba(255,107,107,0.1)';
+  gctx.beginPath();
+  gctx.ellipse(164, 202, 16, 6, 0, 0, Math.PI*2);
+  gctx.fill();
+}
+
+function drawEnemy(e) {
+  const sprite = SPRITES[e.type];
+  const scale = e.type==='seg_fault' ? 3 : 2;
+  const w = 16*scale, h = (sprite.length)*scale;
+  const bob = Math.sin(t*0.03 + e.wobble) * 3;
+  const ex = e.x - w/2, ey = e.y - h/2 + bob;
+
+  // HP 바
+  gctx.fillStyle = '#ffeee8';
+  gctx.beginPath(); gctx.roundRect(e.x-20, e.y-h/2-10, 40, 5, 3); gctx.fill();
+  const hpColor = e.hp > 0.5 ? '#06d6a0' : '#ff6b6b';
+  gctx.fillStyle = hpColor;
+  gctx.beginPath(); gctx.roundRect(e.x-20, e.y-h/2-10, 40*e.hp, 5, 3); gctx.fill();
+
+  // 그림자
+  gctx.fillStyle = 'rgba(0,0,0,0.08)';
+  gctx.beginPath(); gctx.ellipse(e.x, e.y+h/2+2, w/2.5, 4, 0, 0, Math.PI*2); gctx.fill();
+
+  drawSprite(gctx, sprite, ex, ey, scale);
+
+  // null_pointer 반투명
+  if (e.type === 'null_pointer') {
+    gctx.globalAlpha = 0.6;
+    gctx.fillStyle = 'rgba(255,255,255,0.3)';
+    gctx.fillRect(ex, ey, w, h);
+    gctx.globalAlpha = 1;
+  }
+}
+
+function loop() {
+  t++;
+  drawBg();
+
+  // 투사체 생성
+  if (t % 28 === 0) spawnProjectile();
+
+  // 투사체 업데이트·그리기
+  projectiles = projectiles.filter(p => p.life > 0);
+  projectiles.forEach(p => {
+    p.x += p.vx; p.y += p.vy;
+    p.life -= 0.015;
+    if (p.x<0||p.x>GW||p.y<0||p.y>GH) { p.life=0; return; }
+
+    // 적 충돌
+    enemies.forEach(e => {
+      if (Math.hypot(e.x-p.x, e.y-p.y) < 22) {
+        spawnParticle(p.x, p.y, '#ffd166');
+        p.life = 0;
+        e.hp = Math.max(0.1, e.hp - 0.05);
+      }
+    });
+
+    // 잔상
+    for (let i=0;i<3;i++) {
+      gctx.globalAlpha = (p.life * 0.3) * (i/3);
+      gctx.fillStyle = '#4a90d9';
+      gctx.beginPath();
+      gctx.arc(p.x - p.vx*i*0.5, p.y - p.vy*i*0.5, 4*(1-i/3), 0, Math.PI*2);
+      gctx.fill();
+    }
+    gctx.globalAlpha = 1;
+
+    // 구체
+    gctx.shadowBlur = 8; gctx.shadowColor = '#4a90d9';
+    gctx.fillStyle = '#4a90d9';
+    gctx.beginPath(); gctx.arc(p.x, p.y, 5+2*p.life, 0, Math.PI*2); gctx.fill();
+    // 하이라이트
+    gctx.fillStyle = 'rgba(255,255,255,0.6)';
+    gctx.beginPath(); gctx.arc(p.x-1.5, p.y-1.5, 2, 0, Math.PI*2); gctx.fill();
+    gctx.shadowBlur = 0;
+  });
+
+  // 파티클
+  particles = particles.filter(p => p.life > 0);
+  particles.forEach(p => {
+    p.x += p.vx; p.y += p.vy; p.vy += 0.1; p.life -= 0.04;
+    gctx.globalAlpha = p.life;
+    gctx.fillStyle = p.color;
+    gctx.beginPath(); gctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI*2); gctx.fill();
+    // 별 모양
+    if (p.life > 0.6) {
+      gctx.fillStyle = '#ffd166';
+      gctx.font = `${10*p.life}px serif`;
+      gctx.fillText('✦', p.x, p.y);
+    }
+    gctx.globalAlpha = 1;
+  });
+
+  // 적
+  enemies.forEach(drawEnemy);
+  // 플레이어
+  drawPlayer();
+
+  // 데미지 텍스트 힌트
+  const floatT = t % 60;
+  if (floatT < 30) {
+    gctx.globalAlpha = floatT < 20 ? 1 : (30-floatT)/10;
+    gctx.fillStyle = '#ff6b6b';
+    gctx.font = 'bold 14px Nunito, sans-serif';
+    gctx.fillText('-35', 390 + Math.sin(t*0.2)*5, 80 - floatT*0.8);
+    gctx.fillStyle = '#ffd166';
+    gctx.font = 'bold 12px Nunito, sans-serif';
+    gctx.fillText('-21 CRIT!', 290, 260 - ((t+20)%60)*0.5 < 0 ? 260 : 260 - ((t+20)%60 < 30 ? (t+20)%60 : 0) * 0.5);
+    gctx.globalAlpha = 1;
+  }
+
+  requestAnimationFrame(loop);
+}
+loop();
+
+// ── 이펙트 미니 캔버스 ───────────────────────────────────────────────────────
+function fxPython() {
+  const c = document.getElementById('fx-python');
+  const ctx = c.getContext('2d');
+  const orbs = Array.from({length:8},(_,i)=>({a:i/8*Math.PI*2, dist:30}));
+  const pts = [];
+  let ft = 0;
+  function draw() {
+    ft++;
+    ctx.clearRect(0,0,144,100);
+    ctx.fillStyle='#fff8f0'; ctx.fillRect(0,0,144,100);
+    // 중심
+    const grd = ctx.createRadialGradient(72,50,0,72,50,40);
+    grd.addColorStop(0,'rgba(74,144,217,0.15)'); grd.addColorStop(1,'transparent');
+    ctx.fillStyle=grd; ctx.fillRect(0,0,144,100);
+    // 궤적
+    orbs.forEach(o => {
+      o.a += 0.06;
+      const x = 72+Math.cos(o.a)*o.dist, y = 50+Math.sin(o.a)*o.dist*0.6;
+      // 잔상
+      for(let i=1;i<=4;i++){
+        const pa=o.a-0.06*i;
+        const px=72+Math.cos(pa)*o.dist, py=50+Math.sin(pa)*o.dist*0.6;
+        ctx.globalAlpha=0.08*i;
+        ctx.fillStyle='#4a90d9';
+        ctx.beginPath();ctx.arc(px,py,4,0,Math.PI*2);ctx.fill();
+      }
+      ctx.globalAlpha=1;
+      ctx.shadowBlur=8;ctx.shadowColor='#4a90d9';
+      ctx.fillStyle='#4a90d9';
+      ctx.beginPath();ctx.arc(x,y,5,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle='rgba(255,255,255,0.7)';
+      ctx.beginPath();ctx.arc(x-1,y-1,2,0,Math.PI*2);ctx.fill();
+      ctx.shadowBlur=0;
+    });
+    if (ft%20===0) {
+      for(let i=0;i<5;i++) pts.push({x:72+(Math.random()-0.5)*60,y:50+(Math.random()-0.5)*40,life:1,vx:(Math.random()-0.5)*2,vy:-1-Math.random()*2});
+    }
+    pts.forEach((p,idx)=>{
+      p.x+=p.vx;p.y+=p.vy;p.life-=0.05;
+      ctx.globalAlpha=p.life;
+      ctx.fillStyle='#ffd166';
+      ctx.font=`${8*p.life}px serif`;ctx.fillText('✦',p.x,p.y);
+      ctx.globalAlpha=1;
+    });
+    for(let i=pts.length-1;i>=0;i--)if(pts[i].life<=0)pts.splice(i,1);
+    // 중심 플레이어 점
+    ctx.fillStyle='#ff6b6b';ctx.beginPath();ctx.arc(72,50,6,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='white';ctx.beginPath();ctx.arc(70,48,2,0,Math.PI*2);ctx.fill();
+    requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+function fxJava() {
+  const c = document.getElementById('fx-java');
+  const ctx = c.getContext('2d');
+  const orbs = Array.from({length:3},(_,i)=>({a:i/3*Math.PI*2, r:35, size:7}));
+  let ft = 0;
+  function draw() {
+    ft++;
+    ctx.clearRect(0,0,144,100);
+    ctx.fillStyle='#fff8f0'; ctx.fillRect(0,0,144,100);
+    const grd = ctx.createRadialGradient(72,50,0,72,50,40);
+    grd.addColorStop(0,'rgba(255,142,83,0.15)'); grd.addColorStop(1,'transparent');
+    ctx.fillStyle=grd; ctx.fillRect(0,0,144,100);
+    orbs.forEach(o => {
+      o.a += 0.04;
+      const x = 72+Math.cos(o.a)*o.r, y = 50+Math.sin(o.a)*o.r*0.7;
+      // 불꽃 파티클
+      if(ft%5===0){
+        ctx.globalAlpha=0.4;
+        ctx.fillStyle='#ffd166';
+        ctx.beginPath();ctx.arc(x+(Math.random()-0.5)*10,y-Math.random()*12,2+Math.random()*2,0,Math.PI*2);ctx.fill();
+        ctx.globalAlpha=1;
+      }
+      ctx.shadowBlur=12;ctx.shadowColor='#ff8e53';
+      ctx.fillStyle='#ff8e53';
+      ctx.beginPath();ctx.arc(x,y,o.size,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle='rgba(255,255,255,0.6)';
+      ctx.beginPath();ctx.arc(x-2,y-2,2.5,0,Math.PI*2);ctx.fill();
+      ctx.shadowBlur=0;
+    });
+    ctx.fillStyle='#ff6b6b';ctx.beginPath();ctx.arc(72,50,7,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='white';ctx.beginPath();ctx.arc(70,48,2.5,0,Math.PI*2);ctx.fill();
+    requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+function fxGit() {
+  const c = document.getElementById('fx-git');
+  const ctx = c.getContext('2d');
+  let ft=0, waves=[];
+  function draw() {
+    ft++;
+    ctx.clearRect(0,0,144,100);
+    ctx.fillStyle='#fff8f0'; ctx.fillRect(0,0,144,100);
+    if(ft%40===0) waves.push({r:0,life:1});
+    waves.forEach(w=>{
+      w.r+=2.5;w.life-=0.025;
+      ctx.globalAlpha=w.life*0.5;
+      ctx.strokeStyle='#ff6b6b';
+      ctx.lineWidth=3;
+      ctx.beginPath();ctx.arc(72,50,w.r,0,Math.PI*2);ctx.stroke();
+      ctx.globalAlpha=1;
+    });
+    for(let i=waves.length-1;i>=0;i--)if(waves[i].life<=0)waves.splice(i,1);
+    // 스턴 이모지
+    if(Math.floor(ft/40)%2===1){
+      const a=(ft%40)/40;
+      ctx.globalAlpha=a<0.5?a*2:2-a*2;
+      ctx.font='20px serif';ctx.fillText('💫',55,35);
+      ctx.globalAlpha=1;
+    }
+    ctx.fillStyle='#ff6b6b';ctx.beginPath();ctx.arc(72,50,7,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='white';ctx.beginPath();ctx.arc(70,48,2.5,0,Math.PI*2);ctx.fill();
+    requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+function fxLinux() {
+  const c = document.getElementById('fx-linux');
+  const ctx = c.getContext('2d');
+  let ft=0, bursting=false, burstT=0, frags=[];
+  function draw() {
+    ft++;
+    ctx.clearRect(0,0,144,100);
+    ctx.fillStyle='#fff8f0'; ctx.fillRect(0,0,144,100);
+    if(ft%80===0){bursting=true;burstT=0;
+      for(let i=0;i<20;i++){
+        const a=Math.random()*Math.PI*2,spd=3+Math.random()*5;
+        frags.push({x:72,y:50,vx:Math.cos(a)*spd,vy:Math.sin(a)*spd,life:1,
+          color:['#ff6b6b','#ffd166','#06d6a0','#4a90d9','#9b59b6'][Math.floor(Math.random()*5)]});
+      }
+    }
+    if(bursting){
+      burstT++;
+      ctx.globalAlpha=Math.max(0,1-burstT/20)*0.4;
+      ctx.fillStyle='white';
+      ctx.fillRect(0,0,144,100);
+      ctx.globalAlpha=1;
+      if(burstT>20)bursting=false;
+    }
+    frags.forEach(f=>{
+      f.x+=f.vx;f.y+=f.vy;f.vy+=0.1;f.life-=0.03;
+      ctx.globalAlpha=f.life;
+      ctx.fillStyle=f.color;
+      ctx.beginPath();ctx.arc(f.x,f.y,4*f.life,0,Math.PI*2);ctx.fill();
+      ctx.globalAlpha=1;
+    });
+    for(let i=frags.length-1;i>=0;i--)if(frags[i].life<=0)frags.splice(i,1);
+    if(bursting&&burstT<25){
+      ctx.globalAlpha=1-burstT/25;
+      ctx.fillStyle='#ff6b6b';
+      ctx.font='bold 11px Nunito,sans-serif';
+      ctx.fillText('$ rm -rf',20,50);
+      ctx.globalAlpha=1;
+    }
+    ctx.fillStyle='#ff6b6b';ctx.beginPath();ctx.arc(72,50,7,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='white';ctx.beginPath();ctx.arc(70,48,2.5,0,Math.PI*2);ctx.fill();
+    requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+fxPython(); fxJava(); fxGit(); fxLinux();
+</script>
+</body>
+</html>
